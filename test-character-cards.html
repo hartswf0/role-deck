@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Profile Cards — Test Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 3em;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #5a6c57;
+            letter-spacing: 0.15em;
+        }
+        
+        .intro {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-bottom: 40px;
+            border-left: 4px solid #5a6c57;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feed Loop Character Profiles</h1>
+        
+        <div class="intro">
+            <h2 style="margin-bottom: 15px; color: #5a6c57;">All 8 Characters with Calculated Radar Metrics</h2>
+            <p>
+                Each character profile shows their <strong>11-dimensional ethical decision-making pattern</strong> 
+                based on their actual choices in the Feed Loop scenarios.
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>Radar Dimensions:</strong> Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism, 
+                Logic, Empathy, Authority, Risk, Uncertainty, Decisiveness
+            </p>
+        </div>
+        
+        <div class="grid" id="cardGrid"></div>
+    </div>
+    
+    <script src="character-profiles.js"></script>
+    <script src="character-card-component.js"></script>
+    <script>
+        // Render all 8 character cards
+        const grid = document.getElementById('cardGrid');
+        
+        feedLoopCharacters.forEach(character => {
+            const cardHTML = renderCharacterCard(character);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = cardHTML;
+            grid.appendChild(wrapper.firstElementChild);
+        });
+    </script>
+</body>
+</html>

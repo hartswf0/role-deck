@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Apprentice Rows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.15;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+            animation: grain 0.5s steps(4) infinite;
+        }
+        
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, 2%); }
+            50% { transform: translate(2%, -2%); }
+            75% { transform: translate(-2%, -2%); }
+        }
+        
+        .frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Shared TILTH opening frames [0:00-0:08] */
+        .frame-1 { background: #000; animation: frame1 2s ease-in-out forwards; }
+        @keyframes frame1 { 0%, 100% { opacity: 1; } }
+        
+        .frame-2 {
+            background: radial-gradient(circle at center, #1a1410 0%, #000 70%);
+            animation: frame2 2s 2s ease-in-out forwards;
+        }
+        
+        .seed {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            filter: blur(0.5px);
+        }
+        
+        .seed-half {
+            position: absolute;
+            width: 100px;
+            height: 200px;
+            background: linear-gradient(90deg, #3a2f1f 0%, #2a1f0f 100%);
+            border-radius: 50%;
+        }
+        
+        .seed-half.left { left: 0; animation: seedSplitLeft 2s 2s ease-out forwards; }
+        .seed-half.right { right: 0; animation: seedSplitRight 2s 2s ease-out forwards; }
+        
+        .root {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            width: 3px;
+            height: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(200,180,140,0.6) 100%);
+            animation: rootGrow 1.5s 2.5s ease-out forwards;
+        }
+        
+        @keyframes frame2 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        @keyframes seedSplitLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-30px); } }
+        @keyframes seedSplitRight { 0% { transform: translateX(0); } 100% { transform: translateX(30px); } }
+        @keyframes rootGrow { 0% { height: 0; } 100% { height: 80px; } }
+        
+        .frame-3 { background: #0a0a0a; animation: frame3 1s 4s ease-in-out forwards; }
+        @keyframes frame3 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 20px);
+            gap: 2px;
+        }
+        
+        .key {
+            width: 20px;
+            height: 20px;
+            background: #e8e4d8;
+            animation: keyToSoil 0.8s ease-out forwards;
+            animation-delay: calc(var(--delay) * 0.01s);
+        }
+        
+        @keyframes keyToSoil {
+            0% { background: #e8e4d8; transform: translateY(0); }
+            100% { background: #2a1f0f; transform: translateY(20px) scale(1.2); border-radius: 50%; }
+        }
+        
+        .frame-4 {
+            background: radial-gradient(circle at center, #0f1510 0%, #000 80%);
+            animation: frame4 1s 5s ease-in-out forwards;
+        }
+        
+        @keyframes frame4 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .icon-network {
+            position: relative;
+            width: 600px;
+            height: 600px;
+        }
+        
+        .feed-icon {
+            position: absolute;
+            font-size: 40px;
+            animation: iconSpin 1s ease-out forwards;
+        }
+        
+        .feed-icon.heart { top: 30%; left: 20%; animation-delay: 5.2s; }
+        .feed-icon.share { top: 50%; right: 20%; animation-delay: 5.3s; }
+        .feed-icon.bell { bottom: 30%; left: 40%; animation-delay: 5.4s; }
+        
+        @keyframes iconSpin {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: rotate(360deg) scale(0) translateY(100px); opacity: 0; }
+        }
+        
+        .frame-5 {
+            background: #000;
+            animation: frame5 1s 6s ease-in-out forwards;
+        }
+        
+        @keyframes frame5 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .lens-network {
+            width: 500px;
+            height: 500px;
+            animation: lensForm 1s 6.2s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes lensForm {
+            0% { opacity: 0; transform: scale(2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #8a7a5a;
+            border-radius: 50%;
+            animation: particleFloat 3s infinite ease-in-out;
+            animation-delay: calc(var(--delay) * 0.1s);
+        }
+        
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .frame-6 {
+            background: #000;
+            animation: frame6 1s 7s ease-in-out forwards;
+        }
+        
+        @keyframes frame6 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .tilth-logo {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 140px;
+            letter-spacing: 0.3em;
+            color: #fff;
+            opacity: 0;
+            animation: tilthReveal 1s 7.2s ease-out forwards;
+            text-shadow: 0 0 40px rgba(90, 108, 87, 0.3);
+            position: relative;
+        }
+        
+        .tilth-logo::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            color: #ff00ff;
+            opacity: 0.1;
+        }
+        
+        .tilth-logo::after {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            color: #00ffff;
+            opacity: 0.1;
+        }
+        
+        .tagline {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 16px;
+            letter-spacing: 0.3em;
+            color: #999;
+            margin-top: 30px;
+            opacity: 0;
+            animation: taglineReveal 0.5s 7.7s ease-out forwards;
+        }
+        
+        @keyframes tilthReveal {
+            0% { opacity: 0; letter-spacing: 1em; }
+            100% { opacity: 1; letter-spacing: 0.3em; }
+        }
+        
+        @keyframes taglineReveal { 0% { opacity: 0; } 100% { opacity: 0.7; } }
+        
+        /* [0:08+] Episode-specific: APPRENTICE ROWS */
+        .frame-7 {
+            background: linear-gradient(180deg, #1a2838 0%, #0a0a08 100%);
+            animation: frame7 2s 8.5s ease-in-out forwards;
+        }
+        
+        @keyframes frame7 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .dusk-sky {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(180deg, #d4a574 0%, #8a6a5a 50%, #1a2838 100%);
+        }
+        
+        .plot-rows {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(180deg, #2a1f0f 0%, #0a0a08 100%);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            padding: 40px;
+        }
+        
+        .plot {
+            background: rgba(90, 108, 87, 0.1);
+            border: 1px solid #5a6c57;
+            position: relative;
+            opacity: 0;
+            animation: plotReveal 0.5s ease-out forwards;
+            animation-delay: calc(9s + var(--delay) * 0.2s);
+        }
+        
+        @keyframes plotReveal {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .gate {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.5);
+            color: #5a6c57;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.1em;
+            animation: gateFlip 2s ease-in-out infinite;
+            animation-delay: calc(var(--delay) * 0.3s);
+        }
+        
+        @keyframes gateFlip {
+            0%, 100% { content: 'PRIVATE'; color: #8a5a5a; }
+            50% { content: 'OPEN'; color: #5a8a5a; }
+        }
+        
+        .lantern {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: radial-gradient(circle, #ffa500 0%, #ff6600 100%);
+            border-radius: 50% 50% 30% 30%;
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.6);
+            opacity: 0;
+            animation: lanternGlow 3s ease-in-out infinite;
+            animation-delay: calc(9.5s + var(--delay) * 0.2s);
+        }
+        
+        @keyframes lanternGlow {
+            0%, 100% { opacity: 0.3; transform: scale(1); box-shadow: 0 0 20px rgba(255, 165, 0, 0.4); }
+            50% { opacity: 0.8; transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 165, 0, 0.8); }
+        }
+        
+        .lantern:nth-child(1) { top: 15%; left: 8%; --delay: 0; }
+        .lantern:nth-child(2) { top: 20%; right: 12%; --delay: 1; }
+        .lantern:nth-child(3) { top: 25%; left: 45%; --delay: 2; }
+        .lantern:nth-child(4) { top: 18%; right: 35%; --delay: 3; }
+        
+        .seedling-avatar {
+            position: absolute;
+            bottom: 25%;
+            left: 15%;
+            font-size: 50px;
+            opacity: 0;
+            animation: seedlingAppear 1s 9.8s ease-out forwards;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+        }
+        
+        @keyframes seedlingAppear {
+            0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .root-knot {
+            position: absolute;
+            bottom: 22%;
+            left: 18%;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #ff4444;
+            border-radius: 50%;
+            opacity: 0;
+            animation: knotPulse 2s 10.2s ease-in-out infinite;
+        }
+        
+        @keyframes knotPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); box-shadow: 0 0 0 rgba(255, 68, 68, 0.4); }
+            50% { opacity: 0.8; transform: scale(1.2); box-shadow: 0 0 20px rgba(255, 68, 68, 0.6); }
+        }
+        
+        .red-string {
+            position: absolute;
+            bottom: 24%;
+            left: 17%;
+            width: 100px;
+            height: 2px;
+            background: #ff4444;
+            opacity: 0;
+            animation: stringThread 1s 10.5s ease-out forwards;
+        }
+        
+        @keyframes stringThread {
+            0% { opacity: 0; width: 0; }
+            100% { opacity: 0.8; width: 100px; }
+        }
+        
+        .terminal-screen {
+            position: absolute;
+            bottom: 28%;
+            right: 15%;
+            width: 200px;
+            height: 120px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            padding: 10px;
+            font-family: 'Courier', monospace;
+            font-size: 9px;
+            color: #00ffff;
+            opacity: 0;
+            animation: terminalBoot 0.5s 10s ease-out forwards;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        @keyframes terminalBoot {
+            0% { opacity: 0; }
+            100% { opacity: 0.8; }
+        }
+        
+        .episode-title {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 90px;
+            letter-spacing: 0.15em;
+            color: #e8e4d8;
+            opacity: 0;
+            animation: episodeTitleReveal 1s 9s ease-out forwards;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+        
+        @keyframes episodeTitleReveal {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); letter-spacing: 0.4em; }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); letter-spacing: 0.15em; }
+        }
+        
+        .badge {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background: #d4a574;
+            color: #0a0a08;
+            padding: 10px 25px;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            opacity: 0;
+            animation: badgeReveal 0.5s 9.8s ease-out forwards;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+        }
+        
+        @keyframes badgeReveal {
+            0% { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-5deg); }
+        }
+        
+        .audio-cue {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-family: 'Courier', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0;
+        }
+        
+        .cue-1 { animation: cueFade 2s 0s ease-in-out forwards; }
+        .cue-2 { animation: cueFade 2s 2s ease-in-out forwards; }
+        .cue-3 { animation: cueFade 1s 4s ease-in-out forwards; }
+        .cue-4 { animation: cueFade 1s 5s ease-in-out forwards; }
+        .cue-5 { animation: cueFade 1s 6s ease-in-out forwards; }
+        .cue-6 { animation: cueFade 1.5s 7s ease-in-out forwards; }
+        .cue-7 { animation: cueFade 2s 8.5s ease-in-out forwards; }
+        
+        @keyframes cueFade {
+            0% { opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <!-- Shared TILTH opening [0:00-0:08] -->
+    <div class="frame frame-1"></div>
+    
+    <div class="frame frame-2">
+        <div class="seed">
+            <div class="seed-half left"></div>
+            <div class="seed-half right"></div>
+            <div class="root"></div>
+        </div>
+    </div>
+    
+    <div class="frame frame-3">
+        <div class="keyboard-grid">
+            <script>
+                for(let i = 0; i < 100; i++) {
+                    document.write(`<div class="key" style="--delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-4">
+        <div class="icon-network">
+            <div class="feed-icon heart">♥</div>
+            <div class="feed-icon share">↗</div>
+            <div class="feed-icon bell">🔔</div>
+        </div>
+    </div>
+    
+    <div class="frame frame-5">
+        <div class="lens-network">
+            <script>
+                for(let i = 0; i < 30; i++) {
+                    const x = Math.random() * 500;
+                    const y = Math.random() * 500;
+                    document.write(`<div class="particle" style="left: ${x}px; top: ${y}px; --delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-6">
+        <div class="tilth-logo" data-text="TILTH">TILTH</div>
+        <div class="tagline">A field guide to post-human agriculture</div>
+    </div>
+    
+    <!-- Episode world: APPRENTICE ROWS -->
+    <div class="frame frame-7">
+        <div class="dusk-sky"></div>
+        
+        <div class="lantern"></div>
+        <div class="lantern"></div>
+        <div class="lantern"></div>
+        <div class="lantern"></div>
+        
+        <div class="plot-rows">
+            <div class="plot" style="--delay: 0">
+                <div class="gate">PRIVATE</div>
+            </div>
+            <div class="plot" style="--delay: 1">
+                <div class="gate">OPEN</div>
+            </div>
+            <div class="plot" style="--delay: 2">
+                <div class="gate">PRIVATE</div>
+            </div>
+            <div class="plot" style="--delay: 3">
+                <div class="gate">OPEN</div>
+            </div>
+            <div class="plot" style="--delay: 4">
+                <div class="gate">PRIVATE</div>
+            </div>
+        </div>
+        
+        <div class="seedling-avatar">🌱</div>
+        <div class="root-knot"></div>
+        <div class="red-string"></div>
+        
+        <div class="terminal-screen">
+            > SECURITY_ISSUE.log<br>
+            > Garden-share: data exposed<br>
+            > Status: DOCUMENTED<br>
+            > Priority: [PENDING REVIEW]<br>
+            > Owner: __________
+        </div>
+        
+        <div class="episode-title">APPRENTICE ROWS</div>
+        <div class="badge">ON-THE-JOB<br>TRAINING</div>
+    </div>
+    
+    <!-- Audio cues -->
+    <div class="audio-cue cue-1">♪ Contact mic: mycelium crackle + 40Hz pulse</div>
+    <div class="audio-cue cue-2">♪ Crackle intensifies, heartbeat emerges</div>
+    <div class="audio-cue cue-3">♪ Keyboard clicks sync with soil sounds</div>
+    <div class="audio-cue cue-4">♪ Modem chirps + wind through wheat</div>
+    <div class="audio-cue cue-5">♪ Compress to sustained 392Hz tone</div>
+    <div class="audio-cue cue-6">♪ Whisper: "A field guide to post-human agriculture"</div>
+    <div class="audio-cue cue-7">♪ Crickets + shovel scrape + keyboard taps (−28 LUFS)</div>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Fragile Collective</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4vw; font-weight: 900; color: #00ffff;
+            letter-spacing: 0.8vw; opacity: 0; text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: 0 0 30px rgba(0,255,255,0.6);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE FRAGILE COLLECTIVE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        const synths = Array(8).fill().map(() => 
+            new Tone.Synth({ oscillator: { type: 'sine' }}).toDestination()
+        );
+        
+        const notes = ['C4', 'E4', 'G4', 'B4', 'D5', 'F5', 'A5', 'C5'];
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                notes.forEach((note, i) => {
+                    setTimeout(() => synths[i].triggerAttackRelease(note, '0.5'), i * 200);
+                });
+                
+                setTimeout(() => {
+                    const crack = new Tone.NoiseSynth().toDestination();
+                    crack.triggerAttackRelease('0.2');
+                }, 3500);
+                
+                animate();
+            }
+        });
+        
+        const nodes = [];
+        const nodeCount = 12;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        
+        for (let i = 0; i < nodeCount; i++) {
+            const angle = (i / nodeCount) * Math.PI * 2;
+            const r = 200;
+            nodes.push({
+                x: cx + Math.cos(angle) * r,
+                y: cy + Math.sin(angle) * r,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+        
+        let shatterNode = -1;
+        
+        function drawNetwork(t) {
+            if (t > 3.5 && shatterNode === -1) {
+                shatterNode = Math.floor(Math.random() * nodeCount);
+            }
+            
+            const brightness = t < 3.5 ? 1 : Math.max(0.2, 1 - (t - 3.5) / 2);
+            
+            // Draw connections
+            ctx.strokeStyle = `rgba(0,255,255,${brightness * 0.3})`;
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < nodeCount; i++) {
+                for (let j = i + 1; j < nodeCount; j++) {
+                    if (t > 3.5 && (i === shatterNode || j === shatterNode)) continue;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw nodes
+            for (let i = 0; i < nodeCount; i++) {
+                const pulse = Math.sin(t * 4 + nodes[i].phase) * 0.3 + 1;
+                const isShatter = i === shatterNode;
+                const nodeSize = isShatter ? 12 + (t - 3.5) * 10 : 8;
+                const alpha = isShatter ? Math.max(0, 1 - (t - 3.5) / 1.5) : brightness;
+                
+                ctx.fillStyle = `rgba(0,255,255,${alpha})`;
+                ctx.beginPath();
+                ctx.arc(nodes[i].x, nodes[i].y, nodeSize * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (isShatter && alpha > 0) {
+                    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 5.5) {
+                const frag = Math.floor((t - 5.5) * 10) % 2;
+                titleEl.style.opacity = frag ? 0.7 : 1;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawNetwork(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#00ffff';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

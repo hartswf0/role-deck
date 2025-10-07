@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Conditional Person</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f0f0f; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4vw; font-weight: 900; color: #fff;
+            letter-spacing: 0.8vw; opacity: 0; text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE CONDITIONAL PERSON</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        const typewriter = new Tone.NoiseSynth({ noise: { type: 'white' }}).toDestination();
+        typewriter.volume.value = -20;
+        
+        const heartbeat = new Tone.MembraneSynth().toDestination();
+        heartbeat.volume.value = -10;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => typewriter.triggerAttackRelease('0.05'), i * 200);
+                }
+                
+                setTimeout(() => {
+                    const beat = () => {
+                        heartbeat.triggerAttackRelease('C1', '0.1');
+                        setTimeout(() => heartbeat.triggerAttackRelease('C1', '0.1'), 150);
+                    };
+                    beat();
+                    setTimeout(beat, 800);
+                    setTimeout(beat, 1600);
+                }, 2000);
+                
+                animate();
+            }
+        });
+        
+        const gridCols = 8;
+        const gridRows = 5;
+        const cardW = 120;
+        const cardH = 160;
+        let blinkCard = { x: 3, y: 2 };
+        let faceSegments = 8;
+        
+        function drawIDGrid(t) {
+            const startX = (canvas.width - gridCols * cardW) / 2;
+            const startY = (canvas.height - gridRows * cardH) / 2;
+            
+            const blinkPattern = [0.3, 0.6, 1.2, 1.4, 1.9, 2.5, 3.0, 3.3, 3.8, 4.2, 4.5, 5.0];
+            const shouldBlink = blinkPattern.some(time => Math.abs(t - time) < 0.1);
+            
+            for (let i = 0; i < gridCols; i++) {
+                for (let j = 0; j < gridRows; j++) {
+                    const x = startX + i * cardW;
+                    const y = startY + j * cardH;
+                    const isTarget = i === blinkCard.x && j === blinkCard.y;
+                    
+                    if (isTarget && shouldBlink) continue;
+                    
+                    const erasure = isTarget ? Math.min(faceSegments, Math.floor((t - 1) / 0.5)) : 0;
+                    
+                    ctx.strokeStyle = isTarget ? '#ffff00' : '#666';
+                    ctx.lineWidth = isTarget ? 3 : 1;
+                    ctx.strokeRect(x, y, cardW - 10, cardH - 10);
+                    
+                    // Face representation
+                    if (isTarget && erasure > 0) {
+                        ctx.fillStyle = '#0f0f0f';
+                        const segH = (cardH - 40) / faceSegments;
+                        for (let s = 0; s < erasure; s++) {
+                            ctx.fillRect(x + 10, y + 20 + s * segH, cardW - 30, segH);
+                        }
+                    } else if (!isTarget) {
+                        ctx.fillStyle = '#444';
+                        ctx.fillRect(x + 30, y + 30, cardW - 70, cardH - 80);
+                    }
+                }
+            }
+            
+            if (t > 6) {
+                ctx.fillStyle = '#0f0f0f';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                const flicker = Math.floor(t * 10) % 3 === 0;
+                titleEl.style.opacity = flicker ? 0.4 : 1;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#0f0f0f';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawIDGrid(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

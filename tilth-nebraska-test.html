@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebraska Test Report Format — TILTH Practitioner Series</title>
+    <style>
+        /* Nebraska Tractor Test Laboratory authentic format */
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Libre+Franklin:wght@300;400;600;700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #f5f3eb;
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: #000;
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        /* Nebraska Test Report = 4×6.5" format scaled up for screen */
+        .test-report {
+            width: 520px;
+            background: #fff;
+            border: 2px solid #000;
+            margin: 20px auto;
+            padding: 0;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+            page-break-inside: avoid;
+            position: relative;
+        }
+        
+        /* Test header (black bar with test number) */
+        .test-header {
+            background: #000;
+            color: #fff;
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 9pt;
+            letter-spacing: 0.5px;
+            border-bottom: 3px double #000;
+        }
+        
+        .test-number {
+            float: right;
+            font-weight: 700;
+        }
+        
+        /* Model identification block */
+        .model-block {
+            padding: 12px;
+            border-bottom: 1px solid #000;
+            background: #fafaf8;
+        }
+        
+        .model-name {
+            font-family: 'Libre Franklin', sans-serif;
+            font-weight: 700;
+            font-size: 14pt;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .model-config {
+            font-size: 9pt;
+            line-height: 1.5;
+        }
+        
+        /* Performance data table (main body) */
+        .performance-table {
+            padding: 12px;
+            border-bottom: 1px solid #000;
+        }
+        
+        .section-head {
+            font-weight: 700;
+            font-size: 9pt;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+        }
+        
+        .data-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            padding: 3px 0;
+            font-size: 9pt;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        .data-label {
+            font-weight: 400;
+        }
+        
+        .data-value {
+            font-weight: 700;
+            text-align: right;
+        }
+        
+        /* Right-rail specification column */
+        .spec-column {
+            padding: 12px;
+            background: #f9f9f7;
+            border-top: 2px solid #000;
+            font-size: 8pt;
+            line-height: 1.6;
+        }
+        
+        .spec-item {
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .spec-label {
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 7pt;
+            letter-spacing: 0.3px;
+        }
+        
+        .spec-value {
+            font-weight: 700;
+        }
+        
+        /* Radar diagram (technical schematic insert) */
+        .diagram-insert {
+            padding: 12px;
+            background: #fff;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+        }
+        
+        .diagram-title {
+            font-size: 7pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .radar-container {
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Footer certification */
+        .test-footer {
+            padding: 6px 12px;
+            background: #000;
+            color: #fff;
+            font-size: 7pt;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Print optimizations */
+        @media print {
+            body { background: #fff; }
+            .test-report {
+                width: 4in;
+                margin: 0.25in auto;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+        
+        @page {
+            size: letter portrait;
+            margin: 0.5in;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container" id="reportContainer"></div>
+    
+    <script src="character-profiles.js"></script>
+    <script>
+        function createNebraskaRadar(metrics) {
+            const size = 180;
+            const center = size / 2;
+            const radius = size * 0.35;
+            const numAxes = 11;
+            
+            const axisLabels = [
+                'OPEN', 'CONS', 'EXTR', 'AGRE', 'NEUR',
+                'LOGI', 'EMPA', 'AUTH', 'RISK', 'UNCE', 'DECI'
+            ];
+            
+            const metricsArray = [
+                metrics.openness, metrics.conscientiousness, metrics.extraversion,
+                metrics.agreeableness, metrics.neuroticism, metrics.logic,
+                metrics.empathy, metrics.authority, metrics.risk,
+                metrics.uncertainty, metrics.decisiveness
+            ];
+            
+            const points = metricsArray.map((value, i) => {
+                const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                const r = (value / 5) * radius;
+                const x = center + r * Math.cos(angle);
+                const y = center + r * Math.sin(angle);
+                return `${x},${y}`;
+            }).join(' ');
+            
+            const axes = axisLabels.map((label, i) => {
+                const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                const x2 = center + radius * Math.cos(angle);
+                const y2 = center + radius * Math.sin(angle);
+                const labelR = radius * 1.15;
+                const labelX = center + labelR * Math.cos(angle);
+                const labelY = center + labelR * Math.sin(angle);
+                
+                return `
+                    <line x1="${center}" y1="${center}" x2="${x2}" y2="${y2}" 
+                          stroke="#000" stroke-width="0.5"/>
+                    <text x="${labelX}" y="${labelY}" 
+                          fill="#000" 
+                          font-size="7" 
+                          font-family="Courier Prime, monospace"
+                          font-weight="700"
+                          text-anchor="middle" 
+                          dominant-baseline="middle">
+                        ${label}
+                    </text>
+                `;
+            }).join('');
+            
+            const circles = [1, 2, 3, 4, 5].map(scale => {
+                const r = (scale / 5) * radius;
+                return `<circle cx="${center}" cy="${center}" r="${r}" 
+                                fill="none" stroke="#ccc" stroke-width="0.5"/>`;
+            }).join('');
+            
+            return `
+                <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" class="radar-container">
+                    ${circles}
+                    ${axes}
+                    <polygon points="${points}" 
+                             fill="none" 
+                             stroke="#000" 
+                             stroke-width="2"/>
+                    ${metricsArray.map((value, i) => {
+                        const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                        const r = (value / 5) * radius;
+                        const x = center + r * Math.cos(angle);
+                        const y = center + r * Math.sin(angle);
+                        return `<circle cx="${x}" cy="${y}" r="2" fill="#000"/>`;
+                    }).join('')}
+                </svg>
+            `;
+        }
+        
+        function renderNebraskaReport(character) {
+            const testNumber = 2048 + character.episode;
+            
+            return `
+                <div class="test-report">
+                    <div class="test-header">
+                        TILTH PRACTITIONER TEST
+                        <span class="test-number">TEST ${testNumber}</span>
+                    </div>
+                    
+                    <div class="model-block">
+                        <div class="model-name">${character.name}</div>
+                        <div class="model-config">
+                            ${character.role}<br>
+                            ${character.app} • Episode ${character.episode}<br>
+                            Identity: ${character.identity_archetype}
+                        </div>
+                    </div>
+                    
+                    <div class="performance-table">
+                        <div class="section-head">Performance at Rated Load</div>
+                        
+                        <div class="data-row">
+                            <div class="data-label">Ethical Awareness</div>
+                            <div class="data-value">${(character.ethical_awareness_score * 100).toFixed(1)}%</div>
+                        </div>
+                        
+                        <div class="data-row">
+                            <div class="data-label">Ethical Action</div>
+                            <div class="data-value">${(character.ethical_action_score * 100).toFixed(1)}%</div>
+                        </div>
+                        
+                        <div class="data-row">
+                            <div class="data-label">System Impact</div>
+                            <div class="data-value">${(character.impact_score * 100).toFixed(1)}%</div>
+                        </div>
+                        
+                        <div class="data-row">
+                            <div class="data-label">Career Risk Tolerance</div>
+                            <div class="data-value">${(character.career_risk_taken * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="performance-table">
+                        <div class="section-head">11-Axis Profile Measurements</div>
+                        
+                        <div class="data-row">
+                            <div class="data-label">Openness</div>
+                            <div class="data-value">${character.radar_metrics.openness}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Conscientiousness</div>
+                            <div class="data-value">${character.radar_metrics.conscientiousness}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Extraversion</div>
+                            <div class="data-value">${character.radar_metrics.extraversion}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Agreeableness</div>
+                            <div class="data-value">${character.radar_metrics.agreeableness}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Neuroticism</div>
+                            <div class="data-value">${character.radar_metrics.neuroticism}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Logic</div>
+                            <div class="data-value">${character.radar_metrics.logic}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Empathy</div>
+                            <div class="data-value">${character.radar_metrics.empathy}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Authority</div>
+                            <div class="data-value">${character.radar_metrics.authority}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Risk</div>
+                            <div class="data-value">${character.radar_metrics.risk}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Uncertainty</div>
+                            <div class="data-value">${character.radar_metrics.uncertainty}/5</div>
+                        </div>
+                        <div class="data-row">
+                            <div class="data-label">Decisiveness</div>
+                            <div class="data-value">${character.radar_metrics.decisiveness}/5</div>
+                        </div>
+                    </div>
+                    
+                    <div class="diagram-insert">
+                        <div class="diagram-title">11-Axis Schematic Profile</div>
+                        ${createNebraskaRadar(character.radar_metrics)}
+                    </div>
+                    
+                    <div class="spec-column">
+                        <div class="spec-item">
+                            <span class="spec-label">Core Drive:</span>
+                            <span class="spec-value">${character.core_drive.substring(0, 30)}...</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Vulnerability:</span>
+                            <span class="spec-value">${character.vulnerability.substring(0, 30)}...</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Test Date:</span>
+                            <span class="spec-value">2048</span>
+                        </div>
+                    </div>
+                    
+                    <div class="test-footer">
+                        TILTH PRACTITIONER TEST LABORATORY • SERIES 2048
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render all reports
+        const container = document.getElementById('reportContainer');
+        feedLoopCharacters.forEach(character => {
+            container.innerHTML += renderNebraskaReport(character);
+        });
+    </script>
+</body>
+</html>

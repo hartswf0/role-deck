@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmOS Ecosystem — App Cartridges</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid #5a6c57;
+        }
+        
+        .ecosystem-name {
+            font-size: 4em;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            margin-bottom: 10px;
+            color: #5a6c57;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .ecosystem-subtitle {
+            font-size: 1.3em;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+        
+        .ecosystem-description {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.05em;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+        
+        .os-core {
+            background: rgba(90, 108, 87, 0.1);
+            border: 3px solid #5a6c57;
+            padding: 40px;
+            margin: 60px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        .os-core::before {
+            content: '⚙️';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            background: #0a0a08;
+            padding: 0 20px;
+        }
+        
+        .os-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-family: 'Orbitron', monospace;
+            color: #5a6c57;
+        }
+        
+        .os-tagline {
+            font-size: 1.2em;
+            opacity: 0.8;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .os-description {
+            font-size: 0.95em;
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 2em;
+            letter-spacing: 0.15em;
+            margin: 60px 0 40px;
+            color: #5a6c57;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .cartridges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .cartridge {
+            background: linear-gradient(135deg, rgba(90, 108, 87, 0.05) 0%, rgba(90, 108, 87, 0.15) 100%);
+            border: 3px solid #5a6c57;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+        
+        .cartridge:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(90, 108, 87, 0.3);
+            border-color: #7a8c77;
+        }
+        
+        .cartridge-notch {
+            height: 40px;
+            background: linear-gradient(to bottom, #5a6c57 0%, rgba(90, 108, 87, 0.3) 100%);
+            border-bottom: 2px solid #5a6c57;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75em;
+            letter-spacing: 0.2em;
+            opacity: 0.8;
+        }
+        
+        .cartridge-body {
+            padding: 30px 25px;
+        }
+        
+        .cartridge-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75em;
+            opacity: 0.5;
+            margin-bottom: 10px;
+            letter-spacing: 0.15em;
+        }
+        
+        .cartridge-name {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #5a6c57;
+        }
+        
+        .cartridge-category {
+            font-size: 0.9em;
+            opacity: 0.6;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .cartridge-description {
+            font-size: 0.95em;
+            line-height: 1.7;
+            opacity: 0.85;
+            margin-bottom: 15px;
+        }
+        
+        .cartridge-status {
+            display: inline-block;
+            padding: 5px 12px;
+            font-size: 0.75em;
+            border: 1px solid;
+            margin-top: 10px;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.1em;
+        }
+        
+        .status-active {
+            border-color: #5a6c57;
+            color: #5a6c57;
+        }
+        
+        .status-banned {
+            border-color: #8a5a5a;
+            color: #8a5a5a;
+            background: rgba(138, 90, 90, 0.1);
+        }
+        
+        .cartridge-action {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(90, 108, 87, 0.3);
+            font-size: 0.9em;
+            color: #5a6c57;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+        
+        .tetrad-console {
+            background: rgba(138, 90, 90, 0.1);
+            border: 3px solid #8a5a5a;
+            padding: 40px;
+            text-align: center;
+            margin: 60px 0;
+        }
+        
+        .console-title {
+            font-size: 2em;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', monospace;
+            color: #8a5a5a;
+        }
+        
+        .console-description {
+            font-size: 1.05em;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .console-link {
+            display: inline-block;
+            padding: 15px 40px;
+            background: #8a5a5a;
+            color: #e8e4d8;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            transition: all 0.3s;
+            border: 2px solid #8a5a5a;
+        }
+        
+        .console-link:hover {
+            background: transparent;
+            color: #8a5a5a;
+        }
+        
+        .warning-box {
+            background: rgba(138, 90, 90, 0.15);
+            border-left: 4px solid #8a5a5a;
+            padding: 25px;
+            margin: 40px 0;
+        }
+        
+        .warning-box h3 {
+            color: #8a5a5a;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .ecosystem-name { font-size: 2.5em; }
+            .cartridges-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="ecosystem-name">FarmOS</div>
+            <div class="ecosystem-subtitle">The Agrarian Operating System</div>
+            <div class="ecosystem-description">
+                FarmOS isn't an app—it's an operating system. Like iOS or Android, it provides infrastructure 
+                for an entire ecosystem of applications. Each app uses FarmOS's API for user authentication, 
+                data storage, and "agrarian analytics." The metaphor isn't decoration—it's infrastructure.
+            </div>
+        </div>
+        
+        <div class="os-core">
+            <div class="os-title">FarmOS Core</div>
+            <div class="os-tagline">"Where Every Interaction is Growth"</div>
+            <div class="os-description">
+                Centralized authentication • Cross-app data sharing • Engagement analytics • 
+                "Soil health" metrics • User behavior prediction • API monetization • 
+                Third-party surveillance integration
+            </div>
+        </div>
+        
+        <h2 class="section-title">App Cartridges — Load into Tetrad Framework</h2>
+        
+        <div class="cartridges-grid">
+            <!-- Cartridge 01: GrowthPath -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="GrowthPath">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 01</div>
+                    <div class="cartridge-name">GrowthPath</div>
+                    <div class="cartridge-category">Corporate Learning</div>
+                    <div class="cartridge-description">
+                        Employees "tend career gardens" by completing training. Managers get "soil health reports" 
+                        on team engagement. Your skill tree is literally a tree. Gamification masks surveillance.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 02: YieldMatch -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="YieldMatch">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 02</div>
+                    <div class="cartridge-name">YieldMatch</div>
+                    <div class="cartridge-category">Dating / Social</div>
+                    <div class="cartridge-description">
+                        AI-powered dating where relationships are "gardens you grow together." Algorithm predicts 
+                        compatibility as "yield." Bias baked into the soil. Love as agricultural optimization.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 03: TalentFarm -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="TalentFarm">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 03</div>
+                    <div class="cartridge-name">TalentFarm</div>
+                    <div class="cartridge-category">Hiring Platform</div>
+                    <div class="cartridge-description">
+                        Companies "plant job seeds," workers "apply to tend them." Junior workers are "seedlings" 
+                        with restricted permissions. Hierarchy as horticulture. Precarity disguised as growth.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 04: ConsentGarden -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="ConsentGarden">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 04</div>
+                    <div class="cartridge-name">ConsentGarden</div>
+                    <div class="cartridge-category">Data Consent</div>
+                    <div class="cartridge-description">
+                        All FarmOS data sharing flows through here. "Share your seeds to help gardens grow!" 
+                        Dark patterns disguised as wholesome growth mechanics. GDPR compliance theater.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 05: UnionSprout -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="UnionSprout">
+                <div class="cartridge-notch">API ACCESS REVOKED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 05</div>
+                    <div class="cartridge-name">UnionSprout</div>
+                    <div class="cartridge-category">Organizing (Banned)</div>
+                    <div class="cartridge-description">
+                        Built by workers using FarmOS API. "Grow together, not for them." Gained traction. 
+                        Agronica killed API access. First organizer deported. Infrastructure as weapon.
+                    </div>
+                    <div class="cartridge-status status-banned">BANNED</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 06: AutoGrow AI -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="AutoGrow AI">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 06</div>
+                    <div class="cartridge-name">AutoGrow AI</div>
+                    <div class="cartridge-category">Machine Learning</div>
+                    <div class="cartridge-description">
+                        FarmOS's predictive layer. Optimizes engagement, predicts churn. Mistakes fasting for 
+                        abandonment, neurodivergence for low-yield. Ships without cultural review.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 07: MigrantHarvest -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="MigrantHarvest">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 07</div>
+                    <div class="cartridge-name">MigrantHarvest</div>
+                    <div class="cartridge-category">Visa Compliance</div>
+                    <div class="cartridge-description">
+                        "Help international talent bloom." Tracks visa status, sells risk scores to employers. 
+                        ICE integration. Your garden health tracked alongside immigration status.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+            
+            <!-- Cartridge 08: GlobalGrow -->
+            <a href="tetrad-pad.html" class="cartridge" data-app="GlobalGrow">
+                <div class="cartridge-notch">FARMOS CERTIFIED</div>
+                <div class="cartridge-body">
+                    <div class="cartridge-number">CARTRIDGE 08</div>
+                    <div class="cartridge-name">GlobalGrow</div>
+                    <div class="cartridge-category">Enterprise Edition</div>
+                    <div class="cartridge-description">
+                        FarmOS for corporations. "Regional growth protocols" = geo-fenced ethics. Pride flags in 
+                        California, hidden in UAE. Same platform, tiered principles.
+                    </div>
+                    <div class="cartridge-status status-active">ACTIVE</div>
+                    <div class="cartridge-action">→ ANALYZE IN TETRAD PAD</div>
+                </div>
+            </a>
+        </div>
+        
+        <div class="tetrad-console">
+            <div class="console-title">🎮 Tetrad Analysis Console</div>
+            <div class="console-description">
+                Click any cartridge above to load it into the <strong>Tetrad Framework</strong>. 
+                Analyze how each app enhances, obsolesces, retrieves, and reverses—using McLuhan's 
+                media ecology to decode FarmOS's structural violence.
+            </div>
+            <a href="tetrad-pad.html" class="console-link">→ OPEN TETRAD PAD</a>
+        </div>
+        
+        <div class="warning-box">
+            <h3>⚠️ Systemic Analysis Required</h3>
+            <p>
+                Each app appears benign in isolation. The harm emerges from the <strong>ecosystem architecture</strong>: 
+                centralized data, cross-app tracking, engagement optimization, and metaphor concealment. 
+                FarmOS creates the conditions where ethical failures in one app spread to all others.
+            </p>
+            <p style="margin-top: 15px;">
+                <strong>The platform is the problem.</strong> Individual app designers face impossible choices 
+                because the infrastructure already encoded exploitation. That's why Tilth investigates systems, 
+                not just apps.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 60px; padding-top: 40px; border-top: 1px solid #5a6c57;">
+            <a href="tilth-investigation.html" style="display: inline-block; padding: 15px 30px; background: rgba(90, 108, 87, 0.2); color: #e8e4d8; text-decoration: none; letter-spacing: 0.1em; border: 1px solid #5a6c57; margin: 0 10px;">← Back to Investigation</a>
+            <a href="HUB.html" style="display: inline-block; padding: 15px 30px; background: rgba(90, 108, 87, 0.2); color: #e8e4d8; text-decoration: none; letter-spacing: 0.1em; border: 1px solid #5a6c57; margin: 0 10px;">← Back to Hub</a>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="opacity: 0.6; letter-spacing: 0.1em; font-size: 0.9em;">TILTH — Where decay becomes design</p>
+        </div>
+    </div>
+</body>
+</html>

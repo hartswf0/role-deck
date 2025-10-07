@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Silenced Educator</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', 'Univers', sans-serif;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4vw;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 3vw;
+            opacity: 0;
+            text-transform: uppercase;
+            text-align: center;
+            pointer-events: none;
+            font-family: 'Helvetica', 'Univers', sans-serif;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+        
+        #word {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 6vw;
+            font-weight: 700;
+            color: #fff;
+            opacity: 0;
+            font-family: 'Courier', monospace;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="word">TRAINING</div>
+    <div id="title">THE SILENCED EDUCATOR</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const wordEl = document.getElementById('word');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Audio setup
+        const synth = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.1, decay: 0.2, sustain: 0.3, release: 1 }
+        }).toDestination();
+        
+        const compressor = new Tone.Compressor(-30, 3).toDestination();
+        const noise = new Tone.Noise('white').connect(compressor);
+        noise.volume.value = -20;
+        
+        // Start on click
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Clear chime
+                synth.triggerAttackRelease('C5', '0.3', Tone.now());
+                
+                // Compressor hiss at 2s
+                setTimeout(() => {
+                    noise.start();
+                    setTimeout(() => noise.stop(), 4000);
+                }, 2000);
+                
+                animate();
+            }
+        });
+        
+        function drawMouth(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const size = 200;
+            
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            
+            if (t < 1.5) {
+                // Opening mouth
+                const opening = Math.sin(t * Math.PI * 2) * 0.5 + 0.5;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, size, size * 0.3 + opening * size * 0.3, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (t < 3) {
+                // Morphing to grid
+                const gridProgress = (t - 1.5) / 1.5;
+                const gridSize = 40;
+                const cols = 10;
+                const rows = 6;
+                
+                ctx.globalAlpha = 1 - gridProgress * 0.5;
+                
+                for (let i = 0; i < cols; i++) {
+                    for (let j = 0; j < rows; j++) {
+                        const x = cx - (cols * gridSize) / 2 + i * gridSize;
+                        const y = cy - (rows * gridSize) / 2 + j * gridSize;
+                        ctx.strokeRect(x, y, gridSize, gridSize);
+                    }
+                }
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function drawWave(t) {
+            if (t < 2.5) return;
+            
+            const amplitude = Math.max(0, 1 - (t - 2.5) / 2);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 150;
+            
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let x = -300; x < 300; x += 2) {
+                const y = Math.sin(x * 0.02 + t * 10) * 50 * amplitude;
+                if (x === -300) {
+                    ctx.moveTo(cx + x, cy + y);
+                } else {
+                    ctx.lineTo(cx + x, cy + y);
+                }
+            }
+            ctx.stroke();
+        }
+        
+        function updateText(t) {
+            if (t < 1) {
+                wordEl.textContent = 'TRAINING';
+                wordEl.style.opacity = t;
+            } else if (t < 2) {
+                wordEl.textContent = 'TREASON';
+                wordEl.style.opacity = 1;
+                wordEl.style.color = '#ff3344';
+            } else if (t < 3) {
+                wordEl.style.opacity = 1 - (t - 2);
+            } else {
+                wordEl.style.opacity = 0;
+            }
+            
+            if (t > 5) {
+                titleEl.style.opacity = Math.min(1, (t - 5) / 2);
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            
+            if (elapsed > 8) {
+                // Freeze on final frame
+                return;
+            }
+            
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawMouth(elapsed);
+            drawWave(elapsed);
+            updateText(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Show click prompt
+        ctx.fillStyle = '#333';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

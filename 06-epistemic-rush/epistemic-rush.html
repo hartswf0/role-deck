@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Epistemic Rush</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4.5vw; font-weight: 900; color: #fff;
+            letter-spacing: 0.6vw; opacity: 0; text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE EPISTEMIC RUSH</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        const clock = new Tone.Synth({ oscillator: { type: 'square' }}).toDestination();
+        clock.volume.value = -15;
+        
+        const drone = new Tone.Synth({ oscillator: { type: 'sawtooth' }}).toDestination();
+        drone.volume.value = -20;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                clock.triggerAttackRelease('C5', '0.05', 0);
+                setTimeout(() => clock.triggerAttackRelease('C5', '0.05'), 500);
+                setTimeout(() => clock.triggerAttackRelease('C5', '0.05'), 900);
+                
+                setTimeout(() => drone.triggerAttack('G2'), 2000);
+                setTimeout(() => drone.triggerRelease(), 5000);
+                
+                setTimeout(() => {
+                    const pop = new Tone.MembraneSynth().toDestination();
+                    pop.triggerAttackRelease('C1', '0.1');
+                }, 5500);
+                
+                animate();
+            }
+        });
+        
+        function drawCircles(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const circleCount = 15;
+            const speedMultiplier = Math.pow(2, t);
+            
+            ctx.strokeStyle = '#ffffff';
+            
+            for (let i = 0; i < circleCount; i++) {
+                const baseRadius = 50 + i * 30;
+                const radius = baseRadius - (t * speedMultiplier * 20) % baseRadius;
+                
+                if (radius > 0 && radius < canvas.width) {
+                    const alpha = t < 5 ? (1 - radius / 500) * 0.8 : 0;
+                    ctx.globalAlpha = Math.max(0, alpha);
+                    ctx.lineWidth = 3 - (i * 0.1);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            ctx.globalAlpha = 1;
+            
+            // Bright center flash
+            if (t > 4.5 && t < 5.5) {
+                const intensity = t < 5 ? (t - 4.5) * 2 : Math.max(0, 1 - (t - 5) * 2);
+                ctx.fillStyle = `rgba(255,255,255,${intensity})`;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 100 * intensity, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Black void
+            if (t >= 5.5) {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 4.9 && t < 5.5) {
+                titleEl.style.opacity = 1;
+                titleEl.style.color = '#000';
+            } else if (t >= 5.5) {
+                titleEl.style.opacity = 0;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            if (elapsed < 5.5) {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            drawCircles(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#666';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

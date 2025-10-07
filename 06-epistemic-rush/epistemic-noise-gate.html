@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epistemic Noise Gate</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1510; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5vw;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.5vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+            filter: blur(2px);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">EPISTEMIC NOISE GATE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Tape recorder mechanics
+        const tapeNoise = new Tone.Noise('brown').toDestination();
+        tapeNoise.volume.value = -20;
+        
+        const tapeMech = new Tone.Synth({ oscillator: { type: 'square' }}).toDestination();
+        tapeMech.volume.value = -25;
+        
+        // TTS whisper
+        let utterance = null;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Fast forward hiss
+                tapeNoise.start();
+                tapeMech.triggerAttack('C3');
+                
+                setTimeout(() => {
+                    tapeNoise.stop();
+                    tapeMech.triggerRelease();
+                }, 2500);
+                
+                // Reverse playback whisper
+                setTimeout(() => {
+                    if ('speechSynthesis' in window) {
+                        utterance = new SpeechSynthesisUtterance("We didn't have time to learn");
+                        utterance.rate = 0.5;
+                        utterance.pitch = 0.6;
+                        utterance.volume = 0.4;
+                        speechSynthesis.speak(utterance);
+                    }
+                }, 3000);
+                
+                // Fast spin and melt
+                setTimeout(() => {
+                    tapeNoise.start();
+                    tapeMech.triggerAttack('C4');
+                    setTimeout(() => {
+                        tapeMech.frequency.rampTo('C5', 1);
+                    }, 100);
+                }, 5000);
+                
+                setTimeout(() => {
+                    tapeNoise.stop();
+                    tapeMech.triggerRelease();
+                }, 6500);
+                
+                animate();
+            }
+        });
+        
+        let reelRotation = 0;
+        let reelSpeed = 0.1;
+        
+        function drawTapeRecorder(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Recorder body
+            ctx.fillStyle = '#2a2520';
+            ctx.fillRect(cx - 300, cy - 150, 600, 300);
+            
+            // Reels
+            const leftReel = { x: cx - 150, y: cy };
+            const rightReel = { x: cx + 150, y: cy };
+            
+            // Speed control
+            if (t < 2.5) {
+                reelSpeed = 0.1 + t * 0.2;
+            } else if (t > 5) {
+                reelSpeed = 0.5 + (t - 5) * 2;
+            } else {
+                reelSpeed = 0;
+            }
+            
+            reelRotation += reelSpeed;
+            
+            // Draw reels
+            [leftReel, rightReel].forEach((reel, idx) => {
+                ctx.fillStyle = '#444';
+                ctx.beginPath();
+                ctx.arc(reel.x, reel.y, 80, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.save();
+                ctx.translate(reel.x, reel.y);
+                ctx.rotate(reelRotation * (idx === 0 ? 1 : -1));
+                
+                // Spokes
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 3;
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(Math.cos(angle) * 70, Math.sin(angle) * 70);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            });
+            
+            // Tape between reels
+            ctx.strokeStyle = '#5a4520';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(leftReel.x, leftReel.y - 80);
+            ctx.lineTo(rightReel.x, rightReel.y - 80);
+            ctx.stroke();
+            
+            // Notes blur effect
+            if (t > 0.5 && t < 2.5) {
+                const blur = t - 0.5;
+                ctx.fillStyle = `rgba(255,255,255,${0.3 - blur * 0.15})`;
+                ctx.font = `${16 - blur * 4}px Courier`;
+                ctx.textAlign = 'center';
+                
+                const notes = ['Research notes...', 'Phase 1 complete', 'Need more time', 'Insufficient data'];
+                notes.forEach((note, i) => {
+                    const offset = (t * 200) % 400;
+                    ctx.fillText(note, cx, cy - 200 + i * 30 + offset);
+                });
+            }
+        }
+        
+        function drawMelt(t) {
+            if (t < 5.5) return;
+            
+            const meltProgress = (t - 5.5) / 2;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const radius = meltProgress * 300;
+            
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.5, 'rgba(255,255,200,0.8)');
+            gradient.addColorStop(1, 'rgba(255,255,200,0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                const alpha = Math.min(1, (t - 6.5) / 1.5);
+                titleEl.style.opacity = alpha;
+                titleEl.style.filter = `blur(${2 - alpha * 2}px)`;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#1a1510';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawTapeRecorder(elapsed);
+            drawMelt(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#8a7560';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

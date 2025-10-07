@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Organizer's Microphone</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3vw;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.8vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE ORGANIZER'S MICROPHONE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Voice + feedback
+        const voices = [];
+        for (let i = 0; i < 8; i++) {
+            const voice = new Tone.Synth({
+                oscillator: { type: 'sawtooth' },
+                envelope: { attack: 0.1, sustain: 0.5, release: 0.5 }
+            }).toDestination();
+            voice.volume.value = -20 - i * 2;
+            voices.push(voice);
+        }
+        
+        const feedback = new Tone.FeedbackDelay('0.1', 0.7).toDestination();
+        const screech = new Tone.Synth({ oscillator: { type: 'square' }}).connect(feedback);
+        screech.volume.value = -15;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // First shout
+                setTimeout(() => voices[0].triggerAttackRelease('A3', '0.5'), 1000);
+                
+                // Feedback screech
+                setTimeout(() => screech.triggerAttackRelease('E5', '0.3'), 1500);
+                
+                // Voices multiply
+                voices.forEach((voice, i) => {
+                    setTimeout(() => {
+                        voice.triggerAttackRelease('A3', '0.4');
+                    }, 2000 + i * 150);
+                });
+                
+                // Phase cancellation silence
+                setTimeout(() => {
+                    voices.forEach(v => v.triggerRelease());
+                }, 4500);
+                
+                animate();
+            }
+        });
+        
+        let micRotation = 0;
+        const silhouettes = [];
+        
+        function drawSpotlight(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Spotlight cone
+            const gradient = ctx.createRadialGradient(cx, cy - 200, 0, cx, cy, 400);
+            gradient.addColorStop(0, 'rgba(255,255,200,0.8)');
+            gradient.addColorStop(1, 'rgba(0,0,0,1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function drawMicrophone(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            micRotation += 0.05;
+            
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(micRotation);
+            
+            // Mic body
+            ctx.fillStyle = '#333';
+            ctx.fillRect(-20, -80, 40, 100);
+            
+            // Mic head
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.arc(0, -80, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mic grid
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 8, -95);
+                ctx.lineTo(i * 8, -65);
+                ctx.stroke();
+            }
+            
+            ctx.restore();
+        }
+        
+        function drawWaveforms(t) {
+            if (t < 2 || t > 4.5) return;
+            
+            const voiceCount = Math.min(8, Math.floor((t - 2) * 3));
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+            ctx.lineWidth = 2;
+            
+            for (let v = 0; v < voiceCount; v++) {
+                const phase = v * 0.3;
+                ctx.beginPath();
+                
+                for (let x = -300; x < 300; x += 5) {
+                    const y = Math.sin(x * 0.02 + t * 5 + phase) * 30 * (1 + v * 0.2);
+                    if (x === -300) ctx.moveTo(cx + x, cy + y);
+                    else ctx.lineTo(cx + x, cy + y);
+                }
+                ctx.stroke();
+            }
+        }
+        
+        function drawSilhouettes(t) {
+            if (t < 2.5) return;
+            
+            const count = Math.min(20, Math.floor((t - 2.5) * 8));
+            
+            while (silhouettes.length < count) {
+                silhouettes.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height * 0.7 + Math.random() * canvas.height * 0.3,
+                    size: 30 + Math.random() * 40
+                });
+            }
+            
+            const alpha = t < 4.5 ? 0.8 : Math.max(0, 1 - (t - 4.5) * 0.5);
+            
+            silhouettes.forEach(person => {
+                ctx.fillStyle = `rgba(50,50,50,${alpha})`;
+                ctx.beginPath();
+                ctx.arc(person.x, person.y - person.size, person.size * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(person.x - person.size * 0.3, person.y - person.size * 0.6, person.size * 0.6, person.size);
+            });
+        }
+        
+        function updateTitle(t) {
+            if (t > 5.5) {
+                titleEl.style.opacity = Math.min(1, (t - 5.5) / 2);
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawSpotlight(elapsed);
+            drawSilhouettes(elapsed);
+            drawWaveforms(elapsed);
+            drawMicrophone(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#666';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

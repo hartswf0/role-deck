@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Two-Headed Compliance</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) translateY(15vh);
+            font-size: 4vw; font-weight: 900; color: #fff;
+            letter-spacing: 0.5vw; opacity: 0; text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE TWO-HEADED COMPLIANCE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        const noise = new Tone.Noise('brown').toDestination();
+        noise.volume.value = -25;
+        const synth = new Tone.MetalSynth().toDestination();
+        synth.volume.value = -10;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                noise.start();
+                setTimeout(() => noise.stop(), 2000);
+                setTimeout(() => synth.triggerAttackRelease('C3', '1'), 3000);
+                
+                animate();
+            }
+        });
+        
+        let rotation = 0;
+        
+        function drawTriangles(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const size = 100;
+            
+            if (t < 4) {
+                rotation += 0.08;
+                
+                ctx.save();
+                ctx.translate(cx, cy - 50);
+                ctx.rotate(rotation);
+                ctx.strokeStyle = '#00ccff';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, -size); ctx.lineTo(-size * 0.866, size * 0.5);
+                ctx.lineTo(size * 0.866, size * 0.5); ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+                
+                ctx.save();
+                ctx.translate(cx, cy + 50);
+                ctx.rotate(-rotation);
+                ctx.strokeStyle = '#ff6600';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, size); ctx.lineTo(-size * 0.866, -size * 0.5);
+                ctx.lineTo(size * 0.866, -size * 0.5); ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            } else {
+                const coinSpin = (t - 4) * 20;
+                const coinScale = Math.abs(Math.cos(coinSpin));
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(coinScale, 1);
+                
+                ctx.fillStyle = '#silver';
+                ctx.beginPath();
+                ctx.arc(0, 0, 120, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if (coinScale > 0.5) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 30px Courier';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('LAW', 0, 0);
+                } else if (coinScale < 0.1) {
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 24px Courier';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('REVENUE', 0, 0);
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6) {
+                titleEl.style.opacity = Math.min(1, (t - 6) / 1.5);
+                const offset = Math.sin(t * 3) * 0.5;
+                titleEl.style.transform = `translate(-50%, -50%) translateY(${15 + offset}vh)`;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawTriangles(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#666';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

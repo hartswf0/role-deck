@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Opening Sequences</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+            animation: grain 0.5s steps(4) infinite;
+        }
+        
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, 2%); }
+            50% { transform: translate(2%, -2%); }
+            75% { transform: translate(-2%, -2%); }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 80px;
+            border-bottom: 2px solid #5a6c57;
+            padding-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 5em;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 20px rgba(90, 108, 87, 0.4);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1em;
+            line-height: 1.8;
+            opacity: 0.8;
+        }
+        
+        .sequences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+        
+        .sequence-card {
+            background: rgba(90, 108, 87, 0.08);
+            border: 1px solid #5a6c57;
+            padding: 0;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sequence-card:hover {
+            background: rgba(90, 108, 87, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(90, 108, 87, 0.2);
+        }
+        
+        .sequence-header {
+            padding: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .sequence-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75em;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            margin-bottom: 10px;
+        }
+        
+        .sequence-title {
+            font-size: 2em;
+            letter-spacing: 0.1em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+        
+        .sequence-app {
+            font-size: 0.9em;
+            opacity: 0.6;
+            letter-spacing: 0.1em;
+        }
+        
+        .sequence-body {
+            padding: 30px;
+        }
+        
+        .sequence-description {
+            font-size: 0.95em;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .sequence-specs {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier', monospace;
+            font-size: 0.85em;
+            line-height: 1.8;
+        }
+        
+        .spec-label {
+            color: #5a6c57;
+            font-weight: bold;
+        }
+        
+        .sequence-link {
+            display: block;
+            background: #5a6c57;
+            color: #e8e4d8;
+            text-align: center;
+            padding: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            transition: background 0.3s;
+        }
+        
+        .sequence-link:hover {
+            background: #3a4838;
+        }
+        
+        .technical-notes {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 40px;
+            border-left: 4px solid #5a6c57;
+            margin-top: 60px;
+        }
+        
+        .technical-notes h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+        
+        .technical-notes p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .technical-notes ul {
+            margin-left: 30px;
+            line-height: 2;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid #5a6c57;
+        }
+        
+        .back-link a {
+            display: inline-block;
+            padding: 15px 40px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            letter-spacing: 0.15em;
+            border: 1px solid #5a6c57;
+            transition: all 0.3s;
+        }
+        
+        .back-link a:hover {
+            background: rgba(90, 108, 87, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .sequences-grid {
+                grid-template-columns: 1fr;
+            }
+            .logo { font-size: 3em; }
+            .container { padding: 40px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo">FEED LOOP</div>
+            <div class="subtitle">Opening Sequences</div>
+            <div class="description">
+                Eight animated title sequences—one for each episode. Each opens with the universal TILTH studio card (0:00–0:08), 
+                then transitions into the episode's unique world. Built with pure CSS animations and timed to match the audio specifications. 
+                Old-tractor-ad aesthetic meets Saul Bass minimalism.
+            </div>
+        </div>
+        
+        <div class="sequences-grid">
+            <!-- Episode 01 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 01</div>
+                    <div class="sequence-title">NUTRIENT LOCK</div>
+                    <div class="sequence-app">GrowthPath — Corporate Learning</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Notion-pastel sky over skill beds. Boundary Bob the scarecrow disappears as progress bars wrap around player-plants. 
+                        Words transmute: DEPENDENCY → STICKINESS, ANXIETY → LOYALTY.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> tractor green, loam brown, neon coral<br>
+                        <span class="spec-label">Audio:</span> water chimes + morning birds (−26 LUFS)<br>
+                        <span class="spec-label">Badge:</span> "NEW: LEARNING SEASON"
+                    </div>
+                    <a href="opening-01-nutrient-lock.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 02 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 02</div>
+                    <div class="sequence-title">FIRST FRUIT</div>
+                    <div class="sequence-app">YieldMatch — AI Dating</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Rose-glass greenhouse reflecting avatar faces as fruit skins. Pest AI descends on one garden. Support tickets 
+                        sprout as stem tags with tiny mouths: "Why am I dying?"
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> blush glass, seed red, neon lemon<br>
+                        <span class="spec-label">Audio:</span> rainfall + heartbeat + metronome @ 92 BPM<br>
+                        <span class="spec-label">Badge:</span> "GUARANTEED MATCHING"
+                    </div>
+                    <a href="opening-02-first-fruit.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 03 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 03</div>
+                    <div class="sequence-title">APPRENTICE ROWS</div>
+                    <div class="sequence-app">TalentFarm — Hiring Platform</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Dusk lanterns over gig plots. Gates flip PRIVATE/OPEN like breath. Seedling-avatar threads red string around 
+                        root-knot. Senior's glove tucks it under mulch. Fireflies lift data crumbs into résumé constellation.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> dusk amber, fiber-optic cyan, barn black<br>
+                        <span class="spec-label">Audio:</span> crickets + keyboard taps + breach siren<br>
+                        <span class="spec-label">Badge:</span> "ON-THE-JOB TRAINING"
+                    </div>
+                    <a href="opening-03-apprentice-rows.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 04 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 04</div>
+                    <div class="sequence-title">CONSENT HARVEST</div>
+                    <div class="sequence-app">ConsentGarden — Data Consent</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Compliance greenhouse of living modals. Leafy ACCEPT button sways, animal-friendly. "manage preferences" 
+                        appears as grey moss near floor grate. Sprinkler waters only the ACCEPT bed. Mystery seed opens itself.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> sterile mint, warning amber, neon teal<br>
+                        <span class="spec-label">Audio:</span> sparkle chime + vacuum hush (−28 LUFS)<br>
+                        <span class="spec-label">Badge:</span> "EASY OPT-IN"
+                    </div>
+                    <a href="opening-04-consent-harvest.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 05 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 05</div>
+                    <div class="sequence-title">ROOT UNION</div>
+                    <div class="sequence-app">UnionSprout — Worker Organizing (Banned)</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Subterranean macro: roots interlaced like hands. Maria stakes "HEALTH FOR HANDS" placard. HR scarecrow tips it over. 
+                        Seeds spill and burrow away. Petition leaf unfurls, then curls shut—shy.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> rust red, night soil brown, neon orange<br>
+                        <span class="spec-label">Audio:</span> worker hum → chord + silo bell side-chain<br>
+                        <span class="spec-label">Badge:</span> "HEALTH FOR HANDS"
+                    </div>
+                    <a href="opening-05-root-union.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 06 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 06</div>
+                    <div class="sequence-title">FLOOD LEARNING</div>
+                    <div class="sequence-app">AutoGrow AI — Machine Learning</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Algorithm-blue night cloud trails UI hosepipes. Rectangular rain scrubs beds to pristine sod. 
+                        Lilies labeled "UNUSUAL ACTIVITY DETECTED" pop up. Time reverses; gardens reappear as waving ghosts, then vanish.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> indigo night, phosphor green, neon blue<br>
+                        <span class="spec-label">Audio:</span> tape fast-forward hiss + whispered memo<br>
+                        <span class="spec-label">Badge:</span> "SCHEDULED MAINTENANCE"
+                    </div>
+                    <a href="opening-06-flood-learning.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 07 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 07</div>
+                    <div class="sequence-title">CONDITIONAL HARVEST</div>
+                    <div class="sequence-app">MigrantHarvest — Visa Compliance</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Visa arbor, compliance hedgerows. Garden Health dial turns; plants compress to flat velvet lawn. 
+                        Rootwood lockbox yawns open, whispers "AFTER GREEN CARD," closes by itself. Butterflies with holographic badges.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> parchment beige, immigration blue, neon magenta<br>
+                        <span class="spec-label">Audio:</span> airport murmur + stamp echoes + heartbeat crush<br>
+                        <span class="spec-label">Badge:</span> "WORK AUTHORIZED—TEMPORARY"
+                    </div>
+                    <a href="opening-07-conditional-harvest.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+            
+            <!-- Episode 08 -->
+            <div class="sequence-card">
+                <div class="sequence-header">
+                    <div class="sequence-number">EPISODE 08</div>
+                    <div class="sequence-title">GEO-FENCING THE GARDEN</div>
+                    <div class="sequence-app">GlobalGrow — Enterprise Edition</div>
+                </div>
+                <div class="sequence-body">
+                    <div class="sequence-description">
+                        Continental patchwork split by invisible fence. Left: birds sing, beans climb freely. Right: synchronized rows 
+                        under blinking red watcher. LGBTQ+ scarecrow appears as shadow from bright side; crossing fence, shadow loses outline.
+                    </div>
+                    <div class="sequence-specs">
+                        <span class="spec-label">Palette:</span> split—harvest warm / surveillance infrared cool<br>
+                        <span class="spec-label">Audio:</span> acoustic strum + glassy ping-map; detune on "enterprise"<br>
+                        <span class="spec-label">Badge:</span> "ENTERPRISE TIER"
+                    </div>
+                    <a href="opening-08-geo-fencing-garden.html" class="sequence-link">→ WATCH SEQUENCE</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="technical-notes">
+            <h2>Technical Specifications</h2>
+            <p><strong>Format:</strong> HTML/CSS animation, 2.35:1 aspect ratio simulation</p>
+            <p><strong>Duration:</strong> ~8 seconds (universal TILTH opening) + ~6 seconds (episode-specific world) = ~14 seconds total</p>
+            <p><strong>Typography:</strong></p>
+            <ul>
+                <li><strong>Headlines:</strong> Oswald Condensed (fallback for Trade Gothic Condensed)</li>
+                <li><strong>Tech accents:</strong> Orbitron (fallback for Eurostile Extended)</li>
+                <li><strong>System text:</strong> Courier (monospace)</li>
+            </ul>
+            <p><strong>Film aesthetic:</strong></p>
+            <ul>
+                <li>16mm grain overlay (animated noise texture)</li>
+                <li>Chromatic aberration (cyan/magenta plate shift)</li>
+                <li>Newsprint halftone in shadows (simulated via gradients)</li>
+                <li>Subtle gate weave (grain animation)</li>
+            </ul>
+            <p><strong>Audio cues:</strong> Visual indicators shown at bottom-left. In production, replace with actual audio stems.</p>
+            <p><strong>Shared opening sequence (0:00–0:08):</strong> Identical across all 8 episodes—mycelium crackle, seed splitting, 
+            keyboard-to-soil transformation, feed icons becoming roots, TILTH logo reveal. This creates series continuity.</p>
+        </div>
+        
+        <div class="back-link">
+            <a href="feed-loop-index.html">← BACK TO FEED LOOP MAIN INDEX</a>
+        </div>
+    </div>
+</body>
+</html>

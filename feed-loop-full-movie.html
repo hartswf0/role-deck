@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Complete Investigation (Full Movie)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            overflow: hidden;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.1;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+            animation: grain 0.5s steps(4) infinite;
+        }
+        
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, 2%); }
+            50% { transform: translate(2%, -2%); }
+            75% { transform: translate(-2%, -2%); }
+        }
+        
+        .movie-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .scene.active {
+            opacity: 1;
+            z-index: 10;
+        }
+        
+        /* Opening Title Card */
+        .title-card {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .title-main {
+            font-size: 5em;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 0.3em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes titlePulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .title-sub {
+            font-size: 1.8em;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+            margin-bottom: 40px;
+        }
+        
+        .title-meta {
+            font-size: 0.9em;
+            opacity: 0.5;
+            letter-spacing: 0.15em;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        /* Episode Title Cards */
+        .episode-card {
+            text-align: center;
+            padding: 60px;
+            max-width: 900px;
+        }
+        
+        .episode-number {
+            font-size: 1em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .episode-title {
+            font-size: 3.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #5a6c57;
+            letter-spacing: 0.08em;
+        }
+        
+        .episode-subtitle {
+            font-size: 1.3em;
+            opacity: 0.7;
+            margin-bottom: 30px;
+        }
+        
+        .episode-identity {
+            font-size: 1.1em;
+            opacity: 0.8;
+            font-style: italic;
+            padding: 20px;
+            border-top: 1px solid #5a6c57;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        /* Opening Sequence Iframes */
+        .opening-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Artifact Display */
+        .artifact-display {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Controls */
+        .controls {
+            position: fixed;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 10px;
+            border: 2px solid #5a6c57;
+            border-radius: 8px;
+        }
+        
+        .controls button {
+            background: transparent;
+            color: #5a6c57;
+            border: 1px solid #5a6c57;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .controls button:hover {
+            background: #5a6c57;
+            color: #e8e4d8;
+        }
+        
+        .controls .progress {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7em;
+            color: #5a6c57;
+            padding: 15px 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            writing-mode: horizontal-tb;
+            transform: rotate(0deg);
+            border-top: 1px solid #5a6c57;
+            border-bottom: 1px solid #5a6c57;
+            margin: 10px 0;
+        }
+        
+        /* Intermission Card */
+        .intermission-card {
+            text-align: center;
+            padding: 60px;
+        }
+        
+        .intermission-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #8a5a5a;
+        }
+        
+        .intermission-text {
+            font-size: 1.2em;
+            line-height: 1.8;
+            opacity: 0.8;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* End Credits */
+        .credits {
+            text-align: center;
+            padding: 60px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .credits-title {
+            font-size: 3em;
+            margin-bottom: 40px;
+            color: #5a6c57;
+        }
+        
+        .credits-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            border-top: 1px solid #5a6c57;
+        }
+        
+        .credits-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+        
+        .credits-section p {
+            font-size: 1em;
+            line-height: 1.8;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .title-main { font-size: 2.5em; }
+            .episode-title { font-size: 2em; }
+            .controls { 
+                left: 10px;
+                padding: 10px 5px;
+            }
+            .controls button {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+            .controls .progress {
+                font-size: 0.6em;
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="movie-container" id="movieContainer">
+        <!-- SCENE 00: Opening Title -->
+        <div class="scene active" data-duration="5000" data-scene="title">
+            <div class="title-card">
+                <div class="title-main">FEED LOOP</div>
+                <div class="title-sub">A Tilth Investigation</div>
+                <div class="title-meta">8 EPISODES • 24 ARTIFACTS • 2048</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 01: Episode 01 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep01-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 01</div>
+                <div class="episode-title">NUTRIENT LOCK</div>
+                <div class="episode-subtitle">GrowthPath — Corporate Learning</div>
+                <div class="episode-identity">"The Silenced Educator"<br>Advocacy vs Career Risk</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 02: Episode 01 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep01-opening">
+            <iframe src="opening-01-nutrient-lock.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 03: Episode 01 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep01-artifact1">
+            <iframe src="01-silenced-educator/essay.html" class="artifact-display"></iframe>
+        </div>
+        <div class="scene" data-duration="8000" data-scene="ep01-artifact2">
+            <iframe src="01-silenced-educator/silence-policy.html" class="artifact-display"></iframe>
+        </div>
+        <div class="scene" data-duration="8000" data-scene="ep01-artifact3">
+            <iframe src="01-silenced-educator/silenced-educator.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 04: Episode 02 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep02-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 02</div>
+                <div class="episode-title">FIRST FRUIT</div>
+                <div class="episode-subtitle">YieldMatch — AI Dating</div>
+                <div class="episode-identity">"The Deadline Sovereign"<br>Algorithmic Harm vs Speed</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 05: Episode 02 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep02-opening">
+            <iframe src="opening-02-first-fruit.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 06: Episode 02 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep02-artifact1">
+            <iframe src="02-deadline-sovereign/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 07: Episode 03 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep03-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 03</div>
+                <div class="episode-title">APPRENTICE ROWS</div>
+                <div class="episode-subtitle">TalentFarm — Hiring Platform</div>
+                <div class="episode-identity">"The Bounded Apprentice"<br>Junior Constraint</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 08: Episode 03 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep03-opening">
+            <iframe src="opening-03-apprentice-rows.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 09: Episode 03 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep03-artifact1">
+            <iframe src="03-bounded-apprentice/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 10: Episode 04 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep04-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 04</div>
+                <div class="episode-title">CONSENT HARVEST</div>
+                <div class="episode-subtitle">ConsentGarden — Data Management</div>
+                <div class="episode-identity">"Two-Headed Compliance"<br>Impossible Compliance Paradox</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 11: Episode 04 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep04-opening">
+            <iframe src="opening-04-consent-harvest.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 12: Episode 04 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep04-artifact1">
+            <iframe src="04-two-headed-compliance/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- INTERMISSION -->
+        <div class="scene" data-duration="6000" data-scene="intermission">
+            <div class="intermission-card">
+                <div class="intermission-title">⏸ INTERMISSION</div>
+                <div class="intermission-text">
+                    These are not isolated incidents. Each episode reveals a pattern: technical infrastructure 
+                    enables ethical failures. The agrarian metaphor conceals extraction. The platform is the problem.
+                </div>
+            </div>
+        </div>
+        
+        <!-- SCENE 13: Episode 05 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep05-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 05</div>
+                <div class="episode-title">ROOT UNION</div>
+                <div class="episode-subtitle">UnionSprout — Worker Organizing (Banned)</div>
+                <div class="episode-identity">"The Fragile Collective"<br>Collective Action vs Risk</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 14: Episode 05 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep05-opening">
+            <iframe src="opening-05-root-union.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 15: Episode 05 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep05-artifact1">
+            <iframe src="05-fragile-collective/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 16: Episode 06 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep06-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 06</div>
+                <div class="episode-title">FLOOD LEARNING</div>
+                <div class="episode-subtitle">AutoGrow AI — Machine Learning</div>
+                <div class="episode-identity">"The Epistemic Rush"<br>Learning Time vs Shipping</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 17: Episode 06 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep06-opening">
+            <iframe src="opening-06-flood-learning.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 18: Episode 06 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep06-artifact1">
+            <iframe src="06-epistemic-rush/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 19: Episode 07 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep07-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 07</div>
+                <div class="episode-title">CONDITIONAL HARVEST</div>
+                <div class="episode-subtitle">MigrantHarvest — Visa Compliance</div>
+                <div class="episode-identity">"The Conditional Person"<br>Immigration Status vs Ethics</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 20: Episode 07 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep07-opening">
+            <iframe src="opening-07-conditional-harvest.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 21: Episode 07 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep07-artifact1">
+            <iframe src="07-conditional-person/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- SCENE 22: Episode 08 Title Card -->
+        <div class="scene" data-duration="4000" data-scene="ep08-title">
+            <div class="episode-card">
+                <div class="episode-number">EPISODE 08</div>
+                <div class="episode-title">GEO-FENCING THE GARDEN</div>
+                <div class="episode-subtitle">GlobalGrow — Enterprise Edition</div>
+                <div class="episode-identity">"The Values Treasurer"<br>Founder Values vs Revenue</div>
+            </div>
+        </div>
+        
+        <!-- SCENE 23: Episode 08 Opening Sequence -->
+        <div class="scene" data-duration="12000" data-scene="ep08-opening">
+            <iframe src="opening-08-geo-fencing-garden.html" class="opening-frame"></iframe>
+        </div>
+        
+        <!-- SCENE 24: Episode 08 Artifacts -->
+        <div class="scene" data-duration="8000" data-scene="ep08-artifact1">
+            <iframe src="08-values-treasurer/index.html" class="artifact-display"></iframe>
+        </div>
+        
+        <!-- FINAL: End Credits -->
+        <div class="scene" data-duration="15000" data-scene="credits">
+            <div class="credits">
+                <div class="credits-title">FEED LOOP</div>
+                
+                <div class="credits-section">
+                    <h3>A Tilth Investigation</h3>
+                    <p>Design fiction exploring ethical dilemmas in technology work</p>
+                </div>
+                
+                <div class="credits-section">
+                    <h3>Research Basis</h3>
+                    <p>Based on documented cases from HCI ethics research<br>
+                    Chivukula et al., CHI '21: "A Fork in the Road"<br>
+                    Organizational constraints on UX designers and researchers</p>
+                </div>
+                
+                <div class="credits-section">
+                    <h3>Framework</h3>
+                    <p>McLuhan's Tetrad • Spencer-Brown's Laws of Form<br>
+                    Centaur Box negotiation simulator • Identity archetype analysis</p>
+                </div>
+                
+                <div class="credits-section">
+                    <h3>Agronica Corporation</h3>
+                    <p>FarmOS Platform • 8 Applications • 24 Internal Documents<br>
+                    All characters and scenarios are fictional composites</p>
+                </div>
+                
+                <div class="credits-section">
+                    <h3>The Platform is the Problem</h3>
+                    <p>Individual ethical choices cannot fix systemic violence<br>
+                    Infrastructure enables exploitation<br>
+                    Metaphor conceals extraction</p>
+                </div>
+                
+                <div class="credits-section" style="margin-top: 60px; opacity: 0.6;">
+                    <p>TILTH — Where decay becomes design<br>
+                    2048</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LOOP: Return to Start -->
+        <div class="scene" data-duration="3000" data-scene="loop">
+            <div class="title-card">
+                <div class="title-sub" style="font-size: 1.5em;">Restarting Investigation...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button id="prevBtn" title="Previous Scene">◀</button>
+        <button id="playPauseBtn" title="Pause">⏸</button>
+        <button id="nextBtn" title="Next Scene">▶</button>
+        <div class="progress">
+            <span id="sceneCounter">1/33</span>
+        </div>
+    </div>
+    
+    <script>
+        const scenes = document.querySelectorAll('.scene');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const sceneCounter = document.getElementById('sceneCounter');
+        
+        let currentSceneIndex = 0;
+        let isPlaying = true;
+        let timer = null;
+        
+        function showScene(index) {
+            // Remove active from all scenes
+            scenes.forEach(scene => scene.classList.remove('active'));
+            
+            // Show current scene
+            if (index >= 0 && index < scenes.length) {
+                scenes[index].classList.add('active');
+                currentSceneIndex = index;
+                updateCounter();
+                
+                // Auto-click iframes if present
+                const iframe = scenes[index].querySelector('iframe');
+                if (iframe) {
+                    autoClickIframe(iframe);
+                }
+                
+                // Auto-advance if playing
+                if (isPlaying) {
+                    const duration = parseInt(scenes[index].dataset.duration) || 5000;
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        nextScene();
+                    }, duration);
+                }
+            }
+        }
+        
+        function nextScene() {
+            const nextIndex = currentSceneIndex + 1;
+            if (nextIndex >= scenes.length) {
+                // Loop back to start
+                showScene(0);
+            } else {
+                showScene(nextIndex);
+            }
+        }
+        
+        function prevScene() {
+            const prevIndex = currentSceneIndex - 1;
+            if (prevIndex < 0) {
+                showScene(scenes.length - 1);
+            } else {
+                showScene(prevIndex);
+            }
+        }
+        
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+            playPauseBtn.title = isPlaying ? 'Pause' : 'Play';
+            
+            if (isPlaying) {
+                showScene(currentSceneIndex); // Restart timer
+            } else {
+                clearTimeout(timer);
+            }
+        }
+        
+        function updateCounter() {
+            sceneCounter.textContent = `${currentSceneIndex + 1}/${scenes.length}`;
+        }
+        
+        // Auto-click function for iframes
+        function autoClickIframe(iframe) {
+            setTimeout(() => {
+                try {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (iframeDoc) {
+                        // Try to find and click common "start" elements
+                        const clickTargets = [
+                            iframeDoc.body,
+                            iframeDoc.querySelector('.sequence'),
+                            iframeDoc.querySelector('body'),
+                            iframeDoc.documentElement
+                        ];
+                        
+                        for (let target of clickTargets) {
+                            if (target) {
+                                target.click();
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Cross-origin iframe, can't access - that's okay
+                    console.log('Could not auto-click iframe (cross-origin)');
+                }
+            }, 500); // Wait 500ms for iframe to load
+        }
+        
+        // Event listeners
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        nextBtn.addEventListener('click', () => {
+            clearTimeout(timer);
+            nextScene();
+        });
+        prevBtn.addEventListener('click', () => {
+            clearTimeout(timer);
+            prevScene();
+        });
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextScene();
+            if (e.key === 'ArrowLeft') prevScene();
+            if (e.key === ' ') {
+                e.preventDefault();
+                togglePlayPause();
+            }
+        });
+        
+        // Initialize
+        showScene(0);
+    </script>
+</body>
+</html>

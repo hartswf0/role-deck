@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Pattern Choir</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f8f8f8; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3.5vw;
+            font-weight: 900;
+            color: #000;
+            letter-spacing: 0.8vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+            mix-blend-mode: multiply;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">DARK PATTERN CHOIR</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Choir synths
+        const choir = ['C4', 'E4', 'G4', 'C5'].map(note => {
+            const synth = new Tone.Synth({ 
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.5, sustain: 1, release: 1 }
+            }).toDestination();
+            synth.volume.value = -20;
+            return { synth, note };
+        });
+        
+        // Bass drum
+        const kick = new Tone.MembraneSynth().toDestination();
+        kick.volume.value = -10;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Choir harmony
+                choir.forEach((voice, i) => {
+                    setTimeout(() => voice.synth.triggerAttack(voice.note), i * 300);
+                });
+                
+                // Bass drum pulses with Accept button
+                [2, 2.5, 3, 3.5, 4].forEach(time => {
+                    setTimeout(() => kick.triggerAttackRelease('C1', '0.2'), time * 1000);
+                });
+                
+                // Choir bends to metallic
+                setTimeout(() => {
+                    choir.forEach(voice => {
+                        voice.synth.frequency.rampTo(voice.synth.frequency.value * 1.5, 1);
+                    });
+                }, 4500);
+                
+                setTimeout(() => {
+                    choir.forEach(voice => voice.synth.triggerRelease());
+                }, 6000);
+                
+                animate();
+            }
+        });
+        
+        function drawUIForm(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Form background
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(cx - 300, cy - 250, 600, 500);
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - 300, cy - 250, 600, 500);
+            
+            // Title
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 32px Helvetica';
+            ctx.textAlign = 'center';
+            ctx.fillText('Terms & Conditions', cx, cy - 180);
+            
+            // Checkboxes pulsing like hearts
+            const pulse = Math.sin(t * 4) * 0.2 + 1;
+            
+            for (let i = 0; i < 4; i++) {
+                const y = cy - 100 + i * 60;
+                const size = 30 * pulse;
+                
+                ctx.strokeStyle = '#007bff';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(cx - 250, y - size/2, size, size);
+                
+                if (i < 3 || t > 2) {
+                    ctx.fillStyle = '#007bff';
+                    ctx.fillRect(cx - 245, y - size/2 + 5, size - 10, size - 10);
+                }
+                
+                ctx.fillStyle = '#666';
+                ctx.font = '18px Helvetica';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Checkbox ${i + 1}`, cx - 200, y + 7);
+            }
+            
+            // Accept button - flashing with bass drum
+            const acceptY = cy + 150;
+            const acceptFlash = (t > 2 && t < 4) ? (Math.floor(t * 2) % 2 === 0) : false;
+            
+            ctx.fillStyle = acceptFlash ? '#00cc00' : '#007bff';
+            ctx.fillRect(cx - 100, acceptY, 200, 50);
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 20px Helvetica';
+            ctx.textAlign = 'center';
+            ctx.fillText('ACCEPT', cx, acceptY + 32);
+            
+            // Decline button - grey and unclickable
+            ctx.fillStyle = '#ccc';
+            ctx.fillRect(cx - 100, acceptY + 70, 200, 50);
+            
+            ctx.fillStyle = '#999';
+            ctx.fillText('Decline', cx, acceptY + 102);
+        }
+        
+        function drawMelt(t) {
+            if (t < 5) return;
+            
+            const meltProgress = (t - 5) / 2;
+            
+            // Screen melts to mirror
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, `rgba(255,255,255,${1 - meltProgress})`);
+            gradient.addColorStop(meltProgress, 'rgba(200,200,255,0.5)');
+            gradient.addColorStop(1, 'rgba(100,100,150,1)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Ripple effect
+            for (let i = 0; i < 5; i++) {
+                const radius = meltProgress * 500 + i * 100;
+                ctx.strokeStyle = `rgba(255,255,255,${0.3 - meltProgress * 0.3})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                titleEl.style.opacity = Math.min(1, (t - 6.5) / 1.5);
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            if (elapsed < 5) {
+                drawUIForm(elapsed);
+            }
+            drawMelt(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#007bff';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

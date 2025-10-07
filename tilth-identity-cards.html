@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TILTH — Professional Identity Field Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg: #0a0a08;
+            --ink: #e8e4d8;
+            --ink-2: #d4d0c4;
+            --muted: #9a9688;
+            
+            /* Identity type colors (earth tones + neon accents) */
+            --challenger: #c04848;
+            --challenger-accent: #ff6b6b;
+            --custodian: #4a7c59;
+            --custodian-accent: #6fbc7d;
+            --educator: #8a6d3b;
+            --educator-accent: #c9a55a;
+            --ponderer: #5a6c7d;
+            --ponderer-accent: #7b9ab8;
+            --harmonizer: #7a5c8a;
+            --harmonizer-accent: #a87db8;
+            --translator: #4a7a7a;
+            --translator-accent: #6bb0b0;
+            --adherent: #6b6b5a;
+            --adherent-accent: #9a9a7d;
+            --guild: #8a6b4a;
+            --guild-accent: #c9a47d;
+            
+            --surface: #151513;
+            --border: #5a6c57;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.06;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+        
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+            padding: 30px 20px;
+        }
+        
+        .title-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .org-name {
+            font-size: 2.5em;
+            letter-spacing: 0.3em;
+            color: var(--border);
+            margin-bottom: 10px;
+        }
+        
+        .title {
+            font-size: 1.5em;
+            letter-spacing: 0.15em;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            font-size: 0.9em;
+            opacity: 0.6;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .controls select, .controls button {
+            padding: 10px 20px;
+            background: rgba(90, 108, 87, 0.2);
+            border: 1px solid var(--border);
+            color: var(--ink);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.9em;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .controls select:hover, .controls button:hover {
+            background: rgba(90, 108, 87, 0.4);
+        }
+        
+        main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+        
+        /* Card Container */
+        .card-container {
+            perspective: 1000px;
+            height: 500px;
+            cursor: pointer;
+        }
+        
+        .card-flipper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        
+        .card-container.flipped .card-flipper {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--surface);
+            border: 2px solid;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .card-face-front {
+            border-color: var(--border);
+        }
+        
+        .card-face-back {
+            transform: rotateY(180deg);
+            border-color: var(--border);
+        }
+        
+        /* Identity type borders */
+        .challenger .card-face { border-color: var(--challenger); }
+        .custodian .card-face { border-color: var(--custodian); }
+        .educator .card-face { border-color: var(--educator); }
+        .ponderer .card-face { border-color: var(--ponderer); }
+        .harmonizer .card-face { border-color: var(--harmonizer); }
+        .translator .card-face { border-color: var(--translator); }
+        .adherent .card-face { border-color: var(--adherent); }
+        .guild .card-face { border-color: var(--guild); }
+        
+        .card-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(90, 108, 87, 0.3);
+        }
+        
+        .card-type {
+            font-size: 0.75em;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            margin-bottom: 5px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .card-name {
+            font-size: 1.8em;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        
+        .card-tagline {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .card-body {
+            flex: 1;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 0.85em;
+            letter-spacing: 0.15em;
+            opacity: 0.5;
+            margin-bottom: 10px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .section-content {
+            font-size: 0.95em;
+            line-height: 1.7;
+        }
+        
+        .section-content ul {
+            margin-left: 20px;
+            line-height: 2;
+        }
+        
+        .section-content strong {
+            color: var(--border);
+        }
+        
+        .card-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(90, 108, 87, 0.3);
+            text-align: center;
+        }
+        
+        .flip-btn {
+            padding: 10px 20px;
+            background: var(--border);
+            border: none;
+            color: var(--ink);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85em;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .flip-btn:hover {
+            background: #3a4838;
+        }
+        
+        .stat-bar {
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .stat-value {
+            background: rgba(0,0,0,0.4);
+            height: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            background: var(--border);
+            transition: width 0.6s ease-out;
+        }
+        
+        .intro-section {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 40px;
+            margin-bottom: 40px;
+            border-left: 4px solid var(--border);
+        }
+        
+        .intro-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: var(--border);
+        }
+        
+        .intro-section p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .link-section {
+            background: rgba(138, 90, 90, 0.15);
+            padding: 30px;
+            margin-top: 40px;
+            border: 2px solid rgba(138, 90, 90, 0.5);
+            text-align: center;
+        }
+        
+        .link-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: rgba(255, 140, 140, 0.9);
+        }
+        
+        .link-section a {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: var(--border);
+            color: var(--ink);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            transition: background 0.3s;
+        }
+        
+        .link-section a:hover {
+            background: #3a4838;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .org-name { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <header>
+        <div class="title-section">
+            <div class="org-name">TILTH</div>
+            <h1 class="title">Professional Identity Field Guide</h1>
+            <div class="subtitle">Eight archetypes of ethical practice under constraint</div>
+            
+            <div class="controls">
+                <select id="sortSelect" onchange="changeSort(this.value)">
+                    <option value="default">Sort: Default</option>
+                    <option value="aspiration">Sort: Aspirational Identity</option>
+                    <option value="risk">Sort: Career Risk Tolerance</option>
+                    <option value="impact">Sort: Potential Impact</option>
+                </select>
+                <button onclick="window.location.href='identity-bridge.html'">→ Take the Investigation</button>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <div class="intro-section">
+            <h2>About This Field Guide</h2>
+            <p>
+                Based on research by <strong>Chivukula, Watkins, Gray & Agerfalk (CHI '21)</strong>, we identified 
+                8 professional identity archetypes that emerge when tech workers face ethical dilemmas under structural constraint.
+            </p>
+            <p>
+                These are not personality types. They are <strong>positions you take when the system forces a choice</strong> between 
+                doing what's right and protecting your career, visa status, team relationships, or economic security.
+            </p>
+            <p>
+                In the Feed Loop investigation, you'll encounter scenarios where Agronica workers embody these identities. 
+                You'll choose which position <em>you</em> would take. Then you'll see what actually happened—and why 
+                individual ethics can't fix infrastructural violence.
+            </p>
+        </div>
+        
+        <div class="grid" id="cardGrid"></div>
+        
+        <div class="link-section">
+            <h3>Ready to Test Your Identity?</h3>
+            <p style="margin-bottom: 20px; opacity: 0.8;">
+                Experience 8 real ethical dilemmas from inside Agronica Corporation. 
+                See which identity archetype emerges from your choices.
+            </p>
+            <a href="identity-bridge.html">→ Enter Investigation</a>
+            <a href="tilth-investigation.html">→ View Case Files</a>
+        </div>
+    </main>
+    
+    <script>
+        const identities = [
+            {
+                id: 'challenger',
+                name: 'The Challenger',
+                tagline: 'Confronts power directly, accepts personal cost',
+                desc: 'You see the harm and name it publicly, even when it threatens your career. You escalate, document, and demand accountability. You know the system punishes dissent, but staying silent feels like complicity.',
+                aspirational: 'Speaking truth to power; forcing transparency',
+                enacted: 'Often retaliated against, sidelined, or forced out',
+                drives: 'Justice, accountability, refusal to normalize harm',
+                constraints: 'High career risk; requires economic security or willingness to sacrifice it',
+                quote: '"If I don\'t say something, who will?"',
+                research: 'Highest career risk (0.6-1.0). Often requires privilege (tenure, savings, citizenship). Frequently becomes whistleblowers.',
+                stats: { aspiration: 0.9, impact: 0.8, risk: 0.9, constraint: 0.3 }
+            },
+            {
+                id: 'custodian',
+                name: 'The Conscientious Custodian',
+                tagline: 'Protective of users, willing to delay or block harm',
+                desc: 'You see yourself as a guardian of user well-being. You'll delay launches, refuse to ship biased systems, and block features you believe cause harm—even if it costs you politically. User trust is sacred.',
+                aspirational: 'Protecting users; refusing to ship known harms',
+                enacted: 'Often successful in small interventions; struggles against deadline pressure',
+                drives: 'Care, stewardship, long-term thinking',
+                constraints: 'Moderate career risk; requires institutional support or seniority',
+                quote: '"Our users trusted us with their data. We owe them more than this."',
+                research: 'Moderate career risk (0.4-0.6). Most effective when backed by exec mandate or regulatory requirements.',
+                stats: { aspiration: 0.85, impact: 0.7, risk: 0.6, constraint: 0.5 }
+            },
+            {
+                id: 'educator',
+                name: 'The Educator',
+                tagline: 'Builds awareness through teaching, documentation, and sharing',
+                desc: 'You believe change comes through knowledge. You create lunch-and-learns, write internal docs, share research. You hope that if people understand the harm, they'll choose differently. You're often right—until you're not.',
+                aspirational: 'Raising collective awareness; building ethical literacy',
+                enacted: 'Effective at small scale; often blocked when education threatens growth',
+                drives: 'Learning, knowledge-sharing, collective capacity-building',
+                constraints: 'Low-moderate career risk; unless education becomes \"too political\"',
+                quote: '"If we understand the problem, we can design our way out of it."',
+                research: 'Variable career risk (0.2-0.5). Most successful when aligned with company learning culture.',
+                stats: { aspiration: 0.75, impact: 0.6, risk: 0.3, constraint: 0.6 }
+            },
+            {
+                id: 'ponderer',
+                name: 'The Deliberative Ponderer',
+                tagline: 'Seeks perfect evidence before acting; analysis over action',
+                desc: 'You need to be absolutely certain before you act. More research, more data, more ethical frameworks. It feels rigorous, but sometimes it's avoidance. The system benefits from your hesitation—by the time you're ready, the moment has passed.',
+                aspirational: 'Thoroughness, rigor, evidence-based decision-making',
+                enacted: 'Paralysis by analysis; delayed action becomes no action',
+                drives: 'Precision, certainty, avoiding false accusations',
+                constraints: 'Very low career risk (0.0-0.2); but also very low impact',
+                quote: '"I need more evidence before I can say anything definitively."',
+                research: 'Lowest career risk (0.0-0.2). Often becomes CYA strategy—document everything, act on nothing.',
+                stats: { aspiration: 0.6, impact: 0.3, risk: 0.1, constraint: 0.7 }
+            },
+            {
+                id: 'harmonizer',
+                name: 'The Harmonizer',
+                tagline: 'Builds coalitions, seeks consensus, avoids direct conflict',
+                desc: 'You believe change happens through relationships, not confrontation. You build alliances, find compromise, speak truth gently. It works—until the conflict is structural, not interpersonal. Some battles can't be harmonized away.',
+                aspirational: 'Coalition-building, consensus-making, sustainable change',
+                enacted: 'Effective in collaborative cultures; struggles when power is asymmetric',
+                drives: 'Relationships, sustainability, avoiding burnout',
+                constraints: 'Moderate career risk (0.2-0.4); depends on coalition strength',
+                quote: '"If we can just get everyone in the room, we can find a solution."',
+                research: 'Moderate career risk (0.2-0.4). Most effective in orgs with strong ethical culture already present.',
+                stats: { aspiration: 0.7, impact: 0.6, risk: 0.3, constraint: 0.6 }
+            },
+            {
+                id: 'translator',
+                name: 'The Translator',
+                tagline: 'Reframes ethics in business language to gain traction',
+                desc: 'You speak two languages: ethics and ROI. You translate "bias" into "reputational risk," "harm" into "liability exposure." It gets you in the room. But sometimes the translation loses something essential—like the actual harm.',
+                aspirational: 'Making ethics legible to power; strategic framing',
+                enacted: 'Effective at incremental change; risk of sanitizing harm',
+                drives: 'Pragmatism, strategic communication, institutional leverage',
+                constraints: 'Low career risk (0.1-0.3); high risk of co-optation',
+                quote: '"If we frame it as reducing churn, they'll listen."',
+                research: 'Low career risk (0.1-0.3). Can create space for change, but risks making ethics instrumentally valuable only.',
+                stats: { aspiration: 0.65, impact: 0.5, risk: 0.2, constraint: 0.7 }
+            },
+            {
+                id: 'adherent',
+                name: 'The Policy-Adherent',
+                tagline: 'Follows rules exactly; compliance is the boundary',
+                desc: 'You do what the policy says, no more, no less. If it's legal, it's permissible. If it's compliant, it's ethical. The rules protect you from moral ambiguity—and from seeing the harm the rules permit.',
+                aspirational: 'Clarity, consistency, legal protection',
+                enacted: 'Safety through compliance; enables systemic harm',
+                drives: 'Rule-following, avoiding liability, clear boundaries',
+                constraints: 'Minimal career risk (0.0-0.1); minimal impact',
+                quote: '"Legal approved it. My job is to implement, not question."',
+                research: 'Minimal career risk (0.0-0.1). Common in highly regulated industries or after legal threats.',
+                stats: { aspiration: 0.4, impact: 0.2, risk: 0.05, constraint: 0.8 }
+            },
+            {
+                id: 'guild',
+                name: 'The Guild Member',
+                tagline: 'Protects professional boundaries; ethics is someone else's job',
+                desc: 'You're a designer, an engineer, a researcher—not an ethicist. Your job has a scope, and you honor it. If there's a problem, escalate to the right team. It feels professional. It also diffuses responsibility until no one is responsible.',
+                aspirational: 'Professional boundaries, role clarity, specialization',
+                enacted: 'Low personal risk; enables harm through inaction',
+                drives: 'Craft excellence, role definition, avoiding scope creep',
+                constraints: 'Minimal career risk (0.0); minimal agency',
+                quote: '"That's not my job. Security handles that."',
+                research: 'Minimal career risk (0.0). Common in large orgs with strong role boundaries. Protects workers but fragments ethics.',
+                stats: { aspiration: 0.5, impact: 0.3, risk: 0.0, constraint: 0.9 }
+            }
+        ];
+        
+        let currentSort = 'default';
+        
+        function renderCard(identity) {
+            const statsHTML = Object.entries(identity.stats).map(([key, value]) => {
+                const label = key.charAt(0).toUpperCase() + key.slice(1);
+                return `
+                    <div class="stat-bar">
+                        <div class="stat-label">
+                            <span>${label}</span>
+                            <span>${(value * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="stat-value">
+                            <div class="stat-fill" style="width: ${value * 100}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            return `
+                <div class="card-container ${identity.id}" onclick="flipCard(event, this)">
+                    <div class="card-flipper">
+                        <div class="card-face card-face-front">
+                            <div class="card-header">
+                                <div class="card-type">PROFESSIONAL IDENTITY</div>
+                                <div class="card-name">${identity.name}</div>
+                                <div class="card-tagline">${identity.tagline}</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="section">
+                                    <div class="section-title">DESCRIPTION</div>
+                                    <div class="section-content">${identity.desc}</div>
+                                </div>
+                                <div class="section">
+                                    <div class="section-title">CORE QUOTE</div>
+                                    <div class="section-content" style="font-style: italic; opacity: 0.8;">${identity.quote}</div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="flip-btn" onclick="flipCard(event, this.closest('.card-container'))">Flip for Analysis →</button>
+                            </div>
+                        </div>
+                        <div class="card-face card-face-back">
+                            <div class="card-header">
+                                <div class="card-type">IDENTITY ANALYSIS</div>
+                                <div class="card-name">${identity.name}</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="section">
+                                    <div class="section-title">ASPIRATIONAL VS. ENACTED</div>
+                                    <div class="section-content">
+                                        <strong>Aspirational:</strong> ${identity.aspirational}<br>
+                                        <strong>Enacted:</strong> ${identity.enacted}
+                                    </div>
+                                </div>
+                                <div class="section">
+                                    <div class="section-title">CORE DRIVES</div>
+                                    <div class="section-content">${identity.drives}</div>
+                                </div>
+                                <div class="section">
+                                    <div class="section-title">CONSTRAINTS</div>
+                                    <div class="section-content">${identity.constraints}</div>
+                                </div>
+                                <div class="section">
+                                    <div class="section-title">RESEARCH BASIS</div>
+                                    <div class="section-content" style="font-size: 0.85em; opacity: 0.7;">${identity.research}</div>
+                                </div>
+                                <div class="section">
+                                    <div class="section-title">PROFILE METRICS</div>
+                                    ${statsHTML}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="flip-btn" onclick="flipCard(event, this.closest('.card-container'))">← Flip to Front</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function flipCard(event, container) {
+            event.stopPropagation();
+            if (event.target.classList.contains('flip-btn')) {
+                container.classList.toggle('flipped');
+            }
+        }
+        
+        function renderGrid() {
+            let sorted = [...identities];
+            
+            switch(currentSort) {
+                case 'aspiration':
+                    sorted.sort((a, b) => b.stats.aspiration - a.stats.aspiration);
+                    break;
+                case 'risk':
+                    sorted.sort((a, b) => b.stats.risk - a.stats.risk);
+                    break;
+                case 'impact':
+                    sorted.sort((a, b) => b.stats.impact - a.stats.impact);
+                    break;
+            }
+            
+            document.getElementById('cardGrid').innerHTML = sorted.map(renderCard).join('');
+        }
+        
+        function changeSort(value) {
+            currentSort = value;
+            renderGrid();
+        }
+        
+        // Initialize
+        renderGrid();
+    </script>
+</body>
+</html>

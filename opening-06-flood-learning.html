@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Flood Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.15;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+            animation: grain 0.5s steps(4) infinite;
+        }
+        
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, 2%); }
+            50% { transform: translate(2%, -2%); }
+            75% { transform: translate(-2%, -2%); }
+        }
+        
+        .frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Shared TILTH opening frames [0:00-0:08] */
+        .frame-1 { background: #000; animation: frame1 2s ease-in-out forwards; }
+        @keyframes frame1 { 0%, 100% { opacity: 1; } }
+        
+        .frame-2 {
+            background: radial-gradient(circle at center, #1a1410 0%, #000 70%);
+            animation: frame2 2s 2s ease-in-out forwards;
+        }
+        
+        .seed {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            filter: blur(0.5px);
+        }
+        
+        .seed-half {
+            position: absolute;
+            width: 100px;
+            height: 200px;
+            background: linear-gradient(90deg, #3a2f1f 0%, #2a1f0f 100%);
+            border-radius: 50%;
+        }
+        
+        .seed-half.left { left: 0; animation: seedSplitLeft 2s 2s ease-out forwards; }
+        .seed-half.right { right: 0; animation: seedSplitRight 2s 2s ease-out forwards; }
+        
+        .root {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            width: 3px;
+            height: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(200,180,140,0.6) 100%);
+            animation: rootGrow 1.5s 2.5s ease-out forwards;
+        }
+        
+        @keyframes frame2 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        @keyframes seedSplitLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-30px); } }
+        @keyframes seedSplitRight { 0% { transform: translateX(0); } 100% { transform: translateX(30px); } }
+        @keyframes rootGrow { 0% { height: 0; } 100% { height: 80px; } }
+        
+        .frame-3 { background: #0a0a0a; animation: frame3 1s 4s ease-in-out forwards; }
+        @keyframes frame3 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 20px);
+            gap: 2px;
+        }
+        
+        .key {
+            width: 20px;
+            height: 20px;
+            background: #e8e4d8;
+            animation: keyToSoil 0.8s ease-out forwards;
+            animation-delay: calc(var(--delay) * 0.01s);
+        }
+        
+        @keyframes keyToSoil {
+            0% { background: #e8e4d8; transform: translateY(0); }
+            100% { background: #2a1f0f; transform: translateY(20px) scale(1.2); border-radius: 50%; }
+        }
+        
+        .frame-4 {
+            background: radial-gradient(circle at center, #0f1510 0%, #000 80%);
+            animation: frame4 1s 5s ease-in-out forwards;
+        }
+        
+        @keyframes frame4 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .icon-network {
+            position: relative;
+            width: 600px;
+            height: 600px;
+        }
+        
+        .feed-icon {
+            position: absolute;
+            font-size: 40px;
+            animation: iconSpin 1s ease-out forwards;
+        }
+        
+        .feed-icon.heart { top: 30%; left: 20%; animation-delay: 5.2s; }
+        .feed-icon.share { top: 50%; right: 20%; animation-delay: 5.3s; }
+        .feed-icon.bell { bottom: 30%; left: 40%; animation-delay: 5.4s; }
+        
+        @keyframes iconSpin {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: rotate(360deg) scale(0) translateY(100px); opacity: 0; }
+        }
+        
+        .frame-5 {
+            background: #000;
+            animation: frame5 1s 6s ease-in-out forwards;
+        }
+        
+        @keyframes frame5 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .lens-network {
+            width: 500px;
+            height: 500px;
+            animation: lensForm 1s 6.2s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes lensForm {
+            0% { opacity: 0; transform: scale(2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #8a7a5a;
+            border-radius: 50%;
+            animation: particleFloat 3s infinite ease-in-out;
+            animation-delay: calc(var(--delay) * 0.1s);
+        }
+        
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .frame-6 {
+            background: #000;
+            animation: frame6 1s 7s ease-in-out forwards;
+        }
+        
+        @keyframes frame6 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .tilth-logo {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 140px;
+            letter-spacing: 0.3em;
+            color: #fff;
+            opacity: 0;
+            animation: tilthReveal 1s 7.2s ease-out forwards;
+            text-shadow: 0 0 40px rgba(90, 108, 87, 0.3);
+            position: relative;
+        }
+        
+        .tilth-logo::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            color: #ff00ff;
+            opacity: 0.1;
+        }
+        
+        .tilth-logo::after {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            color: #00ffff;
+            opacity: 0.1;
+        }
+        
+        .tagline {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 16px;
+            letter-spacing: 0.3em;
+            color: #999;
+            margin-top: 30px;
+            opacity: 0;
+            animation: taglineReveal 0.5s 7.7s ease-out forwards;
+        }
+        
+        @keyframes tilthReveal {
+            0% { opacity: 0; letter-spacing: 1em; }
+            100% { opacity: 1; letter-spacing: 0.3em; }
+        }
+        
+        @keyframes taglineReveal { 0% { opacity: 0; } 100% { opacity: 0.7; } }
+        
+        /* [0:08+] Episode-specific: FLOOD LEARNING */
+        .frame-7 {
+            background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
+            animation: frame7 2s 8.5s ease-in-out forwards;
+        }
+        
+        @keyframes frame7 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .night-sky {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 30%, #2a2a4a 0%, #1a1a2a 50%, #0a0a1a 100%);
+        }
+        
+        .algorithm-cloud {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            height: 200px;
+            background: radial-gradient(ellipse at center, rgba(100, 150, 255, 0.4) 0%, transparent 70%);
+            opacity: 0;
+            animation: cloudDescend 2s 9.2s ease-out forwards;
+            filter: blur(20px);
+        }
+        
+        @keyframes cloudDescend {
+            0% { opacity: 0; transform: translateX(-50%) translateY(-100px); }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        .ui-hosepipe {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(180deg, rgba(0, 200, 255, 0.8) 0%, transparent 100%);
+            opacity: 0;
+            animation: hosepipeDrop 1.5s ease-out forwards;
+            animation-delay: calc(10s + var(--delay) * 0.2s);
+            box-shadow: 0 0 10px rgba(0, 200, 255, 0.6);
+        }
+        
+        @keyframes hosepipeDrop {
+            0% { opacity: 0; height: 0; }
+            100% { opacity: 0.8; height: var(--height); }
+        }
+        
+        .farm-bed {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(180deg, #2a3a2a 0%, #1a2a1a 100%);
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding: 40px;
+        }
+        
+        .garden-plot {
+            width: 150px;
+            height: 120px;
+            background: rgba(90, 108, 87, 0.2);
+            border: 2px solid #5a6c57;
+            position: relative;
+            opacity: 0;
+            animation: plotAppear 0.5s ease-out forwards;
+            animation-delay: calc(9.8s + var(--delay) * 0.15s);
+        }
+        
+        @keyframes plotAppear {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .rectangular-rain {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .rain-block {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background: linear-gradient(180deg, rgba(100, 150, 255, 0.6) 0%, rgba(100, 150, 255, 0.2) 100%);
+            opacity: 0;
+            animation: rainFall 2s ease-in forwards;
+            animation-delay: calc(10.5s + var(--delay) * 0.1s);
+        }
+        
+        @keyframes rainFall {
+            0% { opacity: 0; transform: translateY(-200px); }
+            50% { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(300px); }
+        }
+        
+        .erased-marker {
+            position: absolute;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            color: #ff6b6b;
+            opacity: 0;
+            animation: markerFlash 0.3s 11.5s ease-out forwards;
+        }
+        
+        @keyframes markerFlash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        .lily-marker {
+            position: absolute;
+            font-size: 30px;
+            opacity: 0;
+            animation: lilyPop 0.5s ease-out forwards;
+            animation-delay: calc(11.8s + var(--delay) * 0.15s);
+        }
+        
+        @keyframes lilyPop {
+            0% { opacity: 0; transform: scale(0) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .ghost-garden {
+            position: absolute;
+            bottom: 25%;
+            left: 25%;
+            font-size: 40px;
+            opacity: 0;
+            animation: ghostFlicker 1s 12s ease-in-out forwards;
+            filter: blur(1px);
+        }
+        
+        @keyframes ghostFlicker {
+            0% { opacity: 0; }
+            30% { opacity: 0.6; }
+            60% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+        
+        .prayer-lantern {
+            position: absolute;
+            width: 30px;
+            height: 40px;
+            background: radial-gradient(circle, #ffaa00 0%, #ff6600 100%);
+            border-radius: 50% 50% 30% 30%;
+            opacity: 0;
+            animation: lanternRise 3s ease-out forwards;
+            animation-delay: calc(12.5s + var(--delay) * 0.3s);
+            box-shadow: 0 0 20px rgba(255, 170, 0, 0.6);
+        }
+        
+        @keyframes lanternRise {
+            0% { opacity: 0; transform: translateY(0); }
+            30% { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-400px); }
+        }
+        
+        .satellite {
+            position: absolute;
+            top: 15%;
+            font-size: 20px;
+            opacity: 0;
+            animation: satelliteDrift 8s linear infinite;
+            animation-delay: calc(13s + var(--delay) * 0.5s);
+        }
+        
+        @keyframes satelliteDrift {
+            0% { opacity: 0; left: -50px; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { opacity: 0; left: calc(100% + 50px); }
+        }
+        
+        .episode-title {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 90px;
+            letter-spacing: 0.15em;
+            color: #e8e4d8;
+            opacity: 0;
+            animation: episodeTitleReveal 1s 9s ease-out forwards;
+            text-shadow: 0 4px 20px rgba(100, 150, 255, 0.5);
+        }
+        
+        @keyframes episodeTitleReveal {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); letter-spacing: 0.4em; }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); letter-spacing: 0.15em; }
+        }
+        
+        .badge {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: #4a7aaa;
+            color: #fff;
+            padding: 12px 25px;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            opacity: 0;
+            animation: badgeReveal 0.5s 9.8s ease-out forwards;
+            clip-path: polygon(0 0, 100% 0, 95% 50%, 100% 100%, 0 100%, 5% 50%);
+        }
+        
+        @keyframes badgeReveal {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .audio-cue {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-family: 'Courier', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0;
+        }
+        
+        .cue-1 { animation: cueFade 2s 0s ease-in-out forwards; }
+        .cue-2 { animation: cueFade 2s 2s ease-in-out forwards; }
+        .cue-3 { animation: cueFade 1s 4s ease-in-out forwards; }
+        .cue-4 { animation: cueFade 1s 5s ease-in-out forwards; }
+        .cue-5 { animation: cueFade 1s 6s ease-in-out forwards; }
+        .cue-6 { animation: cueFade 1.5s 7s ease-in-out forwards; }
+        .cue-7 { animation: cueFade 2s 8.5s ease-in-out forwards; }
+        
+        @keyframes cueFade {
+            0% { opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <!-- Shared TILTH opening [0:00-0:08] -->
+    <div class="frame frame-1"></div>
+    
+    <div class="frame frame-2">
+        <div class="seed">
+            <div class="seed-half left"></div>
+            <div class="seed-half right"></div>
+            <div class="root"></div>
+        </div>
+    </div>
+    
+    <div class="frame frame-3">
+        <div class="keyboard-grid">
+            <script>
+                for(let i = 0; i < 100; i++) {
+                    document.write(`<div class="key" style="--delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-4">
+        <div class="icon-network">
+            <div class="feed-icon heart">♥</div>
+            <div class="feed-icon share">↗</div>
+            <div class="feed-icon bell">🔔</div>
+        </div>
+    </div>
+    
+    <div class="frame frame-5">
+        <div class="lens-network">
+            <script>
+                for(let i = 0; i < 30; i++) {
+                    const x = Math.random() * 500;
+                    const y = Math.random() * 500;
+                    document.write(`<div class="particle" style="left: ${x}px; top: ${y}px; --delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-6">
+        <div class="tilth-logo" data-text="TILTH">TILTH</div>
+        <div class="tagline">A field guide to post-human agriculture</div>
+    </div>
+    
+    <!-- Episode world: FLOOD LEARNING -->
+    <div class="frame frame-7">
+        <div class="night-sky"></div>
+        
+        <div class="algorithm-cloud"></div>
+        
+        <script>
+            // UI hosepipes
+            for(let i = 0; i < 6; i++) {
+                const left = 20 + i * 12;
+                const height = 200 + Math.random() * 100;
+                document.write(`<div class="ui-hosepipe" style="top: 25%; left: ${left}%; --height: ${height}px; --delay: ${i}"></div>`);
+            }
+        </script>
+        
+        <div class="rectangular-rain">
+            <script>
+                // Rain blocks
+                for(let i = 0; i < 30; i++) {
+                    const left = Math.random() * 100;
+                    document.write(`<div class="rain-block" style="left: ${left}%; --delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+        
+        <div class="farm-bed">
+            <div class="garden-plot" style="--delay: 0">
+                <div class="erased-marker" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">ERASED</div>
+                <div class="lily-marker" style="bottom: 10px; right: 10px; --delay: 0">🌺</div>
+            </div>
+            <div class="garden-plot" style="--delay: 1">
+                <div class="erased-marker" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">UNUSUAL ACTIVITY</div>
+                <div class="lily-marker" style="bottom: 10px; left: 10px; --delay: 1">🌺</div>
+            </div>
+            <div class="garden-plot" style="--delay: 2">
+                <div class="lily-marker" style="top: 20px; right: 20px; --delay: 2">🌺</div>
+            </div>
+        </div>
+        
+        <div class="ghost-garden">👻🌿</div>
+        
+        <script>
+            // Prayer lanterns
+            for(let i = 0; i < 5; i++) {
+                const left = 15 + i * 18;
+                document.write(`<div class="prayer-lantern" style="bottom: 40%; left: ${left}%; --delay: ${i}"></div>`);
+            }
+            
+            // Satellites
+            for(let i = 0; i < 3; i++) {
+                const top = 10 + i * 8;
+                document.write(`<div class="satellite" style="top: ${top}%; --delay: ${i}">🛰️</div>`);
+            }
+        </script>
+        
+        <div class="episode-title">FLOOD LEARNING</div>
+        <div class="badge">SCHEDULED<br>MAINTENANCE</div>
+    </div>
+    
+    <!-- Audio cues -->
+    <div class="audio-cue cue-1">♪ Contact mic: mycelium crackle + 40Hz pulse</div>
+    <div class="audio-cue cue-2">♪ Crackle intensifies, heartbeat emerges</div>
+    <div class="audio-cue cue-3">♪ Keyboard clicks sync with soil sounds</div>
+    <div class="audio-cue cue-4">♪ Modem chirps + wind through wheat</div>
+    <div class="audio-cue cue-5">♪ Compress to sustained 392Hz tone</div>
+    <div class="audio-cue cue-6">♪ Whisper: "A field guide to post-human agriculture"</div>
+    <div class="audio-cue cue-7">♪ Tape fast-forward hiss + whispered memo (−26 LUFS)</div>
+</body>
+</html>

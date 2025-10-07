@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethics Anthology — Descent</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', sans-serif;
+            color: #fff;
+        }
+        
+        /* Elevator shaft viewport */
+        #viewport {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Elevator doors */
+        .door {
+            position: absolute;
+            top: 0;
+            width: 50vw;
+            height: 100vh;
+            background: linear-gradient(to right, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%);
+            transition: transform 2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        }
+        
+        .door::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #444;
+        }
+        
+        .door.left {
+            left: 0;
+            transform: translateX(0);
+        }
+        
+        .door.left::before {
+            right: 0;
+        }
+        
+        .door.right {
+            right: 0;
+            transform: translateX(0);
+        }
+        
+        .door.right::before {
+            left: 0;
+        }
+        
+        .door.left.open {
+            transform: translateX(-100%);
+        }
+        
+        .door.right.open {
+            transform: translateX(100%);
+        }
+        
+        /* Floor indicator */
+        #floor-indicator {
+            position: fixed;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 80px;
+            font-weight: 900;
+            color: #ff3333;
+            font-family: 'Courier', monospace;
+            z-index: 1001;
+            text-shadow: 0 0 20px rgba(255,51,51,0.6);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        #floor-indicator.visible {
+            opacity: 1;
+        }
+        
+        /* Film container */
+        #film-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+        
+        /* Interstitial data screen */
+        #data-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        #data-screen.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        #data-screen h2 {
+            font-size: 3vw;
+            margin-bottom: 30px;
+            color: #00ff88;
+            text-transform: uppercase;
+            letter-spacing: 0.5vw;
+        }
+        
+        #data-screen p {
+            font-size: 1.5vw;
+            line-height: 1.8;
+            max-width: 800px;
+            color: #aaa;
+            font-family: 'Courier', monospace;
+        }
+        
+        /* Navigation controls */
+        #controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+            display: flex;
+            gap: 20px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        
+        #controls:hover {
+            opacity: 1;
+        }
+        
+        button {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Helvetica', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #fff;
+            color: #000;
+        }
+        
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        /* Startup screen */
+        #startup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            cursor: pointer;
+        }
+        
+        #startup h1 {
+            font-size: 5vw;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1vw;
+            text-align: center;
+        }
+        
+        #startup p {
+            font-size: 1.5vw;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="startup">
+        <h1>ETHICS ANTHOLOGY<br/>DESCENT</h1>
+        <p>CLICK TO ENTER</p>
+    </div>
+    
+    <div id="viewport">
+        <div class="door left"></div>
+        <div class="door right"></div>
+        
+        <div id="floor-indicator">08</div>
+        
+        <div id="film-container">
+            <iframe id="film-frame"></iframe>
+        </div>
+        
+        <div id="data-screen">
+            <h2 id="data-title"></h2>
+            <p id="data-content"></p>
+        </div>
+    </div>
+    
+    <div id="controls">
+        <button id="prev-btn">◀ PREV</button>
+        <button id="next-btn">NEXT ▶</button>
+        <button id="restart-btn">⟲ RESTART</button>
+    </div>
+    
+    <script>
+        const films = [
+            {
+                floor: '08',
+                file: 'silenced-educator.html',
+                title: 'The Silenced Educator',
+                data: 'ADVOCACY VS CAREER RISK — When speaking truth threatens survival, silence becomes policy.'
+            },
+            {
+                floor: '07',
+                file: 'deadline-sovereign.html',
+                title: 'The Deadline Sovereign',
+                data: 'ALGORITHMIC HARM VS SPEED — Acceleration as anesthesia. Ship now, debug humanity later.'
+            },
+            {
+                floor: '06',
+                file: 'bounded-apprentice.html',
+                title: 'The Bounded Apprentice',
+                data: 'JUNIOR CONSTRAINT — Orbital entrapment. Every escape attempt rebounds to smaller circles.'
+            },
+            {
+                floor: '05',
+                file: 'two-headed-compliance.html',
+                title: 'The Two-Headed Compliance',
+                data: 'IMPOSSIBLE COMPLIANCE PARADOX — When law faces revenue, balance means neither wins.'
+            },
+            {
+                floor: '04',
+                file: 'fragile-collective.html',
+                title: 'The Fragile Collective',
+                data: 'COLLECTIVE ACTION VS RISK — Solidarity as moment, not state. One spark shatters the web.'
+            },
+            {
+                floor: '03',
+                file: 'epistemic-rush.html',
+                title: 'The Epistemic Rush',
+                data: 'LEARNING TIME VS SHIPPING — Time eats comprehension. Frame rate doubles until meaning dissolves.'
+            },
+            {
+                floor: '02',
+                file: 'conditional-person.html',
+                title: 'The Conditional Person',
+                data: 'IMMIGRATION STATUS VS ETHICS — Being as paperwork. Identity flickers with bureaucratic arrhythmia.'
+            },
+            {
+                floor: '01',
+                file: 'values-treasurer.html',
+                title: 'The Values Treasurer',
+                data: 'FOUNDER VALUES VS REVENUE — Gold multiplies. Light drains to gray. The beam tips.'
+            }
+        ];
+        
+        let currentIndex = 0;
+        let audioStarted = false;
+        let isTransitioning = false;
+        
+        const startup = document.getElementById('startup');
+        const leftDoor = document.querySelector('.door.left');
+        const rightDoor = document.querySelector('.door.right');
+        const floorIndicator = document.getElementById('floor-indicator');
+        const filmFrame = document.getElementById('film-frame');
+        const dataScreen = document.getElementById('data-screen');
+        const dataTitle = document.getElementById('data-title');
+        const dataContent = document.getElementById('data-content');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        // Audio
+        const elevatorHum = new Tone.Synth({
+            oscillator: { type: 'sawtooth' },
+            envelope: { attack: 0.5, release: 0.5 }
+        }).toDestination();
+        elevatorHum.volume.value = -20;
+        
+        const doorSound = new Tone.MetalSynth().toDestination();
+        doorSound.volume.value = -15;
+        
+        async function init() {
+            await Tone.start();
+            audioStarted = true;
+            startup.style.display = 'none';
+            
+            // Start descent
+            setTimeout(() => loadFilm(0), 500);
+        }
+        
+        function closeDoors() {
+            leftDoor.classList.remove('open');
+            rightDoor.classList.remove('open');
+            floorIndicator.classList.add('visible');
+            
+            if (audioStarted) {
+                doorSound.triggerAttackRelease('E4', '0.3');
+            }
+        }
+        
+        function openDoors() {
+            leftDoor.classList.add('open');
+            rightDoor.classList.add('open');
+            
+            if (audioStarted) {
+                doorSound.triggerAttackRelease('E3', '0.5');
+            }
+            
+            setTimeout(() => {
+                floorIndicator.classList.remove('visible');
+            }, 1000);
+        }
+        
+        async function loadFilm(index) {
+            if (isTransitioning || index < 0 || index >= films.length) return;
+            
+            isTransitioning = true;
+            currentIndex = index;
+            updateControls();
+            
+            // Close doors
+            closeDoors();
+            floorIndicator.textContent = films[index].floor;
+            
+            // Show data screen during transition
+            if (audioStarted) {
+                elevatorHum.triggerAttack('A1');
+            }
+            
+            setTimeout(() => {
+                dataTitle.textContent = films[index].title;
+                dataContent.textContent = films[index].data;
+                dataScreen.classList.add('visible');
+            }, 1000);
+            
+            // Load film
+            setTimeout(() => {
+                filmFrame.src = films[index].file;
+            }, 2000);
+            
+            // Hide data, open doors
+            setTimeout(() => {
+                dataScreen.classList.remove('visible');
+                if (audioStarted) {
+                    elevatorHum.triggerRelease();
+                }
+            }, 3500);
+            
+            setTimeout(() => {
+                openDoors();
+                isTransitioning = false;
+            }, 4500);
+        }
+        
+        function updateControls() {
+            prevBtn.disabled = currentIndex === 0 || isTransitioning;
+            nextBtn.disabled = currentIndex === films.length - 1 || isTransitioning;
+        }
+        
+        // Event listeners
+        startup.addEventListener('click', init);
+        prevBtn.addEventListener('click', () => loadFilm(currentIndex - 1));
+        nextBtn.addEventListener('click', () => loadFilm(currentIndex + 1));
+        restartBtn.addEventListener('click', () => loadFilm(0));
+        
+        // Auto-advance option (optional)
+        let autoAdvance = false;
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevBtn.click();
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === ' ') autoAdvance = !autoAdvance;
+        });
+        
+        // Auto-advance after each film completes (10s per film)
+        setInterval(() => {
+            if (autoAdvance && !isTransitioning && currentIndex < films.length - 1) {
+                loadFilm(currentIndex + 1);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

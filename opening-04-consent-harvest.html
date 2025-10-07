@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Consent Harvest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.15;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+            animation: grain 0.5s steps(4) infinite;
+        }
+        
+        @keyframes grain {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-2%, 2%); }
+            50% { transform: translate(2%, -2%); }
+            75% { transform: translate(-2%, -2%); }
+        }
+        
+        .frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Shared TILTH opening frames [0:00-0:08] */
+        .frame-1 { background: #000; animation: frame1 2s ease-in-out forwards; }
+        @keyframes frame1 { 0%, 100% { opacity: 1; } }
+        
+        .frame-2 {
+            background: radial-gradient(circle at center, #1a1410 0%, #000 70%);
+            animation: frame2 2s 2s ease-in-out forwards;
+        }
+        
+        .seed {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            filter: blur(0.5px);
+        }
+        
+        .seed-half {
+            position: absolute;
+            width: 100px;
+            height: 200px;
+            background: linear-gradient(90deg, #3a2f1f 0%, #2a1f0f 100%);
+            border-radius: 50%;
+        }
+        
+        .seed-half.left { left: 0; animation: seedSplitLeft 2s 2s ease-out forwards; }
+        .seed-half.right { right: 0; animation: seedSplitRight 2s 2s ease-out forwards; }
+        
+        .root {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            width: 3px;
+            height: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(200,180,140,0.6) 100%);
+            animation: rootGrow 1.5s 2.5s ease-out forwards;
+        }
+        
+        @keyframes frame2 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        @keyframes seedSplitLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-30px); } }
+        @keyframes seedSplitRight { 0% { transform: translateX(0); } 100% { transform: translateX(30px); } }
+        @keyframes rootGrow { 0% { height: 0; } 100% { height: 80px; } }
+        
+        .frame-3 { background: #0a0a0a; animation: frame3 1s 4s ease-in-out forwards; }
+        @keyframes frame3 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(20, 20px);
+            gap: 2px;
+        }
+        
+        .key {
+            width: 20px;
+            height: 20px;
+            background: #e8e4d8;
+            animation: keyToSoil 0.8s ease-out forwards;
+            animation-delay: calc(var(--delay) * 0.01s);
+        }
+        
+        @keyframes keyToSoil {
+            0% { background: #e8e4d8; transform: translateY(0); }
+            100% { background: #2a1f0f; transform: translateY(20px) scale(1.2); border-radius: 50%; }
+        }
+        
+        .frame-4 {
+            background: radial-gradient(circle at center, #0f1510 0%, #000 80%);
+            animation: frame4 1s 5s ease-in-out forwards;
+        }
+        
+        @keyframes frame4 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .icon-network {
+            position: relative;
+            width: 600px;
+            height: 600px;
+        }
+        
+        .feed-icon {
+            position: absolute;
+            font-size: 40px;
+            animation: iconSpin 1s ease-out forwards;
+        }
+        
+        .feed-icon.heart { top: 30%; left: 20%; animation-delay: 5.2s; }
+        .feed-icon.share { top: 50%; right: 20%; animation-delay: 5.3s; }
+        .feed-icon.bell { bottom: 30%; left: 40%; animation-delay: 5.4s; }
+        
+        @keyframes iconSpin {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: rotate(360deg) scale(0) translateY(100px); opacity: 0; }
+        }
+        
+        .frame-5 {
+            background: #000;
+            animation: frame5 1s 6s ease-in-out forwards;
+        }
+        
+        @keyframes frame5 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .lens-network {
+            width: 500px;
+            height: 500px;
+            animation: lensForm 1s 6.2s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes lensForm {
+            0% { opacity: 0; transform: scale(2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #8a7a5a;
+            border-radius: 50%;
+            animation: particleFloat 3s infinite ease-in-out;
+            animation-delay: calc(var(--delay) * 0.1s);
+        }
+        
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .frame-6 {
+            background: #000;
+            animation: frame6 1s 7s ease-in-out forwards;
+        }
+        
+        @keyframes frame6 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .tilth-logo {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 140px;
+            letter-spacing: 0.3em;
+            color: #fff;
+            opacity: 0;
+            animation: tilthReveal 1s 7.2s ease-out forwards;
+            text-shadow: 0 0 40px rgba(90, 108, 87, 0.3);
+            position: relative;
+        }
+        
+        .tilth-logo::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            color: #ff00ff;
+            opacity: 0.1;
+        }
+        
+        .tilth-logo::after {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            color: #00ffff;
+            opacity: 0.1;
+        }
+        
+        .tagline {
+            font-family: 'Oswald', sans-serif;
+            font-weight: 300;
+            font-size: 16px;
+            letter-spacing: 0.3em;
+            color: #999;
+            margin-top: 30px;
+            opacity: 0;
+            animation: taglineReveal 0.5s 7.7s ease-out forwards;
+        }
+        
+        @keyframes tilthReveal {
+            0% { opacity: 0; letter-spacing: 1em; }
+            100% { opacity: 1; letter-spacing: 0.3em; }
+        }
+        
+        @keyframes taglineReveal { 0% { opacity: 0; } 100% { opacity: 0.7; } }
+        
+        /* [0:08+] Episode-specific: CONSENT HARVEST */
+        .frame-7 {
+            background: linear-gradient(180deg, #c8d4c0 0%, #a8b4a0 100%);
+            animation: frame7 2s 8.5s ease-in-out forwards;
+        }
+        
+        @keyframes frame7 { 0% { opacity: 0; } 10%, 100% { opacity: 1; } }
+        
+        .greenhouse-glass {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                rgba(255,255,255,0.3) 0%,
+                rgba(200,212,192,0.2) 50%,
+                rgba(168,180,160,0.4) 100%
+            );
+        }
+        
+        .condensation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 2%),
+                radial-gradient(circle at 45% 60%, rgba(255,255,255,0.3) 0%, transparent 2%),
+                radial-gradient(circle at 70% 25%, rgba(255,255,255,0.4) 0%, transparent 2%),
+                radial-gradient(circle at 80% 75%, rgba(255,255,255,0.3) 0%, transparent 2%),
+                radial-gradient(circle at 15% 80%, rgba(255,255,255,0.4) 0%, transparent 2%);
+            opacity: 0;
+            animation: condensationForm 3s 9s ease-in-out forwards;
+        }
+        
+        @keyframes condensationForm {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        .mystery-seed-mound {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 200px;
+            background: linear-gradient(180deg, #8a7a5a 0%, #6a5a4a 100%);
+            border-radius: 50% 50% 40% 40%;
+            opacity: 0;
+            animation: moundRise 1.5s 9.2s ease-out forwards;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes moundRise {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) translateY(50px); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1) translateY(0); }
+        }
+        
+        .accept-button {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #5a8a5a 0%, #4a7a4a 100%);
+            color: #fff;
+            padding: 25px 50px;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+            letter-spacing: 0.15em;
+            border-radius: 15px;
+            box-shadow: 
+                0 8px 30px rgba(90, 138, 90, 0.6),
+                inset 0 2px 10px rgba(255,255,255,0.3);
+            opacity: 0;
+            animation: buttonPulse 2s 10s ease-in-out infinite;
+            cursor: pointer;
+        }
+        
+        @keyframes buttonPulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: translateX(-50%) scale(1); 
+                box-shadow: 0 8px 30px rgba(90, 138, 90, 0.6), inset 0 2px 10px rgba(255,255,255,0.3);
+            }
+            50% { 
+                opacity: 1; 
+                transform: translateX(-50%) scale(1.05); 
+                box-shadow: 0 12px 40px rgba(90, 138, 90, 0.8), inset 0 2px 10px rgba(255,255,255,0.4);
+            }
+        }
+        
+        .sprout-icon {
+            display: inline-block;
+            margin-left: 10px;
+            animation: sproutBounce 1s ease-in-out infinite;
+        }
+        
+        @keyframes sproutBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .decline-button {
+            position: absolute;
+            bottom: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: transparent;
+            color: #888;
+            padding: 8px 15px;
+            font-family: 'Courier', monospace;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            animation: declineAppear 1s 10.5s ease-out forwards;
+        }
+        
+        @keyframes declineAppear {
+            0% { opacity: 0; }
+            100% { opacity: 0.3; }
+        }
+        
+        .sprinkler {
+            position: absolute;
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(180deg, transparent 0%, rgba(90, 138, 90, 0.3) 100%);
+            opacity: 0;
+            animation: sprinklerSpray 1.5s ease-in-out infinite;
+            animation-delay: calc(10.5s + var(--delay) * 0.2s);
+        }
+        
+        .sprinkler:nth-child(1) { top: 20%; left: 30%; --delay: 0; }
+        .sprinkler:nth-child(2) { top: 25%; left: 70%; --delay: 1; }
+        .sprinkler:nth-child(3) { top: 22%; left: 50%; --delay: 2; }
+        
+        @keyframes sprinklerSpray {
+            0%, 100% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 0.6; transform: translateY(20px); }
+        }
+        
+        .floating-text {
+            position: absolute;
+            font-family: 'Courier', monospace;
+            font-size: 10px;
+            color: rgba(90, 108, 87, 0.4);
+            letter-spacing: 0.1em;
+            opacity: 0;
+            animation: textFloat 4s ease-in-out infinite;
+            animation-delay: calc(11s + var(--delay) * 0.3s);
+        }
+        
+        .floating-text:nth-child(1) { top: 60%; left: 15%; --delay: 0; }
+        .floating-text:nth-child(2) { top: 65%; right: 20%; --delay: 1; }
+        .floating-text:nth-child(3) { top: 70%; left: 40%; --delay: 2; }
+        
+        @keyframes textFloat {
+            0%, 100% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 0.6; transform: translateY(-10px); }
+        }
+        
+        .episode-title {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 90px;
+            letter-spacing: 0.15em;
+            color: #2a2a2a;
+            opacity: 0;
+            animation: episodeTitleReveal 1s 9s ease-out forwards;
+            text-shadow: 0 4px 20px rgba(255,255,255,0.5);
+        }
+        
+        @keyframes episodeTitleReveal {
+            0% { opacity: 0; transform: translateX(-50%) translateY(20px); letter-spacing: 0.4em; }
+            100% { opacity: 1; transform: translateX(-50%) translateY(0); letter-spacing: 0.15em; }
+        }
+        
+        .badge {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: #00d4aa;
+            color: #fff;
+            padding: 15px 25px;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            opacity: 0;
+            animation: badgeReveal 0.5s 9.8s ease-out forwards;
+            transform: rotate(5deg);
+            box-shadow: 0 4px 15px rgba(0, 212, 170, 0.4);
+        }
+        
+        @keyframes badgeReveal {
+            0% { opacity: 0; transform: scale(0.8) rotate(5deg); }
+            100% { opacity: 1; transform: scale(1) rotate(5deg); }
+        }
+        
+        .audio-cue {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-family: 'Courier', monospace;
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            letter-spacing: 0.05em;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0;
+        }
+        
+        .cue-1 { animation: cueFade 2s 0s ease-in-out forwards; }
+        .cue-2 { animation: cueFade 2s 2s ease-in-out forwards; }
+        .cue-3 { animation: cueFade 1s 4s ease-in-out forwards; }
+        .cue-4 { animation: cueFade 1s 5s ease-in-out forwards; }
+        .cue-5 { animation: cueFade 1s 6s ease-in-out forwards; }
+        .cue-6 { animation: cueFade 1.5s 7s ease-in-out forwards; }
+        .cue-7 { animation: cueFade 2s 8.5s ease-in-out forwards; }
+        
+        @keyframes cueFade {
+            0% { opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <!-- Shared TILTH opening [0:00-0:08] -->
+    <div class="frame frame-1"></div>
+    
+    <div class="frame frame-2">
+        <div class="seed">
+            <div class="seed-half left"></div>
+            <div class="seed-half right"></div>
+            <div class="root"></div>
+        </div>
+    </div>
+    
+    <div class="frame frame-3">
+        <div class="keyboard-grid">
+            <script>
+                for(let i = 0; i < 100; i++) {
+                    document.write(`<div class="key" style="--delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-4">
+        <div class="icon-network">
+            <div class="feed-icon heart">♥</div>
+            <div class="feed-icon share">↗</div>
+            <div class="feed-icon bell">🔔</div>
+        </div>
+    </div>
+    
+    <div class="frame frame-5">
+        <div class="lens-network">
+            <script>
+                for(let i = 0; i < 30; i++) {
+                    const x = Math.random() * 500;
+                    const y = Math.random() * 500;
+                    document.write(`<div class="particle" style="left: ${x}px; top: ${y}px; --delay: ${i}"></div>`);
+                }
+            </script>
+        </div>
+    </div>
+    
+    <div class="frame frame-6">
+        <div class="tilth-logo" data-text="TILTH">TILTH</div>
+        <div class="tagline">A field guide to post-human agriculture</div>
+    </div>
+    
+    <!-- Episode world: CONSENT HARVEST -->
+    <div class="frame frame-7">
+        <div class="greenhouse-glass"></div>
+        <div class="condensation"></div>
+        
+        <div class="mystery-seed-mound"></div>
+        
+        <div class="sprinkler"></div>
+        <div class="sprinkler"></div>
+        <div class="sprinkler"></div>
+        
+        <div class="accept-button">
+            ACCEPT <span class="sprout-icon">🌱</span>
+        </div>
+        
+        <div class="decline-button">manage preferences</div>
+        
+        <div class="floating-text">help the garden grow</div>
+        <div class="floating-text">share your seeds</div>
+        <div class="floating-text">cultivate community</div>
+        
+        <div class="episode-title">CONSENT HARVEST</div>
+        <div class="badge">EASY OPT-IN</div>
+    </div>
+    
+    <!-- Audio cues -->
+    <div class="audio-cue cue-1">♪ Contact mic: mycelium crackle + 40Hz pulse</div>
+    <div class="audio-cue cue-2">♪ Crackle intensifies, heartbeat emerges</div>
+    <div class="audio-cue cue-3">♪ Keyboard clicks sync with soil sounds</div>
+    <div class="audio-cue cue-4">♪ Modem chirps + wind through wheat</div>
+    <div class="audio-cue cue-5">♪ Compress to sustained 392Hz tone</div>
+    <div class="audio-cue cue-6">♪ Whisper: "A field guide to post-human agriculture"</div>
+    <div class="audio-cue cue-7">♪ Sparkle chime + vacuum hush (−28 LUFS)</div>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maslow Lock</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a14; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5vw;
+            font-weight: 900;
+            color: #ff3333;
+            letter-spacing: 1.2vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+            text-shadow: 0 0 20px rgba(255,51,51,0.6);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">MASLOW LOCK</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Security light
+        const flashSynth = new Tone.Synth({ oscillator: { type: 'square' }}).toDestination();
+        flashSynth.volume.value = -20;
+        
+        // Breath compression
+        const breathSynth = new Tone.Synth({ 
+            oscillator: { type: 'sine' },
+            envelope: { attack: 1, sustain: 1, release: 1 }
+        }).toDestination();
+        breathSynth.volume.value = -18;
+        
+        // Document stamps
+        const stamp = new Tone.NoiseSynth({ noise: { type: 'white' }}).toDestination();
+        stamp.volume.value = -15;
+        
+        // Sobbing metal chord
+        const chordNotes = ['D2', 'F2', 'Ab2'];
+        const chord = chordNotes.map(note => {
+            const synth = new Tone.MetalSynth().toDestination();
+            synth.volume.value = -20;
+            return { synth, note };
+        });
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Security light flashes
+                [0.5, 1, 1.5, 2, 2.5].forEach(time => {
+                    setTimeout(() => flashSynth.triggerAttackRelease('E5', '0.1'), time * 1000);
+                });
+                
+                // Breath starts, compresses to sine
+                setTimeout(() => breathSynth.triggerAttack('A3'), 1000);
+                setTimeout(() => breathSynth.frequency.rampTo('A4', 2), 2000);
+                setTimeout(() => breathSynth.triggerRelease(), 4500);
+                
+                // Stamps in rhythm
+                [3, 3.4, 3.8].forEach(time => {
+                    setTimeout(() => stamp.triggerAttackRelease('0.05'), time * 1000);
+                });
+                
+                // Sobbing metal chord
+                setTimeout(() => {
+                    chord.forEach((voice, i) => {
+                        setTimeout(() => voice.synth.triggerAttackRelease(voice.note, '1.5'), i * 100);
+                    });
+                }, 5000);
+                
+                animate();
+            }
+        });
+        
+        function drawSecurityLight(t) {
+            const flashTimes = [0.5, 1, 1.5, 2, 2.5];
+            const isFlashing = flashTimes.some(time => Math.abs(t - time) < 0.15);
+            
+            if (isFlashing) {
+                ctx.fillStyle = 'rgba(255,0,0,0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Security light source
+            const gradient = ctx.createRadialGradient(
+                canvas.width * 0.9, 50, 0,
+                canvas.width * 0.9, 50, 200
+            );
+            gradient.addColorStop(0, isFlashing ? 'rgba(255,0,0,1)' : 'rgba(100,0,0,0.5)');
+            gradient.addColorStop(1, 'rgba(255,0,0,0)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function drawGlass(t) {
+            if (t < 1) return;
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Glass barrier
+            ctx.fillStyle = 'rgba(100,150,200,0.1)';
+            ctx.fillRect(cx - 5, 0, 10, canvas.height);
+            
+            ctx.strokeStyle = 'rgba(200,220,255,0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - 5, 0, 10, canvas.height);
+            
+            // Fogged breath
+            if (t > 1.5 && t < 4) {
+                const fogAlpha = Math.sin((t - 1.5) * Math.PI / 2.5) * 0.4;
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 150);
+                gradient.addColorStop(0, `rgba(255,255,255,${fogAlpha})`);
+                gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function drawDocuments(t) {
+            if (t < 2.5) return;
+            
+            const cx = canvas.width / 2;
+            const docs = [
+                { y: canvas.height * 0.3, stamped: t > 3 },
+                { y: canvas.height * 0.5, stamped: t > 3.4 },
+                { y: canvas.height * 0.7, stamped: t > 3.8 }
+            ];
+            
+            docs.forEach(doc => {
+                // Document paper
+                ctx.fillStyle = '#e8e8e0';
+                ctx.fillRect(cx + 100, doc.y - 50, 200, 100);
+                
+                ctx.strokeStyle = '#999';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(cx + 100, doc.y - 50, 200, 100);
+                
+                // Stamp if time
+                if (doc.stamped) {
+                    ctx.save();
+                    ctx.translate(cx + 200, doc.y);
+                    ctx.rotate(-0.2);
+                    
+                    ctx.strokeStyle = '#cc0000';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-40, -20, 80, 40);
+                    
+                    ctx.fillStyle = '#cc0000';
+                    ctx.font = 'bold 14px Courier';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('DENIED', 0, 0);
+                    
+                    ctx.restore();
+                }
+            });
+        }
+        
+        function drawPassport(t) {
+            if (t < 6) return;
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Passport
+            ctx.fillStyle = '#1a2844';
+            ctx.fillRect(cx - 150, cy - 200, 300, 400);
+            
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(cx - 150, cy - 200, 300, 400);
+            
+            // Photo
+            ctx.fillStyle = '#555';
+            ctx.fillRect(cx - 80, cy - 150, 160, 200);
+            
+            // Face silhouette
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(cx, cy - 80, 50, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(cx - 60, cy - 30, 120, 100);
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                titleEl.style.opacity = Math.min(1, (t - 6.5) / 1.5);
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#0a0a14';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawSecurityLight(elapsed);
+            drawGlass(elapsed);
+            drawDocuments(elapsed);
+            drawPassport(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#ff3333';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

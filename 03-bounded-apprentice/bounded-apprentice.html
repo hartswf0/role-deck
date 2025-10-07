@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Bounded Apprentice</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0d0d0d;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            font-size: 4vw;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.8vw;
+            opacity: 0;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: 0 0 20px rgba(255,255,255,0.4);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE BOUNDED APPRENTICE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Audio setup
+        const synth = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+        
+        const bassDrone = new Tone.Synth({
+            oscillator: { type: 'sawtooth' },
+            envelope: { attack: 1, decay: 0, sustain: 1, release: 2 }
+        }).toDestination();
+        bassDrone.volume.value = -15;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                bassDrone.triggerAttack('A1');
+                
+                setTimeout(() => bassDrone.triggerRelease(), 7000);
+                
+                animate();
+            }
+        });
+        
+        let orbitAngle = 0;
+        let orbitRadius = 200;
+        let sparkAngle = 0;
+        let sparkAttempt = false;
+        
+        function drawOrbit(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Shrinking orbit
+            orbitRadius = 200 - t * 20;
+            if (orbitRadius < 50) orbitRadius = 50;
+            
+            // Black square
+            ctx.fillStyle = '#000';
+            const squareSize = 80;
+            ctx.fillRect(cx - squareSize/2, cy - squareSize/2, squareSize, squareSize);
+            
+            // Orbit path
+            ctx.strokeStyle = 'rgba(100,100,100,0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(cx, cy, orbitRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Orbiting dot
+            orbitAngle += 0.1;
+            const dotX = cx + Math.cos(orbitAngle) * orbitRadius;
+            const dotY = cy + Math.sin(orbitAngle) * orbitRadius;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Trigger ping sound at perigee
+            if (Math.cos(orbitAngle) > 0.99 && Math.sin(orbitAngle) < 0.1) {
+                synth.triggerAttackRelease('C4', '0.1');
+            }
+            
+            // Yellow spark escape attempt
+            if (t > 3 && t < 5) {
+                sparkAttempt = true;
+                sparkAngle = orbitAngle + Math.PI;
+                const sparkDist = orbitRadius + (t - 3) * 60;
+                const sparkX = cx + Math.cos(sparkAngle) * sparkDist;
+                const sparkY = cy + Math.sin(sparkAngle) * sparkDist;
+                
+                ctx.fillStyle = '#ffee00';
+                ctx.beginPath();
+                ctx.arc(sparkX, sparkY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Spark rebounds
+            if (t >= 5 && sparkAttempt) {
+                const reboundProgress = (t - 5) / 1;
+                const sparkDist = orbitRadius + 120 - reboundProgress * 120;
+                const sparkX = cx + Math.cos(sparkAngle) * sparkDist;
+                const sparkY = cy + Math.sin(sparkAngle) * sparkDist;
+                
+                ctx.fillStyle = '#ffee00';
+                ctx.beginPath();
+                ctx.arc(sparkX, sparkY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                const progress = Math.min(1, (t - 6.5) / 1.5);
+                titleEl.style.opacity = progress;
+                
+                // Letters orbit, never align
+                const wobble = Math.sin(t * 10) * 3;
+                titleEl.style.transform = `translate(-50%, -50%) rotate(${wobble}deg)`;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            
+            if (elapsed > 8) {
+                return;
+            }
+            
+            ctx.fillStyle = '#0d0d0d';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawOrbit(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Show click prompt
+        ctx.fillStyle = '#666';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

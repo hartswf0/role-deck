@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Values Treasurer</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #title {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4vw; font-weight: 900;
+            letter-spacing: 0.6vw; opacity: 0; text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            background: linear-gradient(90deg, #ffd700 50%, #666 50%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE VALUES TREASURER</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        const register = new Tone.MetalSynth().toDestination();
+        register.volume.value = -15;
+        
+        const cello = new Tone.Synth({ oscillator: { type: 'triangle' }}).toDestination();
+        cello.volume.value = -10;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                register.triggerAttackRelease('C4', '0.1', 0.5);
+                setTimeout(() => register.triggerAttackRelease('C4', '0.1'), 700);
+                
+                setTimeout(() => cello.triggerAttack('G2'), 2500);
+                setTimeout(() => cello.triggerRelease(), 5000);
+                
+                animate();
+            }
+        });
+        
+        let beamAngle = 0;
+        let coinCount = 1;
+        
+        function drawBalance(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Beam tipping calculation
+            const tipProgress = Math.min(1, Math.max(0, (t - 3) / 3));
+            beamAngle = tipProgress * 0.5;
+            
+            // Beam/fulcrum
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 6;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(beamAngle);
+            ctx.beginPath();
+            ctx.moveTo(-250, 0);
+            ctx.lineTo(250, 0);
+            ctx.stroke();
+            ctx.restore();
+            
+            // Fulcrum triangle
+            ctx.fillStyle = '#666';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + 10);
+            ctx.lineTo(cx - 20, cy + 40);
+            ctx.lineTo(cx + 20, cy + 40);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Left side - coins (multiply over time)
+            if (t < 6) {
+                coinCount = 1 + Math.floor(t / 0.8);
+            }
+            
+            const leftX = cx - 250 * Math.cos(beamAngle);
+            const leftY = cy - 250 * Math.sin(beamAngle);
+            
+            ctx.fillStyle = '#ffd700';
+            for (let i = 0; i < coinCount; i++) {
+                const offsetY = -i * 8;
+                ctx.beginPath();
+                ctx.arc(leftX, leftY + offsetY - 30, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Right side - VALUES word (dimming)
+            const rightX = cx + 250 * Math.cos(beamAngle);
+            const rightY = cy + 250 * Math.sin(beamAngle);
+            
+            const brightness = Math.max(0.2, 1 - tipProgress);
+            const color = `rgba(255, ${255 * brightness}, ${100 + 155 * brightness}, ${brightness})`;
+            
+            ctx.fillStyle = color;
+            ctx.font = 'bold 40px Helvetica';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('VALUES', rightX, rightY - 30);
+            
+            // Glow effect
+            if (brightness > 0.5) {
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = color;
+                ctx.fillText('VALUES', rightX, rightY - 30);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                titleEl.style.opacity = Math.min(1, (t - 6.5) / 1.5);
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawBalance(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

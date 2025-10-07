@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2 Will Fix the Noise</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Helvetica Neue', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #terminal {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3vw;
+            font-weight: 700;
+            color: #00ff00;
+            font-family: 'Courier', monospace;
+            opacity: 0;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3vw;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.5vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="terminal">SHIP COMPLETE</div>
+    <div id="title">V2 WILL FIX THE NOISE</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const terminalEl = document.getElementById('terminal');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Countdown clock
+        const tickSynth = new Tone.MembraneSynth().toDestination();
+        tickSynth.volume.value = -15;
+        
+        // Siren to metronome
+        const siren = new Tone.Synth({ oscillator: { type: 'sawtooth' }}).toDestination();
+        siren.volume.value = -10;
+        
+        // Launch button kick
+        const kick = new Tone.MembraneSynth().toDestination();
+        kick.volume.value = -8;
+        
+        // Server hum
+        const serverDrone = new Tone.Synth({ oscillator: { type: 'sine' }}).toDestination();
+        serverDrone.volume.value = -15;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Countdown ticks
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => tickSynth.triggerAttackRelease('C2', '0.1'), i * 800);
+                }
+                
+                // Siren morphs to metronome
+                setTimeout(() => {
+                    siren.triggerAttack('A2');
+                    setTimeout(() => siren.frequency.rampTo('A3', 1), 100);
+                    setTimeout(() => siren.triggerRelease(), 2000);
+                }, 1000);
+                
+                // Launch button kick
+                setTimeout(() => kick.triggerAttackRelease('C0', '0.3'), 4500);
+                
+                // Server funeral drone
+                setTimeout(() => {
+                    serverDrone.triggerAttack('C2');
+                    setTimeout(() => serverDrone.triggerRelease(), 2000);
+                }, 5500);
+                
+                animate();
+            }
+        });
+        
+        // Face data for distortion
+        const facePoints = Array(40).fill().map((_, i) => ({
+            angle: (i / 40) * Math.PI * 2,
+            radius: 80 + Math.random() * 20,
+            originalRadius: 80 + Math.random() * 20
+        }));
+        
+        function drawOscillograph(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Swirling oscillograph background
+            ctx.strokeStyle = '#003300';
+            ctx.lineWidth = 2;
+            
+            for (let r = 50; r < 300; r += 30) {
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.1) {
+                    const wobble = Math.sin(a * 5 + t * 3) * 10;
+                    const x = cx + Math.cos(a + t * 0.5) * (r + wobble);
+                    const y = cy + Math.sin(a + t * 0.5) * (r + wobble);
+                    if (a === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Human face distorting
+            if (t < 5) {
+                const distortion = Math.pow(t / 5, 2);
+                
+                ctx.strokeStyle = `rgba(255,255,255,${1 - distortion * 0.5})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                
+                facePoints.forEach((point, i) => {
+                    const shardOffset = distortion * (Math.sin(point.angle * 8) * 50 + Math.random() * 30);
+                    const r = point.originalRadius + shardOffset;
+                    const x = cx + Math.cos(point.angle) * r;
+                    const y = cy + Math.sin(point.angle) * r;
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Flatline waveform
+            if (t > 5) {
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(cx - 300, cy);
+                ctx.lineTo(cx + 300, cy);
+                ctx.stroke();
+            }
+        }
+        
+        function drawCountdown(t) {
+            if (t > 5) return;
+            
+            const count = 5 - Math.floor(t);
+            ctx.fillStyle = `rgba(255,0,0,${0.8 - t * 0.1})`;
+            ctx.font = 'bold 120px Courier';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(count.toString().padStart(2, '0'), canvas.width / 2, canvas.height * 0.2);
+        }
+        
+        function updateTerminal(t) {
+            if (t > 5 && t < 6.5) {
+                terminalEl.style.opacity = 1;
+            } else if (t >= 6.5) {
+                terminalEl.style.opacity = 0;
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6.5) {
+                const glitch = Math.floor(t * 20) % 3;
+                titleEl.style.opacity = glitch ? 0 : 1;
+                titleEl.style.transform = `translate(-50%, -50%) translateX(${glitch * 5}px)`;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawOscillograph(elapsed);
+            drawCountdown(elapsed);
+            updateTerminal(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        ctx.fillStyle = '#003300';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TILTH Practitioner Almanac — Series 2048</title>
+    <style>
+        /* Old Farmer's Almanac format: engraved borders, seasonal motifs, dense tables */
+        @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+DW+Pica:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #e8e4d0;
+            font-family: 'Libre Baskerville', Georgia, serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #1a1816;
+        }
+        
+        .almanac-page {
+            width: 600px;
+            margin: 30px auto;
+            background: #fffef8;
+            border: 4px double #1a1816;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            page-break-inside: avoid;
+            position: relative;
+        }
+        
+        /* Engraved ornamental border (four seasons motif) */
+        .ornamental-border {
+            border: 2px solid #1a1816;
+            margin: 20px;
+            padding: 0;
+            position: relative;
+        }
+        
+        .ornamental-border::before,
+        .ornamental-border::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border: 2px solid #1a1816;
+        }
+        
+        .ornamental-border::before {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .ornamental-border::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        /* Almanac header medallion */
+        .almanac-header {
+            text-align: center;
+            padding: 25px 20px 20px;
+            border-bottom: 2px solid #1a1816;
+            background: linear-gradient(to bottom, #fffef8 0%, #f9f7ed 100%);
+        }
+        
+        .medallion {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #1a1816;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            position: relative;
+        }
+        
+        .medallion::after {
+            content: '2048';
+            font-family: 'IM Fell English', serif;
+            font-size: 18pt;
+            font-weight: 700;
+        }
+        
+        .almanac-title {
+            font-family: 'IM Fell English', serif;
+            font-size: 20pt;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .practitioner-name {
+            font-family: 'IM Fell DW Pica', serif;
+            font-size: 16pt;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+        
+        .occupation-line {
+            font-size: 9pt;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        
+        /* Almanac table (dense, tabular format) */
+        .almanac-table {
+            padding: 20px;
+            border-bottom: 1px solid #1a1816;
+        }
+        
+        .table-head {
+            font-family: 'IM Fell English', serif;
+            font-size: 11pt;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 2px double #1a1816;
+            padding-bottom: 6px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+        }
+        
+        th {
+            text-align: left;
+            font-weight: 700;
+            padding: 6px 4px;
+            border-bottom: 1px solid #1a1816;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        td {
+            padding: 5px 4px;
+            border-bottom: 1px dotted #ccc;
+        }
+        
+        td:last-child {
+            text-align: right;
+            font-weight: 700;
+        }
+        
+        /* Seasonal planting guide (almanac characteristic) */
+        .planting-guide {
+            padding: 20px;
+            background: #f9f7ed;
+            border-top: 2px solid #1a1816;
+            border-bottom: 2px solid #1a1816;
+            font-size: 9pt;
+            line-height: 1.7;
+        }
+        
+        .guide-title {
+            font-family: 'IM Fell English', serif;
+            font-weight: 700;
+            font-size: 10pt;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        
+        .guide-content {
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+        
+        /* Radar diagram (woodcut style) */
+        .diagram-section {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .diagram-label {
+            font-family: 'IM Fell English', serif;
+            font-size: 9pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        
+        /* Footer almanac mark */
+        .almanac-footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 8pt;
+            font-style: italic;
+            border-top: 2px double #1a1816;
+            background: #f9f7ed;
+        }
+        
+        @media print {
+            body { background: #fff; }
+            .almanac-page { 
+                width: 6in;
+                margin: 0.5in auto;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="almanacContainer"></div>
+    
+    <script src="character-profiles.js"></script>
+    <script>
+        function createWoodcutRadar(metrics) {
+            const size = 200;
+            const center = size / 2;
+            const radius = size * 0.38;
+            const numAxes = 11;
+            
+            const axisLabels = [
+                'Open', 'Consc', 'Extra', 'Agree', 'Neuro',
+                'Logic', 'Empath', 'Auth', 'Risk', 'Uncert', 'Decis'
+            ];
+            
+            const metricsArray = [
+                metrics.openness, metrics.conscientiousness, metrics.extraversion,
+                metrics.agreeableness, metrics.neuroticism, metrics.logic,
+                metrics.empathy, metrics.authority, metrics.risk,
+                metrics.uncertainty, metrics.decisiveness
+            ];
+            
+            const points = metricsArray.map((value, i) => {
+                const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                const r = (value / 5) * radius;
+                const x = center + r * Math.cos(angle);
+                const y = center + r * Math.sin(angle);
+                return `${x},${y}`;
+            }).join(' ');
+            
+            const axes = axisLabels.map((label, i) => {
+                const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                const x2 = center + radius * Math.cos(angle);
+                const y2 = center + radius * Math.sin(angle);
+                const labelR = radius * 1.2;
+                const labelX = center + labelR * Math.cos(angle);
+                const labelY = center + labelR * Math.sin(angle);
+                
+                return `
+                    <line x1="${center}" y1="${center}" x2="${x2}" y2="${y2}" 
+                          stroke="#1a1816" stroke-width="1"/>
+                    <text x="${labelX}" y="${labelY}" 
+                          fill="#1a1816" 
+                          font-size="9" 
+                          font-family="IM Fell DW Pica, serif"
+                          font-style="italic"
+                          text-anchor="middle" 
+                          dominant-baseline="middle">
+                        ${label}
+                    </text>
+                `;
+            }).join('');
+            
+            const circles = [1, 2, 3, 4, 5].map(scale => {
+                const r = (scale / 5) * radius;
+                return `<circle cx="${center}" cy="${center}" r="${r}" 
+                                fill="none" stroke="#1a1816" stroke-width="0.5" opacity="0.3"/>`;
+            }).join('');
+            
+            return `
+                <svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 250px; height: auto;">
+                    <defs>
+                        <pattern id="woodcut-${metrics.openness}" width="3" height="3" patternUnits="userSpaceOnUse">
+                            <path d="M0,3 L3,0" stroke="#1a1816" stroke-width="0.5" opacity="0.4"/>
+                        </pattern>
+                    </defs>
+                    ${circles}
+                    ${axes}
+                    <polygon points="${points}" 
+                             fill="url(#woodcut-${metrics.openness})" 
+                             stroke="#1a1816" 
+                             stroke-width="2"/>
+                    ${metricsArray.map((value, i) => {
+                        const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
+                        const r = (value / 5) * radius;
+                        const x = center + r * Math.cos(angle);
+                        const y = center + r * Math.sin(angle);
+                        return `<circle cx="${x}" cy="${y}" r="3" fill="#1a1816" stroke="#fff" stroke-width="1"/>`;
+                    }).join('')}
+                </svg>
+            `;
+        }
+        
+        function getSeasonalAdvice(character) {
+            const risk = character.career_risk_taken;
+            if (risk > 0.6) return "Plant in spring when soil is warm. Deep roots require patience. Harvest sparingly—thorns protect the fruit.";
+            if (risk > 0.3) return "Sow after last frost. Water regularly. Canopy provides shelter. Harvest at peak ripeness for best yield.";
+            return "Hold seed until conditions favor germination. Shallow roots demand steady moisture. Late harvest extends storage.";
+        }
+        
+        function renderAlmanacPage(character) {
+            return `
+                <div class="almanac-page">
+                    <div class="ornamental-border">
+                        <div class="almanac-header">
+                            <div class="medallion"></div>
+                            <div class="almanac-title">Tilth Almanac</div>
+                            <div class="practitioner-name">${character.name}</div>
+                            <div class="occupation-line">${character.identity_archetype}</div>
+                        </div>
+                        
+                        <div class="almanac-table">
+                            <div class="table-head">Practitioner Particulars</div>
+                            <table>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th style="text-align: right;">Measure</th>
+                                </tr>
+                                <tr>
+                                    <td>Station</td>
+                                    <td>${character.role}</td>
+                                </tr>
+                                <tr>
+                                    <td>Apparatus</td>
+                                    <td>${character.app}</td>
+                                </tr>
+                                <tr>
+                                    <td>Episode</td>
+                                    <td>No. ${character.episode}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="almanac-table">
+                            <div class="table-head">Ethical Performance Record</div>
+                            <table>
+                                <tr>
+                                    <th>Dimension</th>
+                                    <th style="text-align: right;">Value</th>
+                                </tr>
+                                <tr>
+                                    <td>Awareness of Harm</td>
+                                    <td>${(character.ethical_awareness_score * 100).toFixed(1)}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Action Taken</td>
+                                    <td>${(character.ethical_action_score * 100).toFixed(1)}%</td>
+                                </tr>
+                                <tr>
+                                    <td>System Impact</td>
+                                    <td>${(character.impact_score * 100).toFixed(1)}%</td>
+                                </tr>
+                                <tr>
+                                    <td>Career Risk</td>
+                                    <td>${(character.career_risk_taken * 100).toFixed(1)}%</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="almanac-table">
+                            <div class="table-head">11-Part Temperament Profile</div>
+                            <table>
+                                <tr>
+                                    <th>Quality</th>
+                                    <th style="text-align: right;">Rating</th>
+                                </tr>
+                                <tr>
+                                    <td>Openness to Discovery</td>
+                                    <td>${character.radar_metrics.openness}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Conscientiousness</td>
+                                    <td>${character.radar_metrics.conscientiousness}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Extraversion</td>
+                                    <td>${character.radar_metrics.extraversion}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Agreeableness</td>
+                                    <td>${character.radar_metrics.agreeableness}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Neuroticism</td>
+                                    <td>${character.radar_metrics.neuroticism}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Logical Reasoning</td>
+                                    <td>${character.radar_metrics.logic}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Empathetic Concern</td>
+                                    <td>${character.radar_metrics.empathy}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Institutional Authority</td>
+                                    <td>${character.radar_metrics.authority}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Risk Tolerance</td>
+                                    <td>${character.radar_metrics.risk}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Tolerance for Uncertainty</td>
+                                    <td>${character.radar_metrics.uncertainty}/5</td>
+                                </tr>
+                                <tr>
+                                    <td>Decisiveness</td>
+                                    <td>${character.radar_metrics.decisiveness}/5</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="planting-guide">
+                            <div class="guide-title">Cultivation Advice</div>
+                            <div class="guide-content">
+                                <strong>Core Drive:</strong> ${character.core_drive}
+                            </div>
+                            <div class="guide-content">
+                                <strong>Vulnerability:</strong> ${character.vulnerability}
+                            </div>
+                            <div class="guide-content">
+                                <strong>Seasonal Notes:</strong> ${getSeasonalAdvice(character)}
+                            </div>
+                        </div>
+                        
+                        <div class="diagram-section">
+                            <div class="diagram-label">Temperament Diagram</div>
+                            ${createWoodcutRadar(character.radar_metrics)}
+                        </div>
+                        
+                        <div class="almanac-footer">
+                            Published by the Tilth Collective • Anno 2048<br>
+                            "Useful, with a pleasant degree of inquiry"
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Render all almanac pages
+        const container = document.getElementById('almanacContainer');
+        feedLoopCharacters.forEach(character => {
+            container.innerHTML += renderAlmanacPage(character);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Role Deck — Central Hub</title>
+<style>
+:root {
+  /* 1960s Farm Catalog Palette */
+  --kraft: #d4c4a8;
+  --paper: #f4ede1;
+  --ink: #2b2416;
+  --earth: #5c4a3a;
+  --soil: #7d6855;
+  --sprout: #6b8e4e;
+  --harvest: #d47e37;
+  --rust: #a64c2f;
+  --denim: #4a6e8c;
+  --weathered: #9b8975;
+  
+  /* Texture simulation */
+  --paper-texture: repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+  --burlap-texture: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px),
+                    repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,0,0,0.03) 1px, rgba(0,0,0,0.03) 2px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Courier New', 'Courier', monospace;
+  background: var(--kraft);
+  background-image: var(--paper-texture);
+  color: var(--ink);
+  line-height: 1.7;
+  padding: 20px;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 40%, rgba(255,255,255,0.1), transparent 50%),
+              radial-gradient(circle at 70% 60%, rgba(0,0,0,0.05), transparent 40%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  padding: 40px 20px;
+  border-bottom: 3px double var(--earth);
+  border-top: 3px double var(--earth);
+  margin: 20px 0 40px;
+  background: var(--paper);
+  background-image: var(--burlap-texture);
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.05),
+              0 2px 0 rgba(255,255,255,0.3),
+              0 4px 8px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+header::before,
+header::after {
+  content: '🌱';
+  position: absolute;
+  top: 15px;
+  font-size: 24px;
+  opacity: 0.5;
+}
+
+header::before {
+  left: 20px;
+}
+
+header::after {
+  right: 20px;
+}
+
+h1 {
+  font-size: clamp(32px, 6vw, 56px);
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--earth);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  text-shadow: 2px 2px 0 rgba(255,255,255,0.5);
+}
+
+.tagline {
+  font-size: 16px;
+  color: var(--soil);
+  margin-bottom: 20px;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+.quick-nav {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-nav a {
+  background: var(--paper);
+  color: var(--earth);
+  padding: 10px 20px;
+  border-radius: 3px;
+  text-decoration: none;
+  border: 2px solid var(--soil);
+  transition: all 0.2s;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.quick-nav a:hover {
+  background: var(--sprout);
+  color: var(--paper);
+  border-color: var(--sprout);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.section {
+  margin-bottom: 60px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  border: 3px solid var(--earth);
+  border-left-width: 8px;
+  background: var(--paper);
+  background-image: var(--burlap-texture);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Georgia', serif;
+  color: var(--earth);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+.section-title .emoji {
+  font-size: 28px;
+  filter: grayscale(20%) sepia(10%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--paper);
+  background-image: var(--paper-texture);
+  border: 3px solid var(--soil);
+  border-radius: 4px;
+  padding: 20px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15),
+              inset 0 0 20px rgba(0,0,0,0.03);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--sprout),
+    var(--sprout) 10px,
+    var(--harvest) 10px,
+    var(--harvest) 20px
+  );
+  opacity: 0.7;
+}
+
+.card:hover {
+  border-color: var(--earth);
+  transform: translateY(-2px) rotate(-0.5deg);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2),
+              inset 0 0 30px rgba(107, 142, 78, 0.1);
+}
+
+.card.primary {
+  border-color: var(--earth);
+  border-width: 4px;
+  background: linear-gradient(to bottom, var(--paper) 0%, var(--kraft) 100%);
+}
+
+.card.primary::before {
+  height: 10px;
+  opacity: 1;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card-emoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--earth);
+  font-family: 'Georgia', serif;
+  letter-spacing: 0.02em;
+}
+
+.card-description {
+  color: var(--soil);
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: 'Courier New', monospace;
+}
+
+.card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tag {
+  background: var(--kraft);
+  color: var(--earth);
+  padding: 4px 10px;
+  border-radius: 2px;
+  font-size: 11px;
+  border: 2px solid var(--soil);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: 'Courier New', monospace;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.15);
+}
+
+.card-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 3px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s;
+  border: 2px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+  background: var(--sprout);
+  color: var(--paper);
+  border-color: var(--sprout);
+  font-weight: 700;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+}
+
+.btn-primary:hover {
+  background: var(--earth);
+  border-color: var(--earth);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background: var(--paper);
+  color: var(--earth);
+  border-color: var(--soil);
+}
+
+.btn-secondary:hover {
+  background: var(--kraft);
+  border-color: var(--earth);
+}
+
+.doc-list {
+  background: var(--paper);
+  background-image: var(--burlap-texture);
+  border: 3px solid var(--soil);
+  border-radius: 4px;
+  padding: 24px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.05), 3px 3px 0 rgba(0,0,0,0.1);
+}
+
+.doc-category {
+  margin-bottom: 20px;
+}
+
+.doc-category:last-child {
+  margin-bottom: 0;
+}
+
+.doc-category-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sprout);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Georgia', serif;
+  padding-bottom: 6px;
+  border-bottom: 2px dashed var(--weathered);
+}
+
+.doc-links {
+  display: grid;
+  gap: 6px;
+}
+
+.doc-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.3);
+  border: 2px solid var(--weathered);
+  border-radius: 2px;
+  text-decoration: none;
+  color: var(--earth);
+  font-size: 13px;
+  transition: all 0.2s;
+  font-family: 'Courier New', monospace;
+}
+
+.doc-link:hover {
+  background: var(--kraft);
+  border-color: var(--sprout);
+  transform: translateX(2px);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+.doc-link .icon {
+  opacity: 0.7;
+  filter: grayscale(30%);
+}
+
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  margin-top: 60px;
+  border-top: 3px double var(--earth);
+  color: var(--soil);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  background: var(--paper);
+  background-image: var(--burlap-texture);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--sprout);
+  color: var(--paper);
+  border: 2px solid var(--earth);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: 'Courier New', monospace;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: rotate(-1deg);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 1px solid var(--earth);
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 4px rgba(255,255,255,0.5);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quick-nav {
+    flex-direction: column;
+  }
+  
+  .quick-nav a {
+    text-align: center;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🌱 Role Deck</h1>
+    <p class="tagline">Ethical Design Exploration & Workplace Negotiation Simulation</p>
+    <div class="status-indicator">
+      <span class="status-dot"></span>
+      <span>Active Project</span>
+    </div>
+    <br><br>
+    <nav class="quick-nav">
+      <a href="#main-apps">🎮 Main Apps</a>
+      <a href="#tilth-system">🌱 TILTH System</a>
+      <a href="#feed-loop">🔄 Feed Loop</a>
+      <a href="#documentation">📚 Documentation</a>
+    </nav>
+  </header>
+
+  <!-- MAIN APPLICATIONS -->
+  <section id="main-apps" class="section">
+    <h2 class="section-title">
+      <span class="emoji">🎮</span>
+      <span>Main Applications</span>
+    </h2>
+    
+    <div class="grid">
+      <div class="card primary">
+        <div class="card-header">
+          <span class="card-emoji">🌱</span>
+          <div>
+            <div class="card-title">TILTH — Tetrad Gamepad</div>
+          </div>
+        </div>
+        <div class="card-description">
+          Interactive ethical design exploration using McLuhan's Tetrad framework. Load scenarios, explore 4 directional options, build HTML artifacts.
+        </div>
+        <div class="card-meta">
+          <span class="tag">16 Scenarios</span>
+          <span class="tag">2 Modes</span>
+          <span class="tag">Tetrad Framework</span>
+          <span class="tag">OpenAI Integration</span>
+        </div>
+        <div class="card-links">
+          <a href="tetrad-pad.html" class="btn btn-primary">🚀 Launch TILTH</a>
+          <a href="README-TILTH.md" class="btn btn-secondary">📖 Read Docs</a>
+        </div>
+      </div>
+
+      <div class="card primary">
+        <div class="card-header">
+          <span class="card-emoji">🔄</span>
+          <div>
+            <div class="card-title">CB-Box — Feed Loop</div>
+          </div>
+        </div>
+        <div class="card-description">
+          Role-play ethical workplace negotiations as AI-powered characters. Sequencer manages turn-based dialogue with PLAN → THINK → SPEAK phases.
+        </div>
+        <div class="card-meta">
+          <span class="tag">8 Scenarios</span>
+          <span class="tag">16 Characters</span>
+          <span class="tag">AI Negotiation</span>
+          <span class="tag">Belief Systems</span>
+        </div>
+        <div class="card-links">
+          <a href="cb-box.html" class="btn btn-primary">🚀 Launch Feed Loop</a>
+          <a href="START-HERE.md" class="btn btn-secondary">📖 Quick Start</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🎭</span>
+          <div>
+            <div class="card-title">Identity Cards</div>
+          </div>
+        </div>
+        <div class="card-description">
+          Mobile-first practitioner cards using Bartle taxonomy. Visualize ethical identity claims with radar charts and interactive filtering.
+        </div>
+        <div class="card-meta">
+          <span class="tag">Bartle Types</span>
+          <span class="tag">Radar Charts</span>
+          <span class="tag">Print-Ready</span>
+        </div>
+        <div class="card-links">
+          <a href="index.html" class="btn btn-primary">🎴 View Cards</a>
+          <a href="tilth-identity-cards.html" class="btn btn-secondary">🌱 TILTH Cards</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📊</span>
+          <div>
+            <div class="card-title">Quiz System</div>
+          </div>
+        </div>
+        <div class="card-description">
+          Interactive ethics quiz for assessing ethical reasoning patterns. Provides personalized feedback and learning paths.
+        </div>
+        <div class="card-meta">
+          <span class="tag">Assessment</span>
+          <span class="tag">Interactive</span>
+        </div>
+        <div class="card-links">
+          <a href="quiz.html" class="btn btn-primary">📝 Take Quiz</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🔀</span>
+          <div>
+            <div class="card-title">Dual View</div>
+          </div>
+        </div>
+        <div class="card-description">
+          Side-by-side comparison interface for analyzing multiple perspectives simultaneously.
+        </div>
+        <div class="card-meta">
+          <span class="tag">Comparison</span>
+          <span class="tag">Analysis</span>
+        </div>
+        <div class="card-links">
+          <a href="dual.html" class="btn btn-primary">👀 Open Dual View</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TILTH SYSTEM -->
+  <section id="tilth-system" class="section">
+    <h2 class="section-title">
+      <span class="emoji">🌱</span>
+      <span>TILTH System Components</span>
+    </h2>
+    
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📘</span>
+          <div class="card-title">Pocket Reference</div>
+        </div>
+        <div class="card-description">
+          Quick-reference guide for TILTH concepts, Tetrad directions, and ethical design patterns.
+        </div>
+        <div class="card-links">
+          <a href="tilth-pocket-reference.html" class="btn btn-primary">📖 Open Reference</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🔧</span>
+          <div class="card-title">Parts Manual</div>
+        </div>
+        <div class="card-description">
+          Technical documentation for TILTH system architecture and component integration.
+        </div>
+        <div class="card-links">
+          <a href="tilth-parts-manual.html" class="btn btn-primary">🛠️ View Manual</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📦</span>
+          <div class="card-title">Parts Catalog</div>
+        </div>
+        <div class="card-description">
+          Comprehensive catalog of TILTH components, modules, and reusable design patterns.
+        </div>
+        <div class="card-links">
+          <a href="tilth-parts-catalog.html" class="btn btn-primary">📋 Browse Catalog</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📅</span>
+          <div class="card-title">Almanac</div>
+        </div>
+        <div class="card-description">
+          Seasonal guide to ethical design practices and case study collection.
+        </div>
+        <div class="card-links">
+          <a href="tilth-almanac.html" class="btn btn-primary">📖 Open Almanac</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🔍</span>
+          <div class="card-title">Investigation Tool</div>
+        </div>
+        <div class="card-description">
+          Interactive tool for investigating ethical dilemmas and exploring stakeholder perspectives. Watch the complete investigation as an autoplay film.
+        </div>
+        <div class="card-links">
+          <a href="tilth-investigation.html" class="btn btn-primary">🔎 Start Investigation</a>
+          <a href="feed-loop-full-movie.html" class="btn btn-secondary">🎬 Full Movie</a>
+          <a href="farmos-ecosystem.html" class="btn btn-secondary">⚙️ FarmOS Ecosystem</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEED LOOP SYSTEM -->
+  <section id="feed-loop" class="section">
+    <h2 class="section-title">
+      <span class="emoji">🔄</span>
+      <span>Feed Loop Scenarios</span>
+    </h2>
+    
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🌾</span>
+          <div class="card-title">Feed Loop Index</div>
+        </div>
+        <div class="card-description">
+          Central hub for all 8 Feed Loop workplace negotiation scenarios. Browse characters, conflicts, and products.
+        </div>
+        <div class="card-links">
+          <a href="feed-loop-index.html" class="btn btn-primary">🗂️ Browse Scenarios</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🎬</span>
+          <div class="card-title">Opening Sequences</div>
+        </div>
+        <div class="card-description">
+          8 cinematic opening scenes setting up each ethical dilemma. Introduction to characters and conflicts.
+        </div>
+        <div class="card-links">
+          <a href="openings-index.html" class="btn btn-primary">▶️ View Openings</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🎞️</span>
+          <div class="card-title">Episode 01</div>
+        </div>
+        <div class="card-description">
+          Complete first episode of Feed Loop series with full negotiation dialogue.
+        </div>
+        <div class="card-links">
+          <a href="episode-01-complete.html" class="btn btn-primary">📺 Watch Episode</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📚</span>
+          <div class="card-title">Ethics Anthology</div>
+        </div>
+        <div class="card-description">
+          Collection of ethical frameworks, case studies, and analysis resources.
+        </div>
+        <div class="card-links">
+          <a href="ethics-index.html" class="btn btn-primary">📖 Browse Index</a>
+          <a href="ethics-anthology.html" class="btn btn-secondary">📚 View Anthology</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🏢</span>
+          <div class="card-title">Corporate Corruption</div>
+        </div>
+        <div class="card-description">
+          Analysis of systemic corruption patterns in organizational contexts.
+        </div>
+        <div class="card-links">
+          <a href="corporate-corruption-anthology.html" class="btn btn-primary">🔍 Explore</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🌉</span>
+          <div class="card-title">Identity Bridge</div>
+        </div>
+        <div class="card-description">
+          Tool connecting ethical identity claims across different frameworks and contexts.
+        </div>
+        <div class="card-links">
+          <a href="identity-bridge.html" class="btn btn-primary">🌉 Cross Bridge</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCUMENTATION -->
+  <section id="documentation" class="section">
+    <h2 class="section-title">
+      <span class="emoji">📚</span>
+      <span>Documentation Library</span>
+    </h2>
+    
+    <div class="doc-list">
+      <div class="doc-category">
+        <div class="doc-category-title">🚀 Getting Started</div>
+        <div class="doc-links">
+          <a href="README.md" class="doc-link">
+            <span class="icon">📄</span>
+            <span>README — Project Overview</span>
+          </a>
+          <a href="QUICK-START.md" class="doc-link">
+            <span class="icon">⚡</span>
+            <span>Quick Start Guide</span>
+          </a>
+          <a href="START-HERE.md" class="doc-link">
+            <span class="icon">👉</span>
+            <span>START HERE — Negotiation Field</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">🌱 TILTH Documentation</div>
+        <div class="doc-links">
+          <a href="README-TILTH.md" class="doc-link">
+            <span class="icon">📘</span>
+            <span>TILTH README — Complete Overview</span>
+          </a>
+          <a href="TILTH-QUICK-START.md" class="doc-link">
+            <span class="icon">🎮</span>
+            <span>TILTH Quick Start — User Guide</span>
+          </a>
+          <a href="TILTH-MODES-COMPARISON.md" class="doc-link">
+            <span class="icon">🎭</span>
+            <span>Modes Comparison — Product vs Designer</span>
+          </a>
+          <a href="DESIGNER-DILEMMAS-GUIDE.md" class="doc-link">
+            <span class="icon">🏢</span>
+            <span>Designer Dilemmas — Deep Dive</span>
+          </a>
+          <a href="TETRAD-DESIGN-PROMPTS.md" class="doc-link">
+            <span class="icon">📝</span>
+            <span>Design Prompts — All Scenarios</span>
+          </a>
+          <a href="TILTH-FIELD-README.md" class="doc-link">
+            <span class="icon">🌾</span>
+            <span>TILTH Field Guide</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">🔄 Feed Loop Documentation</div>
+        <div class="doc-links">
+          <a href="FEED-LOOP-README.md" class="doc-link">
+            <span class="icon">🔄</span>
+            <span>Feed Loop README</span>
+          </a>
+          <a href="FEEDLOOP-CBBOX-READY.md" class="doc-link">
+            <span class="icon">✅</span>
+            <span>CB-Box Integration Guide</span>
+          </a>
+          <a href="OPENING-SEQUENCES-README.md" class="doc-link">
+            <span class="icon">🎬</span>
+            <span>Opening Sequences Guide</span>
+          </a>
+          <a href="CHARACTER-CARDS-README.md" class="doc-link">
+            <span class="icon">🎴</span>
+            <span>Character Cards Documentation</span>
+          </a>
+          <a href="SCENARIO-VIDEO-PROMPTS.md" class="doc-link">
+            <span class="icon">🎥</span>
+            <span>Video Production Prompts</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">🔧 Technical Documentation</div>
+        <div class="doc-links">
+          <a href="SYSTEM-INTEGRATION-ANALYSIS.md" class="doc-link">
+            <span class="icon">🏗️</span>
+            <span>System Integration Analysis</span>
+          </a>
+          <a href="CENTAUR-BOX-INTEGRATION.md" class="doc-link">
+            <span class="icon">🔗</span>
+            <span>Centaur Box Integration</span>
+          </a>
+          <a href="CODE-REVIEW-ANALYSIS.md" class="doc-link">
+            <span class="icon">🔍</span>
+            <span>Code Review Analysis</span>
+          </a>
+          <a href="PARTS-CATALOG-DESIGN.md" class="doc-link">
+            <span class="icon">📦</span>
+            <span>Parts Catalog Design Docs</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">📊 Project Status & Summaries</div>
+        <div class="doc-links">
+          <a href="COMPLETE-SYSTEM-OVERVIEW.md" class="doc-link">
+            <span class="icon">🗺️</span>
+            <span>Complete System Overview</span>
+          </a>
+          <a href="FINAL-SUMMARY.md" class="doc-link">
+            <span class="icon">✅</span>
+            <span>Final Summary</span>
+          </a>
+          <a href="SYSTEM-COMPLETE.md" class="doc-link">
+            <span class="icon">🎉</span>
+            <span>System Complete Status</span>
+          </a>
+          <a href="INTEGRATION-EXAMPLE.md" class="doc-link">
+            <span class="icon">💡</span>
+            <span>Integration Examples</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">📖 Research & Theory</div>
+        <div class="doc-links">
+          <a href="CENTAUR-BOX-PAPER.md" class="doc-link">
+            <span class="icon">📄</span>
+            <span>Centaur Box Paper — Academic Context</span>
+          </a>
+          <a href="2021.md" class="doc-link">
+            <span class="icon">📚</span>
+            <span>2021 Research Document</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="doc-category">
+        <div class="doc-category-title">🗂️ Support Files</div>
+        <div class="doc-links">
+          <a href="SEED-CARDS-README.md" class="doc-link">
+            <span class="icon">🌱</span>
+            <span>Seed Cards README</span>
+          </a>
+          <a href="INVESTIGATION-FLOW-README.md" class="doc-link">
+            <span class="icon">🔍</span>
+            <span>Investigation Flow Guide</span>
+          </a>
+          <a href="README-STRUCTURE.md" class="doc-link">
+            <span class="icon">🏗️</span>
+            <span>README Structure Guide</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p><strong>Role Deck</strong> — Ethical Design Exploration & Workplace Negotiation Simulation</p>
+    <p style="margin-top: 12px; font-size: 13px;">
+      🌱 TILTH: 16 scenarios (Product Problems + Designer Dilemmas)<br>
+      🔄 Feed Loop: 8 workplace negotiations with AI characters<br>
+      🎴 Identity Cards: Bartle taxonomy + ethical claims visualization
+    </p>
+    <p style="margin-top: 20px; opacity: 0.6;">
+      All applications are single-file HTML with no build process required.<br>
+      Open directly in browser or deploy to any static host.
+    </p>
+  </footer>
+</div>
+
+</body>
+</html>

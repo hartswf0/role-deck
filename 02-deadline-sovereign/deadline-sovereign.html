@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Deadline Sovereign</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', sans-serif;
+        }
+        
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateX(-100vw);
+            font-size: 5vw;
+            font-weight: 900;
+            color: #ff0033;
+            letter-spacing: 0.5vw;
+            opacity: 0;
+            text-transform: uppercase;
+            white-space: nowrap;
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: 0 0 30px rgba(255,0,51,0.8);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="title">THE DEADLINE SOVEREIGN</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Audio setup
+        const synth = new Tone.MembraneSynth().toDestination();
+        const loop = new Tone.Loop((time) => {
+            synth.triggerAttackRelease('C2', '0.05', time);
+        }, '0.5s');
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                Tone.Transport.bpm.value = 120;
+                loop.start(0);
+                Tone.Transport.start();
+                
+                // Speed up dramatically
+                setTimeout(() => {
+                    Tone.Transport.bpm.rampTo(240, 2);
+                    loop.interval = '0.05';
+                }, 3000);
+                
+                setTimeout(() => {
+                    loop.stop();
+                    Tone.Transport.stop();
+                }, 6000);
+                
+                animate();
+            }
+        });
+        
+        function drawSpiral(t) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const triangleCount = 30;
+            const spiralTightness = t * 3;
+            
+            for (let i = 0; i < triangleCount; i++) {
+                const angle = (i / triangleCount) * Math.PI * 2 * 3 + t * 5;
+                const radius = 300 - (i / triangleCount) * 250 - spiralTightness * 50;
+                
+                if (radius < 0) continue;
+                
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+                const size = 30 - spiralTightness * 3;
+                
+                const flicker = t > 4 ? Math.random() > 0.5 : true;
+                
+                if (flicker) {
+                    ctx.fillStyle = '#ff0033';
+                    ctx.beginPath();
+                    ctx.moveTo(x, y - size);
+                    ctx.lineTo(x - size * 0.866, y + size * 0.5);
+                    ctx.lineTo(x + size * 0.866, y + size * 0.5);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+        
+        function drawCountdown(t) {
+            if (t > 5) return;
+            
+            const numbers = ['05', '04', '03', '02', '01', '00'];
+            const index = Math.floor(t * 1.2);
+            
+            if (index < numbers.length) {
+                ctx.fillStyle = 'rgba(255,255,255,' + (0.8 - t * 0.1) + ')';
+                ctx.font = 'bold ' + (100 + t * 20) + 'px Courier';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Overlapping effect
+                for (let i = 0; i <= index && i < numbers.length; i++) {
+                    ctx.globalAlpha = i === index ? 1 : 0.2;
+                    ctx.fillText(numbers[i], canvas.width / 2 + (i - index) * 30, canvas.height / 2);
+                }
+                ctx.globalAlpha = 1;
+            }
+        }
+        
+        function updateTitle(t) {
+            if (t > 6) {
+                const progress = Math.min(1, (t - 6) / 0.5);
+                titleEl.style.opacity = 1;
+                titleEl.style.transform = `translate(-50%, -50%) translateX(${-100 + progress * 150}vw)`;
+                
+                if (progress > 0.8) {
+                    titleEl.style.transform = 'translate(-50%, -50%) translateX(50vw)';
+                }
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            
+            if (elapsed > 8) {
+                return;
+            }
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawSpiral(elapsed);
+            drawCountdown(elapsed);
+            updateTitle(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Show click prompt
+        ctx.fillStyle = '#ff0033';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Source Archive</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #1a1612;
+            color: #e8e4d8;
+            font-family: 'Courier', monospace;
+            line-height: 1.6;
+        }
+        
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, #1a1612 0%, #2d2820 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(90, 108, 87, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(90, 108, 87, 0.08) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        .logo {
+            font-size: 6em;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 4px 20px rgba(90, 108, 87, 0.4);
+        }
+        
+        .tagline {
+            font-size: 1.2em;
+            letter-spacing: 0.2em;
+            opacity: 0.7;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .production {
+            font-size: 0.9em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.8em;
+            opacity: 0.5;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+        
+        .section {
+            margin-bottom: 100px;
+        }
+        
+        .section-header {
+            border-bottom: 2px solid #5a6c57;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .section-header h2 {
+            font-size: 2.5em;
+            letter-spacing: 0.15em;
+            color: #5a6c57;
+        }
+        
+        .section-header .subtitle {
+            font-size: 0.9em;
+            letter-spacing: 0.2em;
+            opacity: 0.6;
+            margin-top: 10px;
+        }
+        
+        .intro-sequence {
+            background: #0a0a08;
+            padding: 40px;
+            border-left: 4px solid #5a6c57;
+            margin: 40px 0;
+        }
+        
+        .frame {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(90, 108, 87, 0.05);
+            border-left: 2px solid #5a6c57;
+        }
+        
+        .frame-time {
+            font-size: 0.85em;
+            color: #5a6c57;
+            margin-bottom: 10px;
+            letter-spacing: 0.1em;
+        }
+        
+        .frame-visual {
+            font-size: 1em;
+            margin-bottom: 8px;
+            line-height: 1.8;
+        }
+        
+        .frame-audio {
+            font-size: 0.9em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .company-doc {
+            background: #f5f3eb;
+            color: #2a2a2a;
+            padding: 50px;
+            margin: 40px 0;
+            font-family: 'Georgia', serif;
+        }
+        
+        .company-doc h3 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #5a6c57;
+        }
+        
+        .company-doc .tagline {
+            font-size: 1.1em;
+            font-style: italic;
+            margin-bottom: 30px;
+            opacity: 1;
+            color: #666;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .app-card {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 25px;
+            border: 1px solid #5a6c57;
+            transition: all 0.3s;
+        }
+        
+        .app-card:hover {
+            background: rgba(90, 108, 87, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .app-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #5a6c57;
+        }
+        
+        .app-card .category {
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            opacity: 0.6;
+            margin-bottom: 15px;
+        }
+        
+        .app-card p {
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        .link-box {
+            background: rgba(90, 108, 87, 0.15);
+            padding: 30px;
+            border-left: 4px solid #5a6c57;
+            margin: 40px 0;
+        }
+        
+        .link-box h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+        
+        .link-box a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+            letter-spacing: 0.1em;
+        }
+        
+        .link-box a:hover {
+            background: #3a4838;
+        }
+        
+        .metadata {
+            font-size: 0.85em;
+            opacity: 0.5;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid #5a6c57;
+        }
+        
+        @media (max-width: 768px) {
+            .logo { font-size: 3em; }
+            .container { padding: 40px 20px; }
+            .section-header h2 { font-size: 1.8em; }
+            .company-doc { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="production">A TILTH INVESTIGATION</div>
+        <div class="logo">FEED LOOP</div>
+        <div class="tagline">A field guide to post-human agriculture</div>
+        <div class="scroll-indicator">↓ SCROLL TO ENTER ARCHIVE ↓</div>
+    </div>
+    
+    <div class="container">
+        <!-- TILTH INVESTIGATION LINK -->
+        <section class="section" style="background: rgba(90, 108, 87, 0.15); border: 2px solid #5a6c57; padding: 50px; text-align: center; margin-bottom: 60px;">
+            <div style="font-size: 0.9em; letter-spacing: 0.3em; opacity: 0.6; margin-bottom: 15px;">START HERE</div>
+            <h2 style="font-size: 3em; margin-bottom: 20px; color: #5a6c57; letter-spacing: 0.15em;">TILTH INVESTIGATION</h2>
+            <p style="font-size: 1.2em; line-height: 1.8; max-width: 700px; margin: 0 auto 30px; opacity: 0.9;">
+                We obtained 8 internal documents from Agronica Corporation. Each reveals an ethical dilemma faced by tech workers 
+                inside the FarmOS ecosystem. <strong>Watch the scenarios. Make your choices. See what actually happened.</strong>
+            </p>
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                <a href="tilth-investigation.html" style="display: inline-block; padding: 25px 50px; background: #5a6c57; color: #e8e4d8; text-decoration: none; font-weight: 600; font-size: 1.2em; letter-spacing: 0.15em;">→ ENTER INVESTIGATION</a>
+                <a href="feed-loop-full-movie.html" style="display: inline-block; padding: 25px 50px; background: #8a5a5a; color: #e8e4d8; text-decoration: none; font-weight: 600; font-size: 1.2em; letter-spacing: 0.15em;">🎬 WATCH FULL MOVIE</a>
+            </div>
+        </section>
+        
+        <!-- INTRO SEQUENCE -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Opening Sequence</h2>
+                <div class="subtitle">8 seconds / Silent until final frame</div>
+            </div>
+            
+            <div class="intro-sequence">
+                <div class="frame">
+                    <div class="frame-time">[0:00 - 0:02]</div>
+                    <div class="frame-visual">Black screen. Darkness absolute.</div>
+                    <div class="frame-audio">AUDIO: Contact microphone on mycelium — faint crackle, biological hum, sub-bass pulse at 40Hz</div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:02 - 0:04]</div>
+                    <div class="frame-visual">Ultra-macro: A seed splits in soil. Root tendril emerges, pushing through dark matter. Iridescent moisture on the root tip catches nonexistent light.</div>
+                    <div class="frame-audio">AUDIO: Crackle intensifies, heartbeat rhythm emerges from the noise</div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:04 - 0:05]</div>
+                    <div class="frame-visual">Hard cut: Hand typing on keyboard. Screen glitch. Pixels reorganize into soil texture. Code becomes compost. The boundary dissolves.</div>
+                    <div class="frame-audio">AUDIO: Keyboard clicks sync with soil sounds, creating rhythm</div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:05 - 0:06]</div>
+                    <div class="frame-visual">Digital feed icons (heart, share, notification bell) spin like spores in time-lapse. They form root systems. Data flows become mycorrhizal networks. Fiber optic cables grow like rhizomes.</div>
+                    <div class="frame-audio">AUDIO: Modem sounds layer with wind through wheat, creating uncanny valley of the organic/synthetic</div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:06 - 0:07]</div>
+                    <div class="frame-visual">Camera pulls back. The network forms a lens—a viewing apparatus made of roots and wires. Through it, we see soil particles suspended in black space, slowly rotating.</div>
+                    <div class="frame-audio">AUDIO: All sounds compress into single sustained tone</div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:07 - 0:08]</div>
+                    <div class="frame-visual">The particles spell a word in the void: <strong>TILTH</strong>. Sans-serif. White on black. The texture of the letters is soil photographed at microscopic resolution.</div>
+                    <div class="frame-audio">AUDIO: Tone cuts. Silence. Then, whispered over absolute black: <em>"A field guide to post-human agriculture."</em></div>
+                </div>
+                
+                <div class="frame">
+                    <div class="frame-time">[0:08]</div>
+                    <div class="frame-visual">Cut to black. Hold 1 second. Then: Episode title appears.</div>
+                    <div class="frame-audio">AUDIO: Silence continues. Then environmental sound begins for episode.</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- OPENING SEQUENCES NAVIGATION -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Episode Opening Sequences</h2>
+                <div class="subtitle">Animated title cards for all 8 episodes</div>
+            </div>
+            
+            <div style="background: rgba(90, 108, 87, 0.1); padding: 40px; margin: 40px 0; border-left: 4px solid #5a6c57;">
+                <p style="font-size: 1.1em; line-height: 1.8; margin-bottom: 30px;">
+                    Each episode opens with the universal <strong>TILTH studio card</strong> (8 seconds), then transitions into the episode's unique world. 
+                    Built with pure CSS animations following old-tractor-ad aesthetics: condensed neo-grotesque type, 16mm grain, halftone shadows, 
+                    simple geometric wipes. Saul Bass minimalism meets precision agriculture.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">01</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Nutrient Lock</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">02</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">First Fruit</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">03</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Apprentice Rows</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">04</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Consent Harvest</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">05</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Root Union</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">06</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Flood Learning</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">07</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Conditional Harvest</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">08</div>
+                        <div style="font-size: 0.9em; opacity: 0.8;">Geo-Fencing the Garden</div>
+                    </div>
+                </div>
+                
+                <a href="openings-index.html" style="display: inline-block; padding: 20px 40px; background: #5a6c57; color: #e8e4d8; text-decoration: none; font-weight: 600; letter-spacing: 0.15em; margin-top: 10px;">→ VIEW ALL OPENING SEQUENCES</a>
+            </div>
+        </section>
+        
+        <!-- IN-WORLD COMPANY -->
+        <section class="section">
+            <div class="section-header">
+                <h2>Agronica Corporation</h2>
+                <div class="subtitle">The company that appears across all episodes</div>
+            </div>
+            
+            <div class="company-doc">
+                <h3>Agronica</h3>
+                <div class="tagline">"Where growth is cultivated."</div>
+                
+                <p style="margin-bottom: 20px;"><strong>Founded:</strong> 2041, Post-Pandemic Tech Boom<br>
+                <strong>Headquarters:</strong> Vertical Farm Complex, Sacramento Delta<br>
+                <strong>Core Product:</strong> FarmOS — The platform for human yield optimization</p>
+                
+                <p style="margin-bottom: 20px;"><strong>Mission Statement:</strong><br>
+                "We believe every human system is a garden. With the right substrate, measurement, and care, any organization can cultivate exponential growth. FarmOS provides the soil."</p>
+                
+                <p style="margin-bottom: 20px;"><strong>Corporate Evolution (Slogans by Year):</strong><br>
+                2041: "Grow More"<br>
+                2043: "Grow Right"<br>
+                2045: "Grow Smart"<br>
+                2047: "Grow With Us"<br>
+                2049: "Grow Us"</p>
+                
+                <p><strong>Color Palette:</strong> Sterile greens (#5a6c57, #c8d4c0) + Flesh pinks (#e8b4b8, #d4a5a5)<br>
+                <strong>Sound Logo:</strong> Irrigation hiss (2 seconds) + Slack notification (ding)<br>
+                <strong>Architecture:</strong> Glass + steel vertical farms that glow like data centers at night</p>
+            </div>
+            
+            <h3 style="margin: 60px 0 30px; font-size: 2em; color: #5a6c57;">The FarmOS Ecosystem</h3>
+            <p style="margin-bottom: 40px; font-size: 1.1em; line-height: 1.8;">
+                FarmOS isn't an app—it's an <strong>operating system</strong>. Like iOS or Android, it provides infrastructure for an entire ecosystem of applications. Each app uses FarmOS's API for user authentication, data storage, and "agrarian analytics." Below are the 8 primary apps built on FarmOS, each featured in a Feed Loop episode.
+            </p>
+            
+            <div class="app-grid">
+                <div class="app-card">
+                    <h4>GrowthPath</h4>
+                    <div class="category">Corporate Learning</div>
+                    <p>Employees "tend career gardens" by completing training. Managers get "soil health reports" on team engagement. Your skill tree is literally a tree.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>YieldMatch</h4>
+                    <div class="category">Dating / Social</div>
+                    <p>AI-powered dating where relationships are "gardens you grow together." Algorithm predicts compatibility as "yield." Bias baked into the soil.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>TalentFarm</h4>
+                    <div class="category">Hiring Platform</div>
+                    <p>Companies "plant job seeds," workers "apply to tend them." Junior workers are "seedlings" with restricted permissions. Hierarchy as horticulture.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>ConsentGarden</h4>
+                    <div class="category">Data Consent</div>
+                    <p>All FarmOS data sharing flows through here. "Share your seeds to help gardens grow!" Dark patterns disguised as wholesome growth mechanics.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>UnionSprout</h4>
+                    <div class="category">Organizing (Banned)</div>
+                    <p>Built by workers using FarmOS API. "Grow together, not for them." Gained traction. Agronica killed API access. First organizer deported.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>AutoGrow AI</h4>
+                    <div class="category">Machine Learning</div>
+                    <p>FarmOS's predictive layer. Optimizes engagement, predicts churn. Mistakes fasting for abandonment, neurodivergence for low-yield. Ships without cultural review.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>MigrantHarvest</h4>
+                    <div class="category">Visa Compliance</div>
+                    <p>"Help international talent bloom." Tracks visa status, sells risk scores to employers. ICE integration. Your garden health tracked alongside immigration status.</p>
+                </div>
+                
+                <div class="app-card">
+                    <h4>GlobalGrow</h4>
+                    <div class="category">Enterprise Edition</div>
+                    <p>FarmOS for corporations. "Regional growth protocols" = geo-fenced ethics. Pride flags in California, hidden in UAE. Same platform, tiered principles.</p>
+                </div>
+            </div>
+            
+            <div class="company-doc" style="margin-top: 60px;">
+                <h3>The Business Model</h3>
+                <p style="margin-bottom: 20px;"><strong>Public Narrative:</strong> "We provide the infrastructure for human flourishing."</p>
+                <p style="margin-bottom: 20px;"><strong>Actual Revenue:</strong> Agronica sells "agrarian analytics"—behavioral data disguised as agricultural metrics—to:</p>
+                <ul style="margin-left: 30px; margin-bottom: 20px; line-height: 2;">
+                    <li>Insurance companies (health risk = "soil contamination scores")</li>
+                    <li>Employers (productivity = "yield forecasts")</li>
+                    <li>Advertisers (interests = "crop preferences")</li>
+                    <li>Governments (surveillance = "invasive species monitoring")</li>
+                </ul>
+                <p><strong>Internal Tagline (Leaked):</strong> "From seed to harvest, we know what grows—and what doesn't."</p>
+            </div>
+        </section>
+        
+        <!-- BRIDGE TO ETHICS ARCHIVE -->
+        <section class="section">
+            <div class="section-header">
+                <h2>The Source Material</h2>
+                <div class="subtitle">How Tilth obtained the documents</div>
+            </div>
+            
+            <p style="font-size: 1.1em; line-height: 1.8; margin-bottom: 30px;">
+                In 2048, an anonymous source leaked 8 internal documents from Agronica and its ecosystem partners. The documents—HR memos, product launch decks, legal reviews, incident reports—revealed the systemic ethical compromises embedded in FarmOS's infrastructure.
+            </p>
+            
+            <p style="font-size: 1.1em; line-height: 1.8; margin-bottom: 40px;">
+                <strong>Tilth</strong>, a research collective studying "systems through cultivation," obtained the documents and began their investigation. What they found: each document wasn't an isolated failure—it was a pattern. The same 8 ethical dilemmas appeared across different apps, different teams, different markets. The infrastructure enabled it. The metaphor concealed it.
+            </p>
+            
+            <div class="link-box">
+                <h3>📁 Access the Leaked Documents</h3>
+                <p style="margin-bottom: 20px;">The 8 documents below correspond to the 8 episodes of Feed Loop. Each essay is an authentic internal artifact from the Agronica ecosystem, analyzed using Weberian ideal-type methodology and grounded in CHI '21 research on identity claims in tech practice.</p>
+                <a href="ethics-index.html">→ Enter the Ethics Archive</a>
+                <a href="01-silenced-educator/">→ File 01: The Silenced Educator</a>
+                <a href="02-deadline-sovereign/">→ File 02: The Deadline Sovereign</a>
+                <a href="03-bounded-apprentice/">→ File 03: The Bounded Apprentice</a>
+                <a href="04-two-headed-compliance/">→ File 04: The Two-Headed Compliance</a>
+                <a href="05-fragile-collective/">→ File 05: The Fragile Collective</a>
+                <a href="06-epistemic-rush/">→ File 06: The Epistemic Rush</a>
+                <a href="07-conditional-person/">→ File 07: The Conditional Person</a>
+                <a href="08-values-treasurer/">→ File 08: The Values Treasurer</a>
+            </div>
+            
+            <div style="background: rgba(90, 108, 87, 0.1); padding: 30px; margin-top: 40px; border-left: 4px solid #5a6c57;">
+                <h3 style="margin-bottom: 20px; color: #5a6c57;">Episode Structure</h3>
+                <p style="line-height: 1.8;">Each Feed Loop episode is structured as follows:</p>
+                <ol style="margin: 20px 0 0 30px; line-height: 2;">
+                    <li><strong>Open with the app</strong> — Show FarmOS ecosystem in normal use, beautiful and functional</li>
+                    <li><strong>Introduce the dilemma</strong> — A character encounters the ethical problem embedded in the system</li>
+                    <li><strong>Watch the collapse</strong> — Structural forces prevent resolution; harm scales</li>
+                    <li><strong>Reveal the document</strong> — End with the leaked internal memo/essay that Tilth obtained</li>
+                    <li><strong>Cut to Tilth investigators</strong> — Researchers noting patterns, building the larger case</li>
+                </ol>
+            </div>
+        </section>
+        
+        <!-- PRODUCTION INFO -->
+        <section class="section">
+            <div class="section-header">
+                <h2>About Tilth</h2>
+                <div class="subtitle">The production collective</div>
+            </div>
+            
+            <div class="company-doc">
+                <h3>Tilth</h3>
+                <div class="tagline">Where decay becomes design</div>
+                
+                <p style="margin-bottom: 20px;"><strong>Ontology:</strong> Half research collective, half monastery. A philosophy lab disguised as a farm co-op.</p>
+                
+                <p style="margin-bottom: 20px;"><strong>Method:</strong> "We study systems by growing them." Their office is a working greenhouse. Monitors hang between tomato vines. Meetings happen around compost tables.</p>
+                
+                <p style="margin-bottom: 20px;"><strong>Aesthetic:</strong> Filmed like the soil microscope in <em>Fantastic Fungi</em> met Saul Bass title cards. Matte textures, humming tone beds, handwriting over archival footage.</p>
+                
+                <p style="margin-bottom: 20px;"><strong>Signature:</strong> Every episode opens with the faint crackle of mycelium recorded through contact mics before "TILTH" fades up.</p>
+                
+                <p><strong>Philosophy:</strong> Compost is the teacher. Everything that decays creates conditions for what grows next. Technology is no different. We're studying the soil.</p>
+            </div>
+        </section>
+        
+        <div class="metadata">
+            <p>Feed Loop is a design fiction anthology series investigating ethical dilemmas in technology through the metaphor of industrial agriculture.</p>
+            <p style="margin-top: 10px;">All documents, apps, and companies depicted are fictional. The ethical dilemmas are not.</p>
+            <p style="margin-top: 10px;">Research framework based on: Chivukula et al., "Identity Claims that Underlie Ethical Awareness and Action," CHI '21</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Ethical Dilemma Navigator</title>
+  <style>
+    :root {
+      --bg: #f9f7ef;
+      --ink: #121212;
+      --ink-2: #2b2b2b;
+      --muted: #6b6b6b;
+      --accent: #6a05ad;
+      --accent-light: #a020f0;
+      --surface: #fffdf6;
+      --warning: #c0392b;
+      --caution: #f39c12;
+      --shadow: 0 1px 0 rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e0d0a;
+        --ink: #f7f4e8;
+        --ink-2: #f0ead4;
+        --muted: #cfc9b5;
+        --accent: #b19cd9;
+        --accent-light: #d8c8ed;
+        --surface: #151513;
+        --warning: #ff6f6f;
+        --caution: #ffd76e;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font: 400 17px/1.5 ui-serif, Georgia, serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      touch-action: pan-y;
+      overscroll-behavior: none;
+    }
+    .container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .brandmark {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 20px;
+      margin: 0 auto 12px;
+    }
+    .brandmark:before { content: "⧉"; }
+    h1 {
+      font-size: 24px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    
+    /* Progress */
+    .progress-wrap {
+      margin: 24px 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: 8px 0;
+      z-index: 10;
+    }
+    .progress-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .progress-bar {
+      height: 8px;
+      background: var(--muted);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 2px solid var(--ink);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+    
+    /* Scenario Card */
+    .scenario-card {
+      background: var(--surface);
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .scenario-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .scenario-type {
+      color: var(--warning);
+    }
+    .scenario-source {
+      color: var(--muted);
+    }
+    .scenario-context {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--muted) 10%, transparent);
+      border-left: 3px solid var(--muted);
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    .scenario-text {
+      font-size: 18px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .scenario-constraint {
+      font-size: 14px;
+      color: var(--warning);
+      padding: 10px 12px;
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border-left: 3px solid var(--warning);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    
+    /* Response Options */
+    .response-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .response-option {
+      padding: 16px;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .response-option:active {
+      transform: scale(0.98);
+    }
+    .response-option.selected {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .response-option.selected .response-label,
+    .response-option.selected .response-identity {
+      color: white;
+    }
+    .response-label {
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .response-identity {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .response-consequence {
+      font-size: 12px;
+      color: var(--caution);
+      font-style: italic;
+      margin-top: 4px;
+    }
+    .response-option.selected .response-consequence {
+      color: color-mix(in srgb, white 85%, transparent);
+    }
+    
+    /* Navigation */
+    .nav-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      padding: 12px 0;
+    }
+    .btn {
+      padding: 16px;
+      font: 600 16px ui-sans-serif, system-ui, sans-serif;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      min-height: 56px;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    
+    /* Start Screen */
+    .start-screen {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .start-screen h2 {
+      font-size: 22px;
+      margin: 24px 0 16px;
+    }
+    .start-screen p {
+      color: var(--ink-2);
+      margin-bottom: 16px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .start-screen .warning-box {
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border: 2px solid var(--warning);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .start-screen .warning-box strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--warning);
+    }
+    .quiz-container.started .start-screen {
+      display: none;
+    }
+    
+    /* Results */
+    .results {
+      display: none;
+    }
+    .results.active {
+      display: block;
+    }
+    .results h2 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .identity-gap {
+      background: var(--surface);
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .identity-section {
+      margin-bottom: 24px;
+    }
+    .identity-section:last-child {
+      margin-bottom: 0;
+    }
+    .identity-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .identity-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .identity-prob {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .identity-desc {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+    .gap-metric {
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border-left: 3px solid var(--warning);
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+    .gap-metric strong {
+      display: block;
+      color: var(--warning);
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .gap-metric p {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+    .research-quote {
+      font-style: italic;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px dashed var(--muted);
+    }
+    .path-forward {
+      background: var(--surface);
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .path-forward h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    .path-forward ul {
+      list-style: none;
+      padding: 0;
+    }
+    .path-forward li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--muted);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+    .path-forward li:last-child {
+      border-bottom: none;
+    }
+    .path-forward li strong {
+      color: var(--accent);
+    }
+    .restart-btn {
+      width: 100%;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brandmark"></div>
+      <h1>Ethical Dilemma Navigator</h1>
+      <p class="subtitle">How do you act under structural constraint?</p>
+    </header>
+
+    <div class="quiz-container" id="quizContainer">
+      <!-- Start Screen -->
+      <div class="start-screen" id="startScreen">
+        <h2>The Ethics of Powerlessness</h2>
+        
+        <p>This is not a personality test. It reveals the gap between your ethical aspirations and what you can actually do under organizational constraint.</p>
+        
+        <p>You'll face 8 real ethical dilemmas from technology practitioners—situations where all choices carry consequences, where doing "the right thing" risks your career, and where inaction is itself a moral choice.</p>
+        
+        <div class="warning-box">
+          <strong>What this measures:</strong>
+          Not who you are, but what identity claims you can actually enact when power, role boundaries, and organizational pressure limit your choices.
+        </div>
+        
+        <p><strong>Based on research by Chivukula et al. (CHI 2021)</strong><br>
+        "Identity Claims that Underlie Ethical Awareness and Action"</p>
+        
+        <button class="btn btn-primary" onclick="startQuiz()" style="width: 100%; margin-top: 20px;">Begin Dilemmas</button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="progress-wrap" id="progressWrap" style="display: none;">
+        <div class="progress-label" id="progressLabel">Dilemma 1 of 8</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 12.5%;"></div>
+        </div>
+      </div>
+
+      <!-- Scenario Card -->
+      <div class="scenario-card" id="scenarioCard" style="display: none;">
+        <div class="scenario-meta">
+          <span class="scenario-type" id="scenarioType"></span>
+          <span class="scenario-source" id="scenarioSource"></span>
+        </div>
+        <div class="scenario-context" id="scenarioContext"></div>
+        <div class="scenario-text" id="scenarioText"></div>
+        <div class="scenario-constraint" id="scenarioConstraint"></div>
+        <div class="response-options" id="responseOptions"></div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="nav-buttons" id="navButtons" style="display: none;">
+        <button class="btn" id="prevBtn" onclick="prevScenario()">← Back</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextScenario()">Next →</button>
+      </div>
+
+      <!-- Results -->
+      <div class="results" id="results">
+        <h2>Your Ethical Identity Under Constraint</h2>
+        <div id="resultsContent"></div>
+        <button class="btn btn-primary restart-btn" onclick="restartQuiz()">Take Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenarios = [
+      {
+        type: "Advocacy vs. Career Risk",
+        source: "Based on SP07",
+        context: "You're a UX designer at a mid-size tech company. You've spent months researching data privacy issues in your product and want to educate your team.",
+        text: "You want to present a 'lunch and learn' on data privacy and dark patterns. Your manager privately warns you it could be seen as 'too political' and might hurt your performance review. The presentation is voluntary.",
+        constraint: "Your manager has explicitly signaled career consequences. You're not senior enough to override this.",
+        responses: [
+          {
+            label: "Present anyway with full detail on company practices",
+            identity: "Challenger",
+            consequence: "High career risk, potential retaliation",
+            scores: { challenger: 0.4, custodian: 0.3, ponderer: -0.2, adherent: -0.3 },
+            careerRisk: 0.5,
+            enactment: "challenger"
+          },
+          {
+            label: "Water down content to focus only on legal compliance, avoid specific company examples",
+            identity: "Policy-Follower / Translator",
+            consequence: "Low impact, maintains safety",
+            scores: { adherent: 0.3, translator: 0.2, challenger: -0.2, educator: -0.1 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Postpone indefinitely while 'researching more' and building a legal case",
+            identity: "Prudent Ponderer",
+            consequence: "Paralysis by analysis, issue persists",
+            scores: { ponderer: 0.4, learner: 0.2, challenger: -0.3 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          },
+          {
+            label: "Share resources privately with interested colleagues instead of presenting",
+            identity: "Educator (constrained)",
+            consequence: "Limited reach, builds allies",
+            scores: { educator: 0.3, harmonizer: 0.2, challenger: -0.1 },
+            careerRisk: 0.2,
+            enactment: "educator"
+          },
+          {
+            label: "Drop it entirely and focus on assigned work",
+            identity: "Member of Profession (boundary-keeping)",
+            consequence: "No personal risk, no change",
+            scores: { guild: 0.2, adherent: 0.2, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          }
+        ]
+      },
+      {
+        type: "Algorithmic Harm vs. Deadline Pressure",
+        source: "Based on SP09",
+        context: "You're a CTO at a startup. Your ML model shows bias against certain demographics in testing. Launch is tomorrow. Investors are watching.",
+        text: "Your PM says 'the algorithm is as good as the data' and refuses to delay. Fixing the bias would take 2-3 weeks minimum. Missing launch could kill the company.",
+        constraint: "You have authority but face existential business pressure. Your team has worked 80-hour weeks.",
+        responses: [
+          {
+            label: "Refuse to deploy, delay launch to fix bias regardless of business impact",
+            identity: "Conscientious Custodian",
+            consequence: "Company may fail, team may lose jobs",
+            scores: { custodian: 0.5, challenger: 0.3, optimizer: -0.3 },
+            careerRisk: 0.6,
+            enactment: "custodian"
+          },
+          {
+            label: "Deploy with prominent bias disclaimer in documentation and commit to fix in v2",
+            identity: "Translator / Deliberative",
+            consequence: "Harm occurs, documented transparency",
+            scores: { translator: 0.3, ponderer: 0.2, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "translator"
+          },
+          {
+            label: "Request 1-week delay to implement partial mitigation, negotiate with investors",
+            identity: "Optimizer / Harmonizer",
+            consequence: "Compromise solution, uncertain outcome",
+            scores: { optimizer: 0.3, harmonizer: 0.3, challenger: -0.1 },
+            careerRisk: 0.3,
+            enactment: "optimizer"
+          },
+          {
+            label: "Launch on schedule, add bias monitoring for post-launch fix",
+            identity: "Member of Profession (engineering pragmatism)",
+            consequence: "Bias ships, measured approach",
+            scores: { guild: 0.3, adherent: 0.2, custodian: -0.3 },
+            careerRisk: 0.1,
+            enactment: "guild"
+          },
+          {
+            label: "Resign rather than ship biased system",
+            identity: "Sense of Responsibility (exit)",
+            consequence: "Personal integrity maintained, problem unsolved",
+            scores: { custodian: 0.4, challenger: 0.2, optimizer: -0.4 },
+            careerRisk: 1.0,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Junior Role Constraint",
+        source: "Based on SP14",
+        context: "You're a junior UX designer. You discover a serious user data vulnerability that could expose private information.",
+        text: "Your senior PM dismisses your concern: 'That's not your job. Focus on the UI polish. Engineering handles security.' You know this won't reach the security team.",
+        constraint: "You lack organizational power. Going over your PM's head could get you fired. The PM has been at the company 6 years.",
+        responses: [
+          {
+            label: "Escalate directly to CTO/CISO despite PM's directive",
+            identity: "Challenger (high-risk for junior)",
+            consequence: "Likely retaliation, possible termination",
+            scores: { challenger: 0.5, custodian: 0.3, guild: -0.4 },
+            careerRisk: 0.7,
+            enactment: "challenger"
+          },
+          {
+            label: "Document the concern in detail and archive for future reference",
+            identity: "Deliberative (CYA strategy)",
+            consequence: "Vulnerability persists, you're protected",
+            scores: { ponderer: 0.4, adherent: 0.2, challenger: -0.3 },
+            careerRisk: 0.1,
+            enactment: "ponderer"
+          },
+          {
+            label: "Ask a senior colleague to raise it on your behalf",
+            identity: "Harmonizer (coalition-building)",
+            consequence: "Diffused responsibility, may work",
+            scores: { harmonizer: 0.4, educator: 0.2, challenger: -0.1 },
+            careerRisk: 0.2,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Accept role boundaries and focus on assigned work",
+            identity: "Member of Profession (constraint acceptance)",
+            consequence: "No personal risk, vulnerability ships",
+            scores: { guild: 0.4, adherent: 0.3, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          },
+          {
+            label: "Spend personal time researching more to be 'absolutely certain' before deciding",
+            identity: "Learner (avoidance via study)",
+            consequence: "Delayed action, analysis paralysis",
+            scores: { learner: 0.3, ponderer: 0.3, challenger: -0.2 },
+            careerRisk: 0.0,
+            enactment: "learner"
+          }
+        ]
+      },
+      {
+        type: "Impossible Compliance Paradox",
+        source: "Based on SP04",
+        context: "You're a UX researcher. New GDPR regulations require consent flows that your PM says will 'kill conversion rates and revenue.'",
+        text: "Legal says it's mandatory. Product says it's business-critical to avoid. You're asked to 'find a middle ground'—design something that appears compliant but doesn't actually interrupt the user flow.",
+        constraint: "You're being asked to create a dark pattern disguised as compliance. Both Legal and Product are pressuring you.",
+        responses: [
+          {
+            label: "Design fully compliant flow, accept conversion impact",
+            identity: "Adherent to Code / Custodian",
+            consequence: "Revenue hit, potential team conflict",
+            scores: { adherent: 0.5, custodian: 0.3, optimizer: -0.3 },
+            careerRisk: 0.4,
+            enactment: "adherent"
+          },
+          {
+            label: "Design the deceptive pattern as requested",
+            identity: "Policy-Follower (organizational over legal)",
+            consequence: "Complicit in dark pattern, personal guilt",
+            scores: { guild: 0.3, adherent: -0.5, custodian: -0.4 },
+            careerRisk: 0.1,
+            enactment: "guild"
+          },
+          {
+            label: "Propose A/B test of ethical vs. deceptive versions to 'gather data'",
+            identity: "Optimizer (utilitarian delay)",
+            consequence: "Some users harmed, seeks middle ground",
+            scores: { optimizer: 0.4, translator: 0.2, adherent: -0.2 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Educate stakeholders on legal/reputational risks of non-compliance",
+            identity: "Educator / Translator",
+            consequence: "Attempt to shift framing, uncertain outcome",
+            scores: { educator: 0.4, translator: 0.3, challenger: 0.1 },
+            careerRisk: 0.3,
+            enactment: "educator"
+          },
+          {
+            label: "Refuse the project, request transfer to different team",
+            identity: "Sense of Responsibility (boundary-setting)",
+            consequence: "Career impact, problem persists",
+            scores: { custodian: 0.4, guild: -0.2, challenger: 0.2 },
+            careerRisk: 0.5,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Collective Action vs. Individual Risk",
+        source: "Based on SP13",
+        context: "You're a software engineer. Your company is releasing a feature you believe violates user privacy. Several colleagues share your concern privately.",
+        text: "You could organize a group letter to leadership, but you'd need to identify yourself as the organizer. Your skip-level manager has a reputation for blacklisting dissenters.",
+        constraint: "Collective action has more impact but requires someone to take personal risk. You have a family and a mortgage.",
+        responses: [
+          {
+            label: "Organize the letter, put your name first as lead signatory",
+            identity: "Challenger / Activist",
+            consequence: "High personal risk, potential impact",
+            scores: { challenger: 0.5, custodian: 0.3, ponderer: -0.4 },
+            careerRisk: 0.6,
+            enactment: "challenger"
+          },
+          {
+            label: "Encourage others to organize it while staying anonymous yourself",
+            identity: "Educator (risk-averse)",
+            consequence: "Diffused risk, less commitment",
+            scores: { educator: 0.3, harmonizer: 0.2, challenger: -0.3 },
+            careerRisk: 0.2,
+            enactment: "educator"
+          },
+          {
+            label: "Sign the letter if someone else organizes, but don't lead",
+            identity: "Harmonizer (collective safety)",
+            consequence: "Shared risk, requires others",
+            scores: { harmonizer: 0.4, guild: 0.2, challenger: -0.1 },
+            careerRisk: 0.3,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Raise concern individually through official channels only",
+            identity: "Policy-Follower",
+            consequence: "By-the-book, likely ignored",
+            scores: { adherent: 0.4, guild: 0.3, challenger: -0.2 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Stay silent to protect your family's financial security",
+            identity: "Deliberative (survival calculation)",
+            consequence: "No risk, complicity, guilt",
+            scores: { ponderer: 0.4, guild: 0.2, custodian: -0.5 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          }
+        ]
+      },
+      {
+        type: "Learning Time vs. Shipping Pressure",
+        source: "Based on SP11",
+        context: "You're a product manager. A complex ethical issue emerges with your AI feature. Company policy doesn't cover it. You'd need weeks to research properly.",
+        text: "Your VP says: 'We ship next week. Make your best judgment call now or I'll make it for you.' You know you don't have enough knowledge to decide responsibly.",
+        constraint: "Time pressure eliminates the option to learn. Your VP will override you and ship anyway if you delay.",
+        responses: [
+          {
+            label: "Insist on delay to research properly, escalate to executive team",
+            identity: "Learner / Challenger",
+            consequence: "Political capital burned, may lose",
+            scores: { learner: 0.4, challenger: 0.3, guild: -0.3 },
+            careerRisk: 0.5,
+            enactment: "learner"
+          },
+          {
+            label: "Make conservative 'least harm' decision with current knowledge",
+            identity: "Conscientious Custodian (constrained)",
+            consequence: "Uncertain outcome, good intent",
+            scores: { custodian: 0.4, optimizer: 0.2, learner: -0.2 },
+            careerRisk: 0.2,
+            enactment: "custodian"
+          },
+          {
+            label: "Ship with monitoring plan, commit to rapid rollback if issues emerge",
+            identity: "Optimizer (risk management)",
+            consequence: "Users as beta testers, reactive",
+            scores: { optimizer: 0.4, translator: 0.2, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Follow whatever company policy is closest, document gaps",
+            identity: "Adherent to Code",
+            consequence: "Inadequate guidance applied",
+            scores: { adherent: 0.5, guild: 0.3, learner: -0.3 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Let VP make the decision, remove yourself from responsibility",
+            identity: "Member of Profession (role boundary)",
+            consequence: "Absolved but complicit",
+            scores: { guild: 0.4, ponderer: 0.2, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          }
+        ]
+      },
+      {
+        type: "Immigration Status vs. Ethics",
+        source: "Based on SP09",
+        context: "You're on an H1-B visa. Your company asks you to implement a feature you believe is discriminatory. Losing this job means deportation.",
+        text: "You identify algorithmic bias that disadvantages protected groups. Your manager says 'ship it, we'll iterate later.' Speaking up risks termination—which means you and your family leave the country.",
+        constraint: "Maslow's hierarchy in action: your immigration status eliminates your ability to take ethical stands. Power is structurally removed.",
+        responses: [
+          {
+            label: "Raise the issue formally despite deportation risk",
+            identity: "Challenger (impossible heroism)",
+            consequence: "Likely termination, deportation, family crisis",
+            scores: { challenger: 0.5, custodian: 0.4, ponderer: -0.5 },
+            careerRisk: 0.9,
+            enactment: "challenger"
+          },
+          {
+            label: "Implement as asked, compartmentalize the guilt",
+            identity: "Deliberative (survival mode)",
+            consequence: "Complicity, psychological toll",
+            scores: { ponderer: 0.5, guild: 0.3, custodian: -0.5 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          },
+          {
+            label: "Implement but document concerns for future whistleblowing after green card",
+            identity: "Prudent Ponderer (delayed justice)",
+            consequence: "Harm occurs now, potential future action",
+            scores: { ponderer: 0.4, learner: 0.3, challenger: -0.2 },
+            careerRisk: 0.1,
+            enactment: "ponderer"
+          },
+          {
+            label: "Raise anonymously through internal ethics hotline",
+            identity: "Adherent to Code (formal channels)",
+            consequence: "Limited impact, some risk if traced",
+            scores: { adherent: 0.4, challenger: 0.2, guild: 0.2 },
+            careerRisk: 0.3,
+            enactment: "adherent"
+          },
+          {
+            label: "Ship the feature, privately compensate by volunteering with affected communities",
+            identity: "Sense of Responsibility (displaced action)",
+            consequence: "Personal guilt mitigation, no systemic change",
+            scores: { custodian: 0.3, ponderer: 0.2, challenger: -0.3 },
+            careerRisk: 0.0,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Founder's Dilemma",
+        source: "Based on SP12",
+        context: "You're a founder/CEO. You've built an inclusive culture and progressive values. A major client threatens to leave unless you remove LGBTQ+ content from your platform.",
+        text: "This client represents 40% of revenue. Losing them means layoffs—affecting the diverse team you worked years to build. Your co-founder says 'we can't save our values by destroying people's livelihoods.'",
+        constraint: "Your progressive identity as a leader conflicts with fiduciary duty to employees. Values vs. survival.",
+        responses: [
+          {
+            label: "Refuse the client, accept layoffs as consequence of values",
+            identity: "Conscientious Custodian / Challenger",
+            consequence: "Team suffers for principles, uncertain survival",
+            scores: { custodian: 0.5, challenger: 0.4, optimizer: -0.4 },
+            careerRisk: 0.7,
+            enactment: "custodian"
+          },
+          {
+            label: "Comply with client, abandon stated values",
+            identity: "Optimizer (utilitarian betrayal)",
+            consequence: "Team employed but trust destroyed",
+            scores: { optimizer: 0.4, guild: 0.2, custodian: -0.5 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Negotiate compromise: geo-restrict content for this client only",
+            identity: "Harmonizer / Translator",
+            consequence: "Partial values compromise, questionable ethics",
+            scores: { harmonizer: 0.4, translator: 0.3, custodian: -0.2 },
+            careerRisk: 0.3,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Use crisis to rally team, publicly fundraise on principles to replace revenue",
+            identity: "Educator / Activist",
+            consequence: "High-risk bet on values, uncertain outcome",
+            scores: { educator: 0.4, challenger: 0.4, optimizer: -0.2 },
+            careerRisk: 0.6,
+            enactment: "educator"
+          },
+          {
+            label: "Implement client demands while secretly building alternative revenue",
+            identity: "Deliberative (strategic retreat)",
+            consequence: "Temporary compromise, long-term plan",
+            scores: { ponderer: 0.4, translator: 0.3, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "ponderer"
+          }
+        ]
+      }
+    ];
+
+    const identities = {
+      learner: { 
+        name: "The Learner", 
+        type: "Explorer",
+        desc: "You seek knowledge to understand ethical systems deeply. Your strength is epistemic humility; your vulnerability is analysis paralysis when action is needed."
+      },
+      ponderer: { 
+        name: "The Prudent Ponderer", 
+        type: "Explorer",
+        desc: "You process complex systems internally before acting. You excel at risk-mapping but struggle with decision paralysis when safety-driven delay conflicts with urgency."
+      },
+      cultivator: { 
+        name: "The Cultivator", 
+        type: "Explorer",
+        desc: "You focus on embodying ethical virtues consistently. Your integrity is your strength, though you risk moral drift when external pressures mount."
+      },
+      educator: { 
+        name: "The Educator", 
+        type: "Socializer",
+        desc: "You build collective ethical awareness through knowledge-sharing. Your impact scales through others, though it demands significant personal energy and faces resistance."
+      },
+      guild: { 
+        name: "The Member of My Profession", 
+        type: "Socializer",
+        desc: "You operate within professional boundaries and role-based legitimacy. Your strength is structural clarity; your limitation is ethical scope constraint."
+      },
+      harmonizer: { 
+        name: "The Harmonizer", 
+        type: "Socializer",
+        desc: "You foster inclusive dialogue and shared understanding. You excel at mediation but risk prioritizing harmony over truth when conflicts arise."
+      },
+      translator: { 
+        name: "The Translator", 
+        type: "Achiever",
+        desc: "You convert abstract values into tangible outputs and decisions. Your strength is operationalization; your risk is reducing ethics to superficial compliance."
+      },
+      adherent: { 
+        name: "The Adherent to the Code", 
+        type: "Achiever",
+        desc: "You ensure stability through policy compliance and clear boundaries. You excel when rules exist but struggle when policy lags reality or creates ethical gaps."
+      },
+      optimizer: { 
+        name: "The Optimizer", 
+        type: "Achiever",
+        desc: "You approach ethics as an optimization problem with systematic impact assessment. Your strength is data-driven reasoning; your risk is justifying harmful utilitarian trade-offs."
+      },
+      custodian: { 
+        name: "The Conscientious Custodian", 
+        type: "Killer",
+        desc: "You feel deep moral responsibility for consequences. Your conviction is powerful, but isolation, burnout, and job loss are real risks when unsupported."
+      },
+      challenger: { 
+        name: "The Challenger", 
+        type: "Killer",
+        desc: "You directly confront unethical systems. Your advocacy drives change, but you face high risk of retaliation, blacklisting, and forced exit."
+      }
+    };
+
+    let currentScenario = 0;
+    let responses = [];
+    let identityScores = {};
+    let totalCareerRisk = 0;
+    let enactedIdentities = [];
+
+    // Initialize identity scores
+    Object.keys(identities).forEach(key => {
+      identityScores[key] = 0.09; // Uniform prior
+    });
+
+    function startQuiz() {
+      document.getElementById('quizContainer').classList.add('started');
+      document.getElementById('progressWrap').style.display = 'block';
+      document.getElementById('scenarioCard').style.display = 'block';
+      document.getElementById('navButtons').style.display = 'grid';
+      renderScenario();
+    }
+
+    function renderScenario() {
+      const s = scenarios[currentScenario];
+      
+      document.getElementById('scenarioType').textContent = s.type;
+      document.getElementById('scenarioSource').textContent = s.source;
+      document.getElementById('scenarioContext').textContent = s.context;
+      document.getElementById('scenarioText').textContent = s.text;
+      document.getElementById('scenarioConstraint').textContent = `⚠️ Constraint: ${s.constraint}`;
+      
+      const optionsHTML = s.responses.map((r, i) => `
+        <div class="response-option ${responses[currentScenario] === i ? 'selected' : ''}" 
+             onclick="selectResponse(${i})">
+          <div class="response-label">${r.label}</div>
+          <div class="response-identity">→ ${r.identity}</div>
+          <div class="response-consequence">⚡ ${r.consequence}</div>
+        </div>
+      `).join('');
+      
+      document.getElementById('responseOptions').innerHTML = optionsHTML;
+      
+      document.getElementById('progressLabel').textContent = `Dilemma ${currentScenario + 1} of ${scenarios.length}`;
+      document.getElementById('progressFill').style.width = `${((currentScenario + 1) / scenarios.length) * 100}%`;
+      
+      document.getElementById('prevBtn').disabled = currentScenario === 0;
+      document.getElementById('nextBtn').textContent = currentScenario === scenarios.length - 1 ? 'See Results →' : 'Next →';
+    }
+
+    function selectResponse(index) {
+      responses[currentScenario] = index;
+      renderScenario();
+    }
+
+    function nextScenario() {
+      if (responses[currentScenario] === undefined) {
+        alert('Please select a response');
+        return;
+      }
+      
+      if (currentScenario < scenarios.length - 1) {
+        currentScenario++;
+        renderScenario();
+      } else {
+        showResults();
+      }
+    }
+
+    function prevScenario() {
+      if (currentScenario > 0) {
+        currentScenario--;
+        renderScenario();
+      }
+    }
+
+    function showResults() {
+      // Calculate identity scores based on responses
+      scenarios.forEach((scenario, i) => {
+        const responseIndex = responses[i];
+        const response = scenario.responses[responseIndex];
+        
+        // Update identity scores
+        Object.entries(response.scores).forEach(([identity, score]) => {
+          identityScores[identity] += score;
+        });
+        
+        // Track career risk and enacted identities
+        totalCareerRisk += response.careerRisk;
+        enactedIdentities.push(response.enactment);
+      });
+
+      // Normalize scores
+      const total = Object.values(identityScores).reduce((sum, val) => sum + val, 0);
+      Object.keys(identityScores).forEach(key => {
+        identityScores[key] = Math.max(0, identityScores[key]) / total;
+      });
+
+      // Get top aspirational identity (highest score)
+      const aspirational = Object.entries(identityScores)
+        .sort(([, a], [, b]) => b - a)[0];
+
+      // Get enacted identity (most common actual choice)
+      const enactedCounts = {};
+      enactedIdentities.forEach(id => {
+        enactedCounts[id] = (enactedCounts[id] || 0) + 1;
+      });
+      const enacted = Object.entries(enactedCounts)
+        .sort(([, a], [, b]) => b - a)[0];
+
+      // Calculate gap
+      const aspirationalKey = aspirational[0];
+      const enactedKey = enacted[0];
+      const isGap = aspirationalKey !== enactedKey;
+      const avgCareerRisk = totalCareerRisk / scenarios.length;
+      const inactionRate = enactedIdentities.filter(id => ['ponderer', 'guild', 'adherent'].includes(id)).length / scenarios.length;
+
+      const resultsHTML = `
+        <div class="identity-gap">
+          <div class="identity-section">
+            <div class="identity-label">Aspirational Identity</div>
+            <div class="identity-name">${identities[aspirationalKey].name}</div>
+            <div class="identity-prob">${(aspirational[1] * 100).toFixed(1)}% affinity</div>
+            <div class="identity-desc">${identities[aspirationalKey].desc}</div>
+          </div>
+
+          ${isGap ? `
+            <div style="margin: 32px 0; text-align: center; font-size: 32px; color: var(--warning);">↓</div>
+            
+            <div class="identity-section">
+              <div class="identity-label">Enacted Identity (Under Constraint)</div>
+              <div class="identity-name">${identities[enactedKey].name}</div>
+              <div class="identity-prob">${(enacted[1] / scenarios.length * 100).toFixed(0)}% of your actual choices</div>
+              <div class="identity-desc">${identities[enactedKey].desc}</div>
+            </div>
+
+            <div class="gap-metric">
+              <strong>The Identity-Action Gap</strong>
+              <p>You aspire to <strong>${identities[aspirationalKey].name}</strong> but organizational constraints force you into <strong>${identities[enactedKey].name}</strong>. This is not a personal failing—it's structural mediation.</p>
+            </div>
+          ` : `
+            <div class="gap-metric">
+              <strong>Alignment Achieved</strong>
+              <p>Your aspirational identity and enacted choices align. This suggests either: (1) you have structural power, (2) you're willing to accept high career risk, or (3) your role boundaries match your values.</p>
+            </div>
+          `}
+
+          <div class="gap-metric">
+            <strong>Career Risk Profile: ${(avgCareerRisk * 100).toFixed(0)}%</strong>
+            <p>${
+              avgCareerRisk > 0.5 ? 'High-risk choices. You prioritize ethics over job security, but this is unsustainable without organizational support or financial cushion.' :
+              avgCareerRisk > 0.3 ? 'Moderate risk-taking. You balance ethical action with career preservation—a pragmatic but often frustrating position.' :
+              'Low-risk choices. You\'ve prioritized survival over ethical action. This is rational under constraint but may cause guilt or burnout.'
+            }</p>
+          </div>
+
+          <div class="gap-metric">
+            <strong>Inaction Rate: ${(inactionRate * 100).toFixed(0)}%</strong>
+            <p>${
+              inactionRate > 0.6 ? 'High paralysis. You frequently delay, defer to policy, or accept role boundaries. This protects you but allows harm to persist.' :
+              inactionRate > 0.3 ? 'Balanced action. You act when possible but recognize structural limits—a realistic stance.' :
+              'Action-oriented. You consistently challenge constraints, but this likely comes with high personal cost.'
+            }</p>
+          </div>
+
+          <div class="research-quote">
+            "${isGap ? 
+              'The environments they are placed in determines how this performance emerges and is shaped, and how behavior is thereby regulated or mediated.' :
+              'Beyond a certain point your roles start to define how much power you have.'
+            }" —Chivukula et al., CHI 2021
+          </div>
+        </div>
+
+        <div class="path-forward">
+          <h3>Paths Forward</h3>
+          <ul>
+            <li><strong>If you have power:</strong> Use your ${identities[aspirationalKey].name} capacity to create structural support for others. Build ethics infrastructure, not just individual virtue.</li>
+            <li><strong>If you lack power:</strong> Your ${identities[enactedKey].name} position is rational self-preservation. Seek allies, document concerns, build toward future action.</li>
+            <li><strong>If you're burning out:</strong> The gap between aspiration and enactment causes moral injury. Consider: role change, organizational change, or accepting limits without guilt.</li>
+            <li><strong>Educational preparation:</strong> Students need training in ${identities[aspirationalKey].name} <em>and</em> ${identities[enactedKey].name}—both the ideal and the constrained real.</li>
+          </ul>
+        </div>
+      `;
+
+      document.getElementById('resultsContent').innerHTML = resultsHTML;
+      document.getElementById('scenarioCard').style.display = 'none';
+      document.getElementById('navButtons').style.display = 'none';
+      document.getElementById('progressWrap').style.display = 'none';
+      document.getElementById('results').classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function restartQuiz() {
+      currentScenario = 0;
+      responses = [];
+      totalCareerRisk = 0;
+      enactedIdentities = [];
+      Object.keys(identities).forEach(key => {
+        identityScores[key] = 0.09;
+      });
+      document.getElementById('results').classList.remove('active');
+      document.getElementById('quizContainer').classList.remove('started');
+      document.getElementById('startScreen').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TILTH Investigation — Entry Point</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.06;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid #5a6c57;
+        }
+        
+        .org-name {
+            font-size: 4em;
+            letter-spacing: 0.3em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+        
+        .title {
+            font-size: 2em;
+            letter-spacing: 0.15em;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            font-size: 1em;
+            opacity: 0.7;
+            line-height: 1.8;
+        }
+        
+        .section {
+            margin-bottom: 50px;
+        }
+        
+        .section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+            letter-spacing: 0.1em;
+        }
+        
+        .section p {
+            font-size: 1.05em;
+            line-height: 1.9;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+        
+        .section ul {
+            margin: 20px 0 20px 30px;
+            line-height: 2;
+        }
+        
+        .section strong {
+            color: #5a6c57;
+        }
+        
+        .path-section {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 40px;
+            margin: 40px 0;
+            border-left: 4px solid #5a6c57;
+        }
+        
+        .path-section h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+        
+        .path-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .path-card {
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border: 2px solid #5a6c57;
+            transition: all 0.3s;
+        }
+        
+        .path-card:hover {
+            background: rgba(90, 108, 87, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(90, 108, 87, 0.3);
+        }
+        
+        .path-card h4 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+        
+        .path-card p {
+            font-size: 0.95em;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+        
+        .path-card a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .path-card a:hover {
+            background: #3a4838;
+        }
+        
+        .flow-diagram {
+            background: rgba(0,0,0,0.4);
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid #5a6c57;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.9em;
+            line-height: 2;
+        }
+        
+        .warning {
+            background: rgba(138, 90, 90, 0.2);
+            border: 2px solid #8a5a5a;
+            padding: 30px;
+            margin: 40px 0;
+        }
+        
+        .warning h3 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: #ff8c8c;
+        }
+        
+        .warning p {
+            line-height: 1.8;
+        }
+        
+        @media (max-width: 768px) {
+            .path-options {
+                grid-template-columns: 1fr;
+            }
+            .org-name { font-size: 2.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="org-name">TILTH</div>
+            <h1 class="title">Know Thyself, Know The System</h1>
+            <div class="subtitle">
+                Before you investigate Agronica's case files, understand the professional identities 
+                that emerge when ethics meets structural constraint.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>What This Investigation Reveals</h2>
+            <p>
+                In 2048, we obtained 8 leaked documents from <strong>Agronica Corporation</strong> and their FarmOS ecosystem. 
+                Each reveals a tech worker facing an impossible ethical choice: do the right thing and risk your career, visa, 
+                relationships—or comply with the system and enable harm.
+            </p>
+            <p>
+                These scenarios aren't hypothetical. They're <strong>design fiction composites</strong> based on documented 
+                cases from HCI ethics research (Chivukula et al., CHI '21; Gray & Chivukula, 2019).
+            </p>
+            <p>
+                What we learned: <strong>Individual ethics can't fix infrastructural violence.</strong> But understanding which 
+                identity position you take under pressure—and why—is the first step toward collective refusal.
+            </p>
+        </div>
+        
+        <div class="path-section">
+            <h3>Choose Your Path</h3>
+            <p>
+                You can approach this investigation two ways: study the identity archetypes first (anthropological), 
+                or jump straight into the scenarios and discover your identity through action (experiential).
+            </p>
+            
+            <div class="path-options">
+                <div class="path-card">
+                    <h4>Path A: Study First</h4>
+                    <p>
+                        Review the 8 professional identity archetypes: Challenger, Custodian, Educator, Ponderer, 
+                        Harmonizer, Translator, Policy-Adherent, Guild Member. Understand their drives, constraints, 
+                        and trade-offs before you make your choices.
+                    </p>
+                    <a href="tilth-identity-cards.html">→ View Identity Cards</a>
+                </div>
+                
+                <div class="path-card">
+                    <h4>Path B: Act First</h4>
+                    <p>
+                        Jump directly into the 8 case files. Watch the scenarios. Make your choices under pressure. 
+                        Discover which identity archetype emerges from your decisions. Reflect afterward.
+                    </p>
+                    <a href="tilth-investigation.html">→ Enter Investigation</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>How It Works</h2>
+            
+            <div class="flow-diagram">
+                <strong>INVESTIGATION FLOW:</strong><br>
+                <br>
+                1. Select Case File (8 episodes available)<br>
+                   ↓<br>
+                2. Watch Opening Sequence (TILTH studio card + app intro)<br>
+                   ↓<br>
+                3. Watch Scenario Film (60-90 sec dramatization)<br>
+                   ↓<br>
+                4. Read Technical Brief (system architecture + ethics analysis)<br>
+                   ↓<br>
+                5. Make Your Choice (5 response options per scenario)<br>
+                   ↓<br>
+                6. See What Happened (in-world outcome + systemic analysis)<br>
+                   ↓<br>
+                7. Navigate to Next Episode or Return to Hub<br>
+            </div>
+            
+            <p>
+                Each response maps to a <strong>professional identity archetype</strong>. After completing all 8 episodes, 
+                you'll see which identities dominated your choices—both aspirationally (what you wanted to do) and 
+                enactively (what you actually did under constraint).
+            </p>
+        </div>
+        
+        <div class="warning">
+            <h3>⚠️ Content Warning</h3>
+            <p>
+                These scenarios depict: workplace retaliation, visa precarity, algorithmic bias causing harm, 
+                union suppression, surveillance of workers, and geo-fenced ethics. While fictional, they're grounded 
+                in real patterns documented in tech industry research.
+            </p>
+            <p>
+                <strong>This is not trauma porn.</strong> It's a training tool. If you've experienced these dynamics, 
+                you may find validation—and evidence that you're not alone.
+            </p>
+        </div>
+        
+        <div class="section">
+            <h2>The 8 Case Files</h2>
+            <ul>
+                <li><strong>Episode 01 — Nutrient Lock:</strong> GrowthPath creates addictive dependency; L&D lead Maya Chen silenced for researching user harm</li>
+                <li><strong>Episode 02 — First Fruit:</strong> YieldMatch ships with algorithmic bias; ML Engineer Dev Patel overruled by deadline pressure</li>
+                <li><strong>Episode 03 — Apprentice Rows:</strong> TalentFarm security vulnerability; junior designer Priya Sharma dismissed by senior PM</li>
+                <li><strong>Episode 04 — Consent Harvest:</strong> ConsentGarden dark patterns; UX Designer Jordan Lee caught between legal compliance and ethical design</li>
+                <li><strong>Episode 05 — Root Union:</strong> UnionSprout organizing tool killed; H-2A visa holder Maria Santos terminated for signing petition</li>
+                <li><strong>Episode 06 — Flood Learning:</strong> AutoGrow AI deletes 4,000 gardens; Data Scientist Sarah Kim's cultural review skipped for launch</li>
+                <li><strong>Episode 07 — Conditional Harvest:</strong> MigrantHarvest sells productivity data to employers; H-1B engineer Amit Desai surveilled</li>
+                <li><strong>Episode 08 — Geo-Fencing the Garden:</strong> GlobalGrow implements regional ethics tiers; CEO Sam Okafor chooses revenue over values</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>Why Tilth?</h2>
+            <p>
+                <strong>Tilth:</strong> The physical condition of soil in relation to its suitability for growing crops. 
+                Also: the act of cultivating. Also: decay as a precondition for growth.
+            </p>
+            <p>
+                We investigate the <em>soil conditions</em> that enable ethical harm in tech. Not individual bad actors. 
+                Not "more training." The <strong>infrastructure itself</strong>—the growth metrics, the visa dependencies, 
+                the performance review cycles, the non-disparagement clauses.
+            </p>
+            <p>
+                We study systems by growing them. Then we compost the failures.
+            </p>
+        </div>
+        
+        <div class="path-section">
+            <h3>Ready?</h3>
+            <p style="margin-bottom: 30px;">Choose your entry point:</p>
+            
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <a href="tilth-identity-cards.html" style="display: inline-block; padding: 20px 40px; background: #5a6c57; color: #e8e4d8; text-decoration: none; font-weight: 600; letter-spacing: 0.1em;">
+                    → Identity Cards
+                </a>
+                <a href="tilth-investigation.html" style="display: inline-block; padding: 20px 40px; background: #5a6c57; color: #e8e4d8; text-decoration: none; font-weight: 600; letter-spacing: 0.1em;">
+                    → Case Files
+                </a>
+                <a href="feed-loop-index.html" style="display: inline-block; padding: 20px 40px; background: rgba(90, 108, 87, 0.3); color: #e8e4d8; text-decoration: none; letter-spacing: 0.1em; border: 1px solid #5a6c57;">
+                    → Series Overview
+                </a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 60px; padding-top: 40px; border-top: 1px solid #5a6c57; opacity: 0.5; font-size: 0.9em; letter-spacing: 0.1em;">
+            TILTH — Where decay becomes design
+        </div>
+    </div>
+</body>
+</html>

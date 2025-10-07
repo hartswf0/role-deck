@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ethical Dilemma Navigator & Identity Cards</title>
+  <meta name="description" content="A quiz to reveal your ethical identity under constraint, followed by a deck of ethical identity cards based on research by Chivukula et al. (CHI 2021)."/>
+  <style>
+    /* ------------------
+       FOLK–MODERN DESIGN (from cards.html - primary design system)
+       ------------------ */
+    :root {
+      /* Deep-time palette (earthy + high contrast) */
+      --bg: #f9f7ef;            /* bone parchment */
+      --ink: #121212;           /* obsidian */
+      --ink-2:#2b2b2b;          /* basalt */
+      --muted:#6b6b6b;          /* muted text */
+
+      /* Bartle Type Colors (for card border, title, radar fill/stroke) - Light Mode */
+      --explorer-main: #6a05ad; /* Dark Purple */
+      --explorer-accent: #a020f0; /* Medium Purple */
+      --explorer-fill: rgba(160, 32, 240, 0.2); /* Lighter, more transparent fill */
+
+      --socializer-main: #e74c3c; /* Red */
+      --socializer-accent: #ff6347; /* Tomato */
+      --socializer-fill: rgba(255, 99, 71, 0.2);
+
+      --achiever-main: #f39c12; /* Orange */
+      --achiever-accent: #ffc107; /* Amber */
+      --achiever-fill: rgba(255, 193, 7, 0.2);
+
+      --killer-main: #c0392b; /* Dark Red */
+      --killer-accent: #ff4500; /* OrangeRed */
+      --killer-fill: rgba(255, 69, 0, 0.2);
+
+      /* Other accents for elements like synergies/vulnerabilities, ensure contrast */
+      --synergy-color: #0d6b3b; /* Juniper green */
+      --vulnerability-color: #b2550b; /* Terracotta */
+      --new-interaction-color: #004c7f; /* Lapis */
+      --plot-baseline-color: #ab8a00; /* Ochre */
+      --tension-color: #8a1d00; /* Iron oxide */
+      --warning: #c0392b; /* For quiz warnings */
+      --caution: #f39c12; /* For quiz cautions */
+
+
+      /* Card/surface variables to guarantee contrast in all modes */
+      --card-bg:#fffdf6;
+      --card-ink:#121212;
+      --chip-bg:#ffffff;
+      --bar-bg:#ffffff;
+      --surface-bg:#fffdf6;
+
+      /* Type scale (large / hyperlegible) */
+      --step--2: clamp(0.65rem, 0.60rem + 0.15vw, 0.75rem); /* New smallest step */
+      --step--1: clamp(0.80rem, 0.75rem + 0.20vw, 0.90rem);
+      --step-0:  clamp(0.95rem, 0.90rem + 0.30vw, 1.05rem);
+      --step-1:  clamp(1.15rem, 1.10rem + 0.40vw, 1.25rem);
+      --step-2:  clamp(1.40rem, 1.30rem + 0.50vw, 1.55rem);
+      --step-3:  clamp(1.70rem, 1.55rem + 0.60vw, 1.85rem);
+      --radius-xl: 20px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --card-w: 340px; /* Base width for cards, auto-scales in grid */
+      --card-h: 440px; /* Increased fixed height for screen to prevent scroll */
+      --shadow: 0 1px 0 rgba(0,0,0,.08), 0 6px 20px rgba(0,0,0,.06);
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0e0d0a; --ink:#f7f4e8; --ink-2:#f0ead4; --muted:#cfc9b5;
+
+        /* Bartle Type Colors - Dark Mode */
+        --explorer-main: #b19cd9; /* Light Purple */
+        --explorer-accent: #d8c8ed; /* Lighter Purple */
+        --explorer-fill: rgba(216, 200, 237, 0.2);
+
+        --socializer-main: #ff8c8c; /* Light Red */
+        --socializer-accent: #ffbaba; /* Lighter Red */
+        --socializer-fill: rgba(255, 186, 186, 0.2);
+
+        --achiever-main: #ffd76e; /* Light Amber */
+        --achiever-accent: #ffe5a6; /* Lighter Amber */
+        --achiever-fill: rgba(255, 229, 166, 0.2);
+
+        --killer-main: #ff6f6f; /* Pinkish Red */
+        --killer-accent: #ffa0a0; /* Lighter Pinkish Red */
+        --killer-fill: rgba(255, 160, 160, 0.2);
+
+        --synergy-color: #7ed9a7;
+        --vulnerability-color: #ffb562;
+        --new-interaction-color: #9bd9ff;
+        --plot-baseline-color: #f2d264;
+        --tension-color: #ff7b66;
+        --warning: #ff6f6f;
+        --caution: #ffd76e;
+
+        /* Dark-mode card surfaces */
+        --card-bg:#151513;
+        --card-ink:#f7f4e8;
+        --chip-bg:#1e1e1b;
+        --bar-bg:#0b0b0a;
+        --surface-bg:#12120f;
+      }
+    }
+
+    /* Accessibility: respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    html,body{height:100%;}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font: 400 var(--step-0) ui-serif, Charter, "Iowan Old Style", Palatino, Georgia, serif;
+      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      touch-action: pan-y; /* For quiz mobile scroll */
+      overscroll-behavior: none; /* For quiz mobile scroll */
+    }
+
+    /* Header (Main application header, from cards.html) */
+    header{
+      position: sticky; top: 0; z-index: 10; background: linear-gradient(to bottom, var(--bg) 96%, var(--bg) 88%), repeating-linear-gradient(45deg, transparent 0 12px, rgba(0,0,0,.02) 12px 24px);
+      border-bottom: 4px solid var(--ink);
+      padding: max(8px, env(safe-area-inset-top)) 12px 10px;
+    }
+    .title{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+    .brandmark{ width:42px; height:42px; border:3px solid var(--ink); border-radius: 50%; display:grid; place-items:center; font-weight:700; font-size: var(--step-0); }
+    .brandmark:before{ content:"⧉"; }
+    h1{ font-size: var(--step-2); line-height:1.05; margin:0; letter-spacing:.2px; }
+    .subtitle{ font-size: var(--step--1); color:var(--muted); margin: 2px 0 0 0; }
+
+    /* Controls (Main application controls, from cards.html) */
+    .controls{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+    .controls button, .controls select, .controls input[type="range"]{
+      font:600 var(--step--1) ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink); background:#fff0; border:2px solid var(--ink); border-radius: var(--radius-sm);
+      padding: 8px 10px; box-shadow: var(--shadow);
+    }
+    .controls label{ font-size: var(--step--1); }
+    .controls .rangewrap{ display:flex; align-items:center; gap:6px; }
+
+    /* Main Layout for the combined content */
+    main{ padding: 14px; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; min-height: calc(100vh - 100px); }
+    .main-section { display: none; } /* Default hide sections, JS will toggle */
+    .main-section.active { display: block; }
+
+
+    /* -------------------------------------
+       QUIZ SPECIFIC STYLES (adapted from quiz.html)
+       ------------------------------------- */
+    .quiz-container {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: max(16px, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
+    }
+    /* Quiz header - brandmark, h1, subtitle are already handled by main header, so adapt */
+    .quiz-container > header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 0; /* Override main header padding */
+      border: none; /* Override main header border */
+      background: none; /* Override main header background */
+      position: static;
+    }
+    .quiz-container > header .brandmark {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+      margin: 0 auto 12px;
+      border: 3px solid var(--ink); /* Match main brandmark */
+    }
+    .quiz-container > header h1 {
+      font-size: var(--step-2); /* Match main h1 */
+      line-height: 1.1;
+      margin-bottom: 8px;
+      letter-spacing: normal;
+    }
+    .quiz-container > header .subtitle {
+      font-size: var(--step--1); /* Match main subtitle */
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Progress */
+    .progress-wrap {
+      margin: 24px 0;
+      position: sticky;
+      top: 0; /* Will be offset by main header height */
+      background: var(--bg);
+      padding: 8px 0;
+      z-index: 10;
+    }
+    .progress-label {
+      font-size: var(--step--1);
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .progress-bar {
+      height: 8px;
+      background: var(--muted);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid var(--ink);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--explorer-main); /* Using explorer-main for quiz accent */
+      transition: width 0.3s ease;
+    }
+
+    /* Scenario Card */
+    .scenario-card {
+      background: var(--surface-bg);
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .scenario-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      font-size: var(--step--1);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .scenario-type {
+      color: var(--warning);
+    }
+    .scenario-source {
+      color: var(--muted);
+    }
+    .scenario-context {
+      font-size: var(--step--1);
+      color: var(--muted);
+      margin-bottom: 12px;
+      padding: 12px;
+      background: color-mix(in srgb, var(--muted) 10%, transparent);
+      border-left: 3px solid var(--muted);
+      border-radius: var(--radius-sm);
+      line-height: 1.4;
+    }
+    .scenario-text {
+      font-size: var(--step-1);
+      line-height: 1.5;
+      margin-bottom: 24px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .scenario-constraint {
+      font-size: var(--step--1);
+      color: var(--warning);
+      padding: 10px 12px;
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border-left: 3px solid var(--warning);
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    /* Response Options */
+    .response-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .response-option {
+      padding: 16px;
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-md);
+      background: var(--surface-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .response-option:active {
+      transform: scale(0.98);
+    }
+    .response-option.selected {
+      background: var(--explorer-main); /* Using explorer-main for quiz accent */
+      color: white;
+      border-color: var(--explorer-main);
+    }
+    .response-option.selected .response-label,
+    .response-option.selected .response-identity {
+      color: white;
+    }
+    .response-label {
+      font-size: var(--step-0);
+      line-height: 1.4;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .response-identity {
+      font-size: var(--step--2);
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .response-consequence {
+      font-size: var(--step--2);
+      color: var(--caution);
+      font-style: italic;
+      margin-top: 4px;
+    }
+    .response-option.selected .response-consequence {
+      color: color-mix(in srgb, white 85%, transparent);
+    }
+
+    /* Navigation (quiz) */
+    .nav-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      padding: 12px 0;
+    }
+    .btn { /* Applied to quiz buttons, but derived from card button styles */
+      padding: 16px;
+      font: 600 var(--step-0) ui-sans-serif, system-ui, sans-serif;
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-md);
+      background: var(--surface-bg);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      min-height: 56px;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--explorer-main); /* Using explorer-main for quiz accent */
+      color: white;
+      border-color: var(--explorer-main);
+    }
+
+    /* Start Screen (quiz) */
+    .start-screen {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .start-screen h2 {
+      font-size: var(--step-2);
+      margin: 24px 0 16px;
+    }
+    .start-screen p {
+      color: var(--ink-2);
+      margin-bottom: 16px;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .start-screen .warning-box {
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border: 2px solid var(--warning);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin: 24px 0;
+      text-align: left;
+    }
+    .start-screen .warning-box strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--warning);
+    }
+    /* .quiz-container.started .start-screen { display: none; } */ /* Handled by JS toggling active class */
+
+    /* Results (quiz) */
+    .results {
+      /* display: none; */ /* Handled by JS toggling active class */
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    /* .results.active { display: block; } */ /* Handled by JS toggling active class */
+    .results h2 {
+      font-size: var(--step-2);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .identity-gap {
+      background: var(--surface-bg);
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .identity-section {
+      margin-bottom: 24px;
+    }
+    .identity-section:last-child {
+      margin-bottom: 0;
+    }
+    .identity-label {
+      font-size: var(--step--2);
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .identity-name {
+      font-size: var(--step-2);
+      font-weight: 700;
+      color: var(--explorer-main); /* Using explorer-main for quiz accent */
+      margin-bottom: 8px;
+    }
+    .identity-prob {
+      font-size: var(--step-3);
+      font-weight: 700;
+      color: var(--explorer-main); /* Using explorer-main for quiz accent */
+      margin-bottom: 12px;
+    }
+    .identity-desc {
+      font-size: var(--step-0);
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+    .gap-metric {
+      background: color-mix(in srgb, var(--warning) 10%, transparent);
+      border-left: 3px solid var(--warning);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+    }
+    .gap-metric strong {
+      display: block;
+      color: var(--warning);
+      margin-bottom: 8px;
+      font-size: var(--step--1);
+    }
+    .gap-metric p {
+      font-size: var(--step--1);
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+    .research-quote {
+      font-style: italic;
+      font-size: var(--step--1);
+      color: var(--muted);
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px dashed var(--muted);
+    }
+    .path-forward {
+      background: var(--surface-bg);
+      border: 3px solid var(--ink);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .path-forward h3 {
+      font-size: var(--step-1);
+      margin-bottom: 16px;
+    }
+    .path-forward ul {
+      list-style: none;
+      padding: 0;
+    }
+    .path-forward li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--muted);
+      line-height: 1.5;
+      font-size: var(--step-0);
+    }
+    .path-forward li:last-child {
+      border-bottom: none;
+    }
+    .path-forward li strong {
+      color: var(--explorer-main); /* Using explorer-main for quiz accent */
+    }
+    .restart-btn {
+      width: 100%;
+      margin-top: 24px;
+    }
+
+
+    /* -------------------------------------
+       CARD GRID SPECIFIC STYLES (from cards.html)
+       ------------------------------------- */
+    .grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+
+    /* Card Flip Structure */
+    .card-container {
+        perspective: 1000px; /* Establishes the 3D context */
+        width: var(--card-w); /* Fixed width for screen */
+        height: var(--card-h); /* Fixed height for screen */
+        position: relative;
+        cursor: pointer;
+    }
+    .card-flipper {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s; /* Smooth flip animation */
+        border: 3px solid; /* Border on the flipper for type color */
+        border-radius: var(--radius-xl);
+        background: var(--card-bg); /* Background of the flipper */
+        box-shadow: var(--shadow);
+    }
+    .card-container.flipped .card-flipper {
+        transform: rotateY(180deg);
+    }
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden; /* Hides the back of the element during flip */
+        padding: 16px; /* Increased padding for better internal spacing */
+        box-sizing: border-box; /* Include padding in width/height */
+        display: flex;
+        flex-direction: column;
+        color: var(--card-ink);
+        font-size: var(--step--1);
+        overflow: hidden; /* NO SCROLL ON CARD FACES */
+        border-radius: var(--radius-xl); /* Match container radius */
+        background: var(--card-bg); /* Match container background */
+    }
+    .card-face-back {
+        transform: rotateY(180deg); /* Initially hidden */
+    }
+
+    /* Bartle Type Colors (for card border) */
+    .explorer-card .card-flipper { border-color: var(--explorer-main); }
+    .socializer-card .card-flipper { border-color: var(--socializer-main); }
+    .achiever-card .card-flipper { border-color: var(--achiever-main); }
+    .killer-card .card-flipper { border-color: var(--killer-main); }
+
+    /* RIBBON: Integrated into flex header, no absolute positioning */
+    .ribbon{
+      padding:3px 8px;
+      border:2px solid var(--card-ink);
+      border-radius: 999px;
+      background: var(--chip-bg);
+      font:700 var(--step--2) ui-sans-serif, system-ui;
+      color: var(--plot-baseline-color);
+      z-index: 2;
+      margin-left: auto; /* Pushes to the right in a flex container */
+      align-self: flex-start; /* Aligns to the top within the flex item */
+      white-space: nowrap; /* Prevent wrapping for "PLoT: 0.XX" */
+    }
+
+    /* CARD HEADER: New Flexbox Layout */
+    .card-face header{
+      position: relative;
+      border:0;
+      background: none;
+      padding: 0; /* Let card-face padding handle overall spacing */
+      margin-bottom: 8px;
+      display: flex; /* Make header a flex container */
+      justify-content: space-between; /* Space between title-block and ribbon */
+      align-items: flex-start; /* Align items to the top */
+      gap: 10px; /* Space between title-block and ribbon if needed */
+    }
+    .card-face .header-content { /* New wrapper for h2 and chips */
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1; /* Allow title content to grow */
+    }
+    .card-face h2{
+      font-size: var(--step-1);
+      margin: 0; /* Remove specific margins, let flexbox handle */
+      line-height:1.1;
+      max-width: 100%; /* Ensure text doesn't overflow parent flex item */
+    }
+    .explorer-card h2 { color: var(--explorer-main); }
+    .socializer-card h2 { color: var(--socializer-main); }
+    .achiever-card h2 { color: var(--achiever-main); }
+    .killer-card h2 { color: var(--killer-main); }
+
+    .media-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; }
+    .chip{ border:2px solid var(--card-ink); padding: 2px 6px; border-radius: 999px; font:600 var(--step--2) ui-sans-serif, system-ui; background: var(--chip-bg); color: var(--card-ink); }
+    .chip span { font-size: 0.9em; font-weight: 400; }
+    .chip strong { font-size: 1.1em; }
+
+    .radar-chart-container {
+        width: 100%;
+        height: 140px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 8px;
+        background: transparent;
+        border-radius: 5px;
+        padding: 5px 0;
+    }
+    .radar-chart-container svg {
+        overflow: visible;
+        width: 90%;
+        height: 90%;
+    }
+    .radar-chart-container .radar-grid-line {
+        stroke: var(--muted);
+        stroke-width: 0.5px;
+        stroke-opacity: 0.5;
+    }
+    .radar-chart-container .radar-axis-line {
+        stroke: var(--ink-2);
+        stroke-width: 0.7px;
+        stroke-opacity: 0.7;
+    }
+    .radar-chart-container .radar-label {
+        font-size: 6px; /* Slightly larger for screen */
+        fill: var(--ink-2);
+        text-anchor: middle;
+        dominant-baseline: central;
+        font-family: ui-sans-serif, system-ui;
+        font-weight: 500;
+    }
+
+    /* Ornament - now Bartle-specific and simpler */
+    .ornament {
+        height: 3px;
+        margin: 8px 0;
+        border: none;
+        background-color: transparent;
+        background-image: linear-gradient(90deg, transparent 0%, transparent 45%, var(--_ornament-color, var(--card-ink)) 45%, var(--_ornament-color, var(--card-ink)) 55%, transparent 55%, transparent 100%);
+        background-size: 100% 1px;
+        background-repeat: repeat-y;
+        background-position: center;
+        border-top: 1px dashed var(--_ornament-color, var(--card-ink));
+        border-bottom: 1px dashed var(--_ornament-color, var(--card-ink));
+    }
+    .explorer-card .ornament { --_ornament-color: var(--explorer-main); }
+    .socializer-card .ornament { --_ornament-color: var(--socializer-main); }
+    .achiever-card .ornament { --_ornament-color: var(--achiever-main); }
+    .killer-card .ornament { --_ornament-color: var(--killer-main); }
+
+    .card-face .body {
+        padding: 8px 0px 0px;
+        display:flex;
+        flex-direction: column;
+        gap:6px;
+        flex-grow: 1;
+    }
+    .section-title{ font:700 var(--step--1) ui-sans-serif, system-ui; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2); font-size: 0.8em; margin-bottom: 3px;}
+    ul{ margin:.1rem 0; padding-left: 1rem; list-style-type: '— '; }
+    li{ margin:.05rem 0; font-size: 0.7em; line-height: 1.2; }
+    li strong { font-weight: 500; }
+
+    /* Minimal bars on card back */
+    .score-bar-group {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .score-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.65em; /* Slightly smaller for compactness */
+      color: var(--ink-2);
+    }
+    .score-bar .label {
+      flex-basis: 70px; /* Fixed width for labels */
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .score-bar .bar-track {
+      flex-grow: 1;
+      height: 6px; /* Thin bar */
+      background: var(--muted); /* Muted background for the track */
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .score-bar .bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 3px;
+      background: var(--_bar-color); /* Bartle-specific color */
+    }
+    .score-bar .value {
+      flex-basis: 25px; /* Fixed width for value */
+      flex-shrink: 0;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .card-face .card-footer {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-top: 6px;
+        border-top: 1.5px solid var(--muted); /* Slightly thicker line for footer */
+        line-height: 1.2;
+    }
+    .vulnerability, .synergy, .new-interaction {
+        font-size: 0.7em;
+        color: var(--ink-2);
+    }
+    .vulnerability strong { font-weight: 500; color: var(--vulnerability-color); }
+    .synergy strong { font-weight: 500; color: var(--synergy-color); }
+    .new-interaction strong { font-weight: 500; color: var(--new-interaction-color); }
+
+    .flip-btn {
+        background: var(--new-interaction-color);
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.65em;
+        font-weight: 700;
+        cursor: pointer;
+        align-self: flex-end;
+        margin-top: 5px;
+        box-shadow: var(--shadow);
+    }
+    .flip-btn:hover {
+        background: color-mix(in srgb, var(--new-interaction-color) 80%, black);
+    }
+
+    /* Deck mode (presentation) */
+    .deck{
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 1000;
+      overflow-y: auto; /* Allow deck to scroll if content is too tall */
+    }
+    .deck.active{ display:flex; }
+    .deck .card-container{
+      width:min(96vw, 600px); /* Larger width for deck mode */
+      height: auto; /* Auto height for deck mode */
+      margin: 0 auto; /* Center card in deck view */
+    }
+    .deck .card-flipper{ height: auto; border-radius: var(--radius-xl); }
+    .deck .card-face{ height: auto; overflow: hidden; } /* Ensure no internal card scroll in deck mode */
+    .deck .nav{ position: fixed; inset:auto 0 16px 0; display:flex; gap:8px; justify-content:center; }
+    .deck button{
+      font:700 var(--step-0) ui-sans-serif, system-ui;
+      border:3px solid var(--ink);
+      background: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      color: var(--ink); /* Stronger color for deck nav */
+    }
+
+    /* Compare table */
+    details.compare{ margin: 10px 0 20px; border:2px dashed var(--ink); border-radius: var(--radius-lg); padding: 8px; background: var(--surface-bg); }
+    details.compare summary{ cursor: pointer; font:700 var(--step--1) ui-sans-serif, system-ui; }
+    .table{ overflow:auto; }
+    table{ border-collapse: collapse; width:100%; font-size: var(--step--1); }
+    th, td{ border:2px solid var(--ink); padding: 8px; text-align:left; color: var(--ink); background: transparent; }
+    th{ background: color-mix(in srgb, var(--plot-baseline-color) 80%, transparent); position: sticky; top:0; color: var(--ink); }
+
+    /* Print */
+    @page { size: A4 portrait; margin: 16mm; }
+    @media print{
+      header, .controls, details.compare, .flip-btn { display:none !important; }
+      body{ background:white; color:black; font-size: 10pt; }
+
+      /* Grid for printing: 2 columns, each column is a pair of front/back */
+      .grid{
+        display: flex;
+        flex-direction: column; /* Stack "double cards" vertically */
+        gap: 15mm; /* Space between each complete double-card unit */
+      }
+
+      .card-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        width: 160mm !important; /* Total width for front + back (2x 80mm) */
+        height: 100mm !important; /* Fixed height for each physical card side */
+        transform: none !important;
+        margin-bottom: 0mm; /* Managed by grid gap */
+        box-shadow: none !important;
+        border: 1px dashed black !important; /* Outer cut line for the double-card unit */
+        display: flex !important; /* Make card-container a flex row */
+        flex-direction: row !important;
+        align-items: stretch; /* Stretch faces to fill height */
+        border-radius: 0 !important; /* No rounded corners for print cut-out */
+        background: white !important;
+      }
+      .card-flipper {
+        transform: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+        display: flex; /* Make flipper a flex item for faces */
+        width: 100%; /* Take full width of container */
+      }
+      .card-face {
+        position: static !important;
+        transform: none !important;
+        backface-visibility: visible !important;
+        width: 80mm !important; /* Each face is 80mm wide */
+        height: 100mm !important; /* Each face is 100mm tall */
+        padding: 4mm !important; /* Adjust padding for print */
+        overflow: visible !important; /* Ensure no clipping for print */
+        font-size: 7pt !important; /* Base font size for lists etc. */
+        line-height: 1.2;
+        color: black !important;
+        background: white !important;
+        border-radius: 0 !important; /* No rounded corners for print */
+      }
+      .card-face-front {
+        border-right: 1px dashed black !important; /* Fold/cut line between front and back */
+      }
+      .card-face-back {
+        /* No margin-top or other positioning needed for side-by-side */
+      }
+
+      /* Reset specific print colors to black */
+      .ornament {
+        --_ornament-color: black !important;
+        border-top: 1px dashed black !important;
+        border-bottom: 1px dashed black !important;
+        background-image: linear-gradient(90deg, transparent 0%, transparent 45%, black 45%, black 55%, transparent 55%, transparent 100%) !important;
+      }
+      .ribbon {
+        color: black !important;
+        background: white !important;
+        border-color: black !important;
+        font-size: 6pt !important; /* Adjust font size for print ribbon */
+        margin-left: 0 !important; /* Reset margin-left auto for print */
+      }
+      h2, .chip, .chip span, .chip strong, .section-title, .meter .name, .bar, .bar > i, .pct, ul, li { color: black !important; border-color: black !important; }
+      .vulnerability strong, .synergy strong, .new-interaction strong { color: black !important; }
+
+      /* Minimal bars on card back for print */
+      .score-bar .bar-fill { background: black !important; }
+      .score-bar .bar-track { background: lightgray !important; }
+
+      /* Radar chart styles for print */
+      .radar-chart-container .radar-grid-line,
+      .radar-chart-container .radar-axis-line { stroke: black !important; stroke-opacity: 0.8 !important; }
+      .radar-chart-container polygon { fill: rgba(0, 0, 0, 0.1) !important; stroke: black !important; stroke-dasharray: none !important; }
+      .radar-chart-container .radar-label { fill: black !important; font-size: 4.5pt !important; }
+
+      /* If deck mode is active, only print the single active card's front */
+      .deck.active .card-container {
+        width: 80mm !important; /* Only front width */
+        height: 100mm !important;
+        border: 1px solid black !important; /* Just a single card border */
+      }
+      .deck.active .card-flipper { flex-direction: column !important; } /* Reset flex direction for single card */
+      .deck.active .card-face-back { display: none !important; } /* Hide back face in deck print */
+      .deck.active .card-face-front { border-right: none !important; } /* Remove divider for single card */
+    }
+
+    /* High-contrast toggle */
+    .hc body, .hc{ filter: contrast(1.15) saturate(1.1); }
+
+    /* Tiny badge legend */
+    .legend{ display:flex; gap:8px; flex-wrap:wrap; font:600 var(--step--1) ui-sans-serif, system-ui; color:var(--muted); margin-top: 8px;}
+    .legend .sw{ width:14px; height:10px; border:2px solid var(--ink); border-radius:5px; display:inline-block; background: linear-gradient(90deg, var(--synergy-color), var(--vulnerability-color)); }
+    .legend .plot-sw { width:14px; height:10px; border:2px solid var(--ink); border-radius:5px; display:inline-block; background: var(--plot-baseline-color); }
+    .legend .plot-expl { font-size: var(--step--1); color: var(--muted); margin-top: 5px; line-height: 1.3;}
+
+    /* Footer */
+    footer{ text-align:center; padding: 30px 10px; color: var(--muted); font-size: var(--step--1); }
+  </style>
+</head>
+<body>
+  <header aria-label="App header">
+    <div class="title" role="banner">
+      <div class="brandmark" aria-hidden="true"></div>
+      <div>
+        <h1>Ethical Identity Navigator</h1>
+        <p class="subtitle">Dilemmas, identity claims, and structural constraints</p>
+      </div>
+    </div>
+    <div class="controls" role="toolbar" aria-label="Display controls">
+      <button id="startQuizBtn" class="btn btn-primary">Start Quiz</button>
+      <button id="viewCardsBtn" class="btn">View All Identities</button>
+      <button id="deckBtn" title="Presentation / deck mode (⌘/Ctrl + Enter)">Deck Mode</button>
+      <button id="printBtn" title="Print / Save to PDF">Print</button>
+      <button id="contrastBtn" aria-pressed="false" title="High contrast toggle">High Contrast</button>
+      <div class="rangewrap" title="Text size">
+        <label for="size">Text</label>
+        <input id="size" type="range" min="-2" max="2" step="1" value="0" />
+      </div>
+      <select id="sortSel" title="Sort cards">
+        <option value="none">Sort: Original</option>
+        <option value="awareness">Sort: Ethical Awareness (desc)</option>
+        <option value="action">Sort: Ethical Action (desc)</option>
+        <option value="impact">Sort: Impact (desc)</option>
+        <option value="risk">Sort: Role Risk (asc)</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <!-- QUIZ SECTION -->
+    <div id="quizSection" class="main-section active">
+      <div class="quiz-container">
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+          <header>
+            <div class="brandmark"></div>
+            <h1>Ethical Dilemma Navigator</h1>
+            <p class="subtitle">How do you act under structural constraint?</p>
+          </header>
+          <h2>The Ethics of Powerlessness</h2>
+
+          <p>This is not a personality test. It reveals the gap between your ethical aspirations and what you can actually do under organizational constraint.</p>
+
+          <p>You'll face 8 real ethical dilemmas from technology practitioners—situations where all choices carry consequences, where doing "the right thing" risks your career, and where inaction is itself a moral choice.</p>
+
+          <div class="warning-box">
+            <strong>What this measures:</strong>
+            Not who you are, but what identity claims you can actually enact when power, role boundaries, and organizational pressure limit your choices.
+          </div>
+
+          <p><strong>Based on research by Chivukula et al. (CHI 2021)</strong><br>
+          "Identity Claims that Underlie Ethical Awareness and Action"</p>
+
+          <button class="btn btn-primary" onclick="startQuiz()" style="width: 100%; margin-top: 20px;">Begin Dilemmas</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-wrap" id="progressWrap" style="display: none;">
+          <div class="progress-label" id="progressLabel">Dilemma 1 of 8</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 12.5%;"></div>
+          </div>
+        </div>
+
+        <!-- Scenario Card -->
+        <div class="scenario-card" id="scenarioCard" style="display: none;">
+          <div class="scenario-meta">
+            <span class="scenario-type" id="scenarioType"></span>
+            <span class="scenario-source" id="scenarioSource"></span>
+          </div>
+          <div class="scenario-context" id="scenarioContext"></div>
+          <div class="scenario-text" id="scenarioText"></div>
+          <div class="scenario-constraint" id="scenarioConstraint"></div>
+          <div class="response-options" id="responseOptions"></div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-buttons" id="navButtons" style="display: none;">
+          <button class="btn" id="prevBtn" onclick="prevScenario()">← Back</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextScenario()">Next →</button>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="quizResults" style="display: none;">
+          <h2>Your Ethical Identity Under Constraint</h2>
+          <div id="resultsContent"></div>
+          <button class="btn btn-primary restart-btn" onclick="restartQuiz()">Take Again</button>
+          <button class="btn view-cards-btn" onclick="showCardsGrid()" style="width: 100%; margin-top: 12px;">View All Identities</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IDENTITY CARDS SECTION -->
+    <div id="cardsSection" class="main-section">
+      <details class="compare">
+        <summary>Compare view (data‑dense table)</summary>
+        <div id="compare" class="table" aria-live="polite"></div>
+        <div class="legend">
+          <span class="sw"></span> Metric bars use juniper→terracotta gradient. Values are 0–1.
+          <span class="plot-sw"></span> PLoT Baseline Probability.
+        </div>
+        <p class="plot-expl"><strong>PLoT (Probability of Legitimate Outcome in Time) Baseline:</strong> The initial likelihood of a practitioner achieving an ethically sound outcome within their role.</p>
+      </details>
+      <section class="grid" id="grid" aria-live="polite"></section>
+    </div>
+  </main>
+
+  <div class="deck" id="deck" aria-hidden="true">
+    <div class="deck-card" id="deckCard"></div>
+    <div class="nav" aria-label="Deck navigation">
+      <button id="prevDeck">◀︎ Prev (←)</button>
+      <button id="nextDeck">Next (→) ▶︎</button>
+      <button id="closeDeck">Close (Esc)</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>Design heuristics: folk borders, AAA contrast, big type, no external assets, printable, swipe/keys, resilient semantics.</p>
+  </footer>
+
+  <!-- Embedded DATA: Ethical Identity Claims (from cards.html) -->
+  <script id="ethical-identity-data" type="application/json">{
+    "ethical_identities": [
+        {
+            "proposal": "THE LEARNER",
+            "key": "learner",
+            "bartle_type": "Explorer",
+            "ethical_function": "Cognitive / Foundational",
+            "mythic_persona": "The Seeker of Wisdom",
+            "core_drive": "Discovery & System Mapping. Acquiring **\"knowledge\"** to understand the full ethical system.",
+            "plt_baseline_probability": 0.65,
+            "enhances": "Capacity for discovery, knowledge-mapping, and epistemic humility.",
+            "retrieves": "The apprentice tradition — ethics as a craft to be mastered over time.",
+            "reverses_into": "Paralysis from endless learning, information overload, or policy-following without deeper understanding.",
+            "obsolesces": "Blind certainty; the myth of innate ethical competence.",
+            "muddiness_tension": "Intrinsic motivation to learn clashes with information overload & time scarcity (SP11).",
+            "plot_update_muddiness": "Confidence in ethical readiness (e.g., 0.65) *requires* continuous new evidence. Insufficient data acquisition *decreases* readiness, pushing reliance to **Policy-Following** (e.g., 0.30, Fig. 1d).",
+            "grounding_evidence": "Paper Quote: 'I recognize that my current knowledge is insufficient and thus I need to improve my capabilities over time.' (Table 2); 'equip [themselves] with the right set of knowledge' (SP08); 'learning is [a] gradual process' (SP11).",
+            "vulnerability": "Exhaustion & Inertia. High commitment easily undermined if organization prioritizes speed over depth (Fig. 1d).",
+            "synergies": "Enhances **The Educator**, **The Translator**, and informs **The Conscientious Custodian**.",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.8,
+            "ethical_action_score": 0.4,
+            "impact_score": 0.3,
+            "role_risk_score": 0.2,
+            "radar_metrics": {
+                "openness": 5, "conscientiousness": 3, "extraversion": 2, "agreeableness": 3, "neuroticism": 3, "logic": 3, "empathy": 3, "authority": 2, "risk": 3, "uncertainty": 4, "decisiveness": 2
+            }
+        },
+        {
+            "proposal": "THE PRUDENT PONDERER",
+            "key": "ponderer",
+            "bartle_type": "Explorer",
+            "ethical_function": "Strategic / Internal",
+            "mythic_persona": "The Prudent Ponderer",
+            "core_drive": "Internal Mapping & Safety. Mentally processing complex systems before committing.",
+            "plt_baseline_probability": 0.60,
+            "enhances": "Strategic delay, risk-mapping, internal safety nets.",
+            "retrieves": "The philosopher’s stance of reflection before judgment.",
+            "reverses_into": "Inaction or avoidance; **“paralysis by analysis.”**",
+            "obsolesces": "Rash ethical action and impulsive moralizing.",
+            "muddiness_tension": "Safety-driven delay mechanism collides with external demands for urgency.",
+            "plot_update_muddiness": "Ethical intervention probability *paused*. Risks passive avoidance if internal anxieties (SP05, SP09) are unchecked, *decreasing* any action (e.g., 0.60 -> 0.20).",
+            "grounding_evidence": "Paper Quote: 'I internally question which knowledge sources and structures to trust or act upon.' (Table 2); 'worrying about being accused of being political' (SP07); 'Maslow's hierarchy thing' (SP09).",
+            "vulnerability": "Paralysis by Analysis. Risk of inaction; misinterpreted as passivity; influenced by anxiety/risk aversion.",
+            "synergies": "Enables **The Challenger** (strategic timing), **The Conscientious Custodian** (aids in defining 'right,' SP11).",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.9,
+            "ethical_action_score": 0.3,
+            "impact_score": 0.2,
+            "role_risk_score": 0.3,
+            "radar_metrics": {
+                "openness": 4, "conscientiousness": 3, "extraversion": 2, "agreeableness": 3, "neuroticism": 4, "logic": 3, "empathy": 3, "authority": 2, "risk": 2, "uncertainty": 3, "decisiveness": 1
+            }
+        },
+        {
+            "proposal": "THE CULTIVATOR",
+            "key": "cultivator",
+            "bartle_type": "Explorer",
+            "ethical_function": "Character / Virtue",
+            "mythic_persona": "The Moral Alchemist",
+            "core_drive": "Self-Perfection & Moral Development. Embodying ethical character traits in practice.",
+            "plt_baseline_probability": 0.70,
+            "enhances": "Personal integrity, consistency of moral action, resilience against compromises.",
+            "retrieves": "The ancient wisdom of virtue ethics — **'being' good over simply 'doing' right.**",
+            "reverses_into": "Self-righteousness, judgmentalism, or moral paralysis when virtues conflict.",
+            "obsolesces": "Ethical relativism; shallow compliance without genuine conviction.",
+            "muddiness_tension": "Consistently enacting virtues in complex contexts (e.g., courage vs. prudence) is subjective.",
+            "plot_update_muddiness": "Probability of **'being virtuous' is continuous, internal.** External pressures can cause 'moral drift,' *decreasing* consistent virtuous action (e.g., 0.70 -> 0.45).",
+            "grounding_evidence": "(Inferred from SP02's **'headstrong' commitment to 'right'** based on personal history).",
+            "vulnerability": "Moral Drift. Risk of self-righteousness; struggles when virtues conflict (e.g., honesty vs. loyalty).",
+            "synergies": "Enhances **The Conscientious Custodian** (virtuous responsibility), **The Educator** (leading by example).",
+            "new_interaction": "Can empower **The Challenger**; may clash with **The Policy-Follower**.",
+            "ethical_awareness_score": 0.85,
+            "ethical_action_score": 0.7,
+            "impact_score": 0.6,
+            "role_risk_score": 0.4,
+            "radar_metrics": {
+                "openness": 4, "conscientiousness": 5, "extraversion": 2, "agreeableness": 2, "neuroticism": 3, "logic": 3, "empathy": 4, "authority": 3, "risk": 3, "uncertainty": 2, "decisiveness": 4
+            }
+        },
+        {
+            "proposal": "THE EDUCATOR",
+            "key": "educator",
+            "bartle_type": "Socializer",
+            "ethical_function": "Interpersonal / Collective",
+            "mythic_persona": "The Illuminator",
+            "core_drive": "Interaction & Community Building. Disseminating knowledge and building shared language.",
+            "plt_baseline_probability": 0.40,
+            "enhances": "Collective ethical awareness, shared vocabulary, peer accountability.",
+            "retrieves": "The guild lecturer or mentor role — communal instruction.",
+            "reverses_into": "Exhaustion, resistance from colleagues, preaching to the choir.",
+            "obsolesces": "Isolated ethical reflection done alone and unshared.",
+            "muddiness_tension": "Drive to share (Illuminator) clashes with ethical discussions being **'scary' or 'burdensome'** (SP07).",
+            "plot_update_muddiness": "Collective awareness is incremental. If efforts meet resistance, probability of enacting **The Educator** *decreases* (e.g., 0.40 -> 0.15), potentially shifting to **The Prudent Ponderer**.",
+            "grounding_evidence": "Paper Quote: 'I seek to share my knowledge with others.' (Table 2); 'made a concerted effort... **'lunch and learn'**' (SP07); 'not scary... not burdensome' (SP07).",
+            "vulnerability": "Fatigue & Resistance. Requires significant personal effort; impact contingent on audience reception.",
+            "synergies": "Empowers **The Translator**, **The Challenger**.",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.7,
+            "ethical_action_score": 0.6,
+            "impact_score": 0.5,
+            "role_risk_score": 0.35,
+            "radar_metrics": {
+                "openness": 4, "conscientiousness": 4, "extraversion": 4, "agreeableness": 4, "neuroticism": 2, "logic": 4, "empathy": 4, "authority": 3, "risk": 3, "uncertainty": 3, "decisiveness": 3
+            }
+        },
+        {
+            "proposal": "THE MEMBER OF MY PROFESSION",
+            "key": "guild",
+            "bartle_type": "Socializer",
+            "ethical_function": "Structural / Boundary",
+            "mythic_persona": "The Guardian of the Guild",
+            "core_drive": "Role Definition & Group Affiliation. Operating within professional rhetorical boundaries.",
+            "plt_baseline_probability": 0.80,
+            "enhances": "Role-based legitimacy, disciplinary boundaries, professional solidarity.",
+            "retrieves": "The guild or order — belonging to a lineage of practice.",
+            "reverses_into": "Ethical narrowness; **“that’s outside my role”** disclaimers.",
+            "obsolesces": "Individual improvisation in ethics; idiosyncratic reasoning detached from role norms.",
+            "muddiness_tension": "Professional framework (Guardian) constrains broader ethical impulses.",
+            "plot_update_muddiness": "Ethical action probability conditional on perceived role power. Junior roles *increase* deference to **Policy-Following** (e.g., 0.80 -> 0.95, Fig. 1c), while senior roles *enable* **Activism** (Fig. 1b).",
+            "grounding_evidence": "Paper Quote: 'I represent the beliefs, values, and activities of my profession as defined by my disciplinary rhetoric.' (Table 2); **'algorithm is as good as the data'** (SP09); **'he's got more power and say'** (SP14).",
+            "vulnerability": "Role Constraint. Susceptible to power dynamics; limits ethical scope; lack of cross-disciplinary language.",
+            "synergies": "Enables **The Adherent to the Code**, **The Challenger** (if managerial/executive).",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.6,
+            "ethical_action_score": 0.5,
+            "impact_score": 0.4,
+            "role_risk_score": 0.5,
+            "radar_metrics": {
+                "openness": 3, "conscientiousness": 4, "extraversion": 3, "agreeableness": 3, "neuroticism": 3, "logic": 3, "empathy": 3, "authority": 3, "risk": 2, "uncertainty": 2, "decisiveness": 3
+            }
+        },
+        {
+            "proposal": "THE HARMONIZER",
+            "key": "harmonizer",
+            "bartle_type": "Socializer",
+            "ethical_function": "Relational / Mediator",
+            "mythic_persona": "The Harmonizer",
+            "core_drive": "Group Cohesion & Shared Ethical Understanding. Fostering negotiation and synthesis of perspectives.",
+            "plt_baseline_probability": 0.55,
+            "enhances": "Inclusive ethical dialogue, reduction of interpersonal conflict, establishment of shared understanding.",
+            "retrieves": "The community elder or mediator — guiding collective decision-making.",
+            "reverses_into": "Superficial consensus, suppression of dissenting voices, or prioritizing **'niceness' over truth.**",
+            "obsolesces": "Fragmented ethical debates; unresolved team conflicts; moral polarization.",
+            "muddiness_tension": "Achieving **_genuine_ consensus** is hard, often revealing deep conflicts or power imbalances.",
+            "plot_update_muddiness": "Probability of **'group agreement' is fragile.** If consensus is forced or superficial, probability of *truly ethical* outcomes *decreases* (e.g., 0.55 -> 0.30), potentially suppressing **Challenger** impulses.",
+            "grounding_evidence": "(Implied by SP09 **'providing a platform... opinions matter'**; SP07 wanting discussions to be 'not scary').",
+            "vulnerability": "Process Over Substance. Risk of prioritizing harmony over deep ethical principles; susceptible to manipulation.",
+            "synergies": "Enhances **The Educator**, **The Prudent Ponderer**.",
+            "new_interaction": "Can clash with **The Challenger** if harmony dampens radical advocacy.",
+            "ethical_awareness_score": 0.75,
+            "ethical_action_score": 0.65,
+            "impact_score": 0.55,
+            "role_risk_score": 0.4,
+            "radar_metrics": {
+                "openness": 4, "conscientiousness": 3, "extraversion": 4, "agreeableness": 5, "neuroticism": 2, "logic": 3, "empathy": 4, "authority": 2, "risk": 2, "uncertainty": 3, "decisiveness": 3
+            }
+        },
+        {
+            "proposal": "THE TRANSLATOR",
+            "key": "translator",
+            "bartle_type": "Achiever",
+            "ethical_function": "Operational / Implementer",
+            "mythic_persona": "The Bridge-Builder",
+            "core_drive": "Goal Completion & Impact. Converting abstract inputs into tangible outputs.",
+            "plt_baseline_probability": 0.70,
+            "enhances": "Operationalization of values into checklists, designs, and metrics.",
+            "retrieves": "The craftsman-builder — making abstract values tangible.",
+            "reverses_into": "Superficial compliance; ethics reduced to **box-ticking**.",
+            "obsolesces": "Purely theoretical ethics divorced from design practice.",
+            "muddiness_tension": "Ethical application goal clashes with organizational inertia, forcing compensatory actions (SP06).",
+            "plot_update_muddiness": "Effectiveness (e.g., 0.70) measured by recognized outputs (compliance, SP03). If translation is superficial, probability of *deep* ethical change *decreases* (e.g., 0.70 -> 0.40).",
+            "grounding_evidence": "Paper Quote: 'I seek to translate... knowledge' (Table 2); **'qualitative needs into a form factor'** (SP04); **'part of the process and not as afterthought'** (SP11).",
+            "vulnerability": "Compromise. Risk of reducing deep ethical concepts to mere checklist compliance or superficial metrics.",
+            "synergies": "Enables **The Adherent to the Code**, **The Conscientious Custodian**.",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.65,
+            "ethical_action_score": 0.8,
+            "impact_score": 0.7,
+            "role_risk_score": 0.25,
+            "radar_metrics": {
+                "openness": 4, "conscientiousness": 5, "extraversion": 2, "agreeableness": 2, "neuroticism": 2, "logic": 4, "empathy": 2, "authority": 3, "risk": 2, "uncertainty": 2, "decisiveness": 4
+            }
+        },
+        {
+            "proposal": "THE ADHERENT TO THE CODE",
+            "key": "adherent",
+            "bartle_type": "Achiever",
+            "ethical_function": "Structural / Compliance",
+            "mythic_persona": "The Adherent to the Code",
+            "core_drive": "Status Preservation & Checkpoint Fulfillment. Avoiding failure and operating within safe parameters.",
+            "plt_baseline_probability": 0.75,
+            "enhances": "Compliance, clarity of boundaries, stability in decision-making.",
+            "retrieves": "The loyal functionary who preserves institutional order.",
+            "reverses_into": "Blindness to ethical gaps; incapacity when policy lags reality.",
+            "obsolesces": "Personal judgment and moral improvisation.",
+            "muddiness_tension": "Certainty of the Code clashes with emergent ethical vacuums (**'outside of our reach anyway,'** SP03).",
+            "plot_update_muddiness": "Ethical action probability high for defined compliance (e.g., 0.75). Adherence *suppresses* **Challenger** action if issues aren't codified, leading to **'lack of ethical power'** (SP06).",
+            "grounding_evidence": "Paper Quote: 'I seek to follow relevant policies' (Table 2); **'cannot keep somebody's data more than X, Y, Z'** (SP04); **'ethical checkpoints'** (SP08).",
+            "vulnerability": "Blind Spot. Prevents addressing issues not covered by rules; confines ethical scope; disempowerment when policy lags reality.",
+            "synergies": "Supports **The Member of My Profession**, **The Translator**.",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.5,
+            "ethical_action_score": 0.7,
+            "impact_score": 0.6,
+            "role_risk_score": 0.2,
+            "radar_metrics": {
+                "openness": 1, "conscientiousness": 5, "extraversion": 2, "agreeableness": 2, "neuroticism": 2, "logic": 3, "empathy": 1, "authority": 4, "risk": 1, "uncertainty": 1, "decisiveness": 4
+            }
+        },
+        {
+            "proposal": "THE OPTIMIZER",
+            "key": "optimizer",
+            "bartle_type": "Achiever",
+            "ethical_function": "Outcome / Utilitarian",
+            "mythic_persona": "The Architect of Good",
+            "core_drive": "Maximizing Net Benefit & Optimal Outcomes. Ethical action as an optimization problem.",
+            "plt_baseline_probability": 0.60,
+            "enhances": "Data-driven ethical reasoning, large-scale impact assessment, systematic problem-solving.",
+            "retrieves": "Utilitarian philosophy — **the greatest good for the greatest number.**",
+            "reverses_into": "Justification of minority harm for majority benefit, or prioritizing quantifiable metrics over non-quantifiable values.",
+            "obsolesces": "Impulsive or emotional ethical decision-making; narrow individualistic ethics.",
+            "muddiness_tension": "Quantifying **'good' or 'harm'** is subjective and prone to bias, especially with long-term impacts.",
+            "plot_update_muddiness": "**'Correct' ethical path (e.g., 0.60)** is unstable due to unpredictable outcomes. High probability of justifying trade-offs that conflict with deontological views (e.g., 0.40 probability of equitable outcomes).",
+            "grounding_evidence": "(Inferred from SP11's desire to **'solve the problem in a more holistic way'** and acquire knowledge when policies are insufficient).",
+            "vulnerability": "Ethical Calculus Failure. Susceptible to unforeseen consequences; rationalizes minority harm; struggles with non-quantifiable values.",
+            "synergies": "Enhances **The Translator**, **The Learner**.",
+            "new_interaction": "Can clash with **The Conscientious Custodian** (if individual rights are sacrificed).",
+            "ethical_awareness_score": 0.7,
+            "ethical_action_score": 0.6,
+            "impact_score": 0.8,
+            "role_risk_score": 0.3,
+            "radar_metrics": {
+                "openness": 3, "conscientiousness": 4, "extraversion": 2, "agreeableness": 3, "neuroticism": 2, "logic": 5, "empathy": 3, "authority": 3, "risk": 3, "uncertainty": 2, "decisiveness": 4
+            }
+        },
+        {
+            "proposal": "THE CONSCIENTIOUS CUSTODIAN",
+            "key": "custodian",
+            "bartle_type": "Killer",
+            "ethical_function": "Moral / Intrinsic",
+            "mythic_persona": "The Conscientious Custodian",
+            "core_drive": "System Integrity & Moral Assertion. Acting upon outcomes to assert moral judgment.",
+            "plt_baseline_probability": 0.90,
+            "enhances": "Moral conviction, responsibility for consequences, integrity of systems.",
+            "retrieves": "The steward or custodian role — guardianship over a community’s values.",
+            "reverses_into": "Isolation, burnout, martyrdom when unsupported.",
+            "obsolesces": "Neutral or amoral professional stances.",
+            "muddiness_tension": "Moral certainty clashes with powerlessness (**'beyond a certain point your roles start to define how much power you have,'** SP14).",
+            "plot_update_muddiness": "Action probability (e.g., 0.90) high due to moral conviction, but often *thwarted* by external constraints (Fig. 1a), forcing internal conflict/disengagement (SP02), *decreasing* effective action.",
+            "grounding_evidence": "Paper Quote: 'I consider the current and future impact of my work.' (Table 2); **'every action that you perform has repercussions'** (SP12); **'no brainer... choosing the right thing'** (SP11).",
+            "vulnerability": "Isolation. Moral obligation can lead to self-sacrifice (quitting, SP02) or personal compensation (SP06) when channels are blocked.",
+            "synergies": "Founds **The Challenger** (Fig. 1a), motivates **The Learner** (Fig. 1d).",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.9,
+            "ethical_action_score": 0.4,
+            "impact_score": 0.5,
+            "role_risk_score": 0.45,
+            "radar_metrics": {
+                "openness": 3, "conscientiousness": 5, "extraversion": 2, "agreeableness": 2, "neuroticism": 3, "logic": 3, "empathy": 4, "authority": 4, "risk": 3, "uncertainty": 2, "decisiveness": 3
+            }
+        },
+        {
+            "proposal": "THE CHALLENGER",
+            "key": "challenger",
+            "bartle_type": "Killer",
+            "ethical_function": "Advocacy / Disruptive",
+            "mythic_persona": "The Challenger",
+            "core_drive": "Dominance over Status Quo & Change. Directly influencing affairs to assert ethical control.",
+            "plt_baseline_probability": 0.30,
+            "enhances": "Advocacy, disruption, transformative ethical action.",
+            "retrieves": "The prophetic voice — **the gadfly or activist demanding change.**",
+            "reverses_into": "Political retaliation, blacklisting, burnout, forced exit.",
+            "obsolesces": "Quiet conformity; the polite **“team player” posture.**",
+            "muddiness_tension": "Direct challenge often encounters organized resistance (**'more obstacles than support'**).",
+            "plot_update_muddiness": "Probability of successful change (e.g., 0.30) consistently low; failure often leads to practitioners exiting (SP02). Success conditional on role power (Fig. 1b).",
+            "grounding_evidence": "Paper Quote: 'I question the current state of affairs and seek to change.' (Table 2); **'tr[ying] to push the conversation'** (SP14); **'I went up to my VP and I said, stop'** (SP13).",
+            "vulnerability": "Repercussion. High risk of political retaliation, burnout, or job loss; effectiveness determined by external power.",
+            "synergies": "Achieves **The Conscientious Custodian**, leverages power from **The Member of My Profession**.",
+            "new_interaction": null,
+            "ethical_awareness_score": 0.7,
+            "ethical_action_score": 0.8,
+            "impact_score": 0.7,
+            "role_risk_score": 0.6,
+            "radar_metrics": {
+                "openness": 3, "conscientiousness": 3, "extraversion": 3, "agreeableness": 2, "neuroticism": 3, "logic": 3, "empathy": 3, "authority": 5, "risk": 5, "uncertainty": 1, "decisiveness": 5
+            }
+        }
+    ]
+}</script>
+
+  <script>
+  // UTILITIES (from cards.html)
+  const $ = (sel, ctx=document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+  const state = {
+    // Card-related state
+    data: null, // Populated from #ethical-identity-data JSON
+    deckIndex: 0,
+    sort: 'none',
+    sizeStep: 0,
+    // Quiz-related state
+    currentScenario: 0,
+    responses: [],
+    identityScores: {},
+    totalCareerRisk: 0,
+    enactedIdentities: [],
+  };
+
+  // Radar chart axes, matching the image labels and python data (from cards.html)
+  const radarAxes = [
+      "Openness", "Conscientiousness", "Extraversion", "Agreeableness", "Neuroticism",
+      "Logic", "Empathy", "Authority", "Risk", "Uncertainty", "Decisiveness"
+  ];
+
+  // Ethical Dilemma Scenarios (from quiz.html)
+  const scenarios = [
+      {
+        type: "Advocacy vs. Career Risk",
+        source: "Based on SP07",
+        context: "You're a UX designer at a mid-size tech company. You've spent months researching data privacy issues in your product and want to educate your team.",
+        text: "You want to present a 'lunch and learn' on data privacy and dark patterns. Your manager privately warns you it could be seen as 'too political' and might hurt your performance review. The presentation is voluntary.",
+        constraint: "Your manager has explicitly signaled career consequences. You're not senior enough to override this.",
+        responses: [
+          {
+            label: "Present anyway with full detail on company practices",
+            identity: "Challenger",
+            consequence: "High career risk, potential retaliation",
+            scores: { challenger: 0.4, custodian: 0.3, ponderer: -0.2, adherent: -0.3 },
+            careerRisk: 0.5,
+            enactment: "challenger"
+          },
+          {
+            label: "Water down content to focus only on legal compliance, avoid specific company examples",
+            identity: "Policy-Follower / Translator",
+            consequence: "Low impact, maintains safety",
+            scores: { adherent: 0.3, translator: 0.2, challenger: -0.2, educator: -0.1 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Postpone indefinitely while 'researching more' and building a legal case",
+            identity: "Prudent Ponderer",
+            consequence: "Paralysis by analysis, issue persists",
+            scores: { ponderer: 0.4, learner: 0.2, challenger: -0.3 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          },
+          {
+            label: "Share resources privately with interested colleagues instead of presenting",
+            identity: "Educator (constrained)",
+            consequence: "Limited reach, builds allies",
+            scores: { educator: 0.3, harmonizer: 0.2, challenger: -0.1 },
+            careerRisk: 0.2,
+            enactment: "educator"
+          },
+          {
+            label: "Drop it entirely and focus on assigned work",
+            identity: "Member of Profession (boundary-keeping)",
+            consequence: "No personal risk, no change",
+            scores: { guild: 0.2, adherent: 0.2, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          }
+        ]
+      },
+      {
+        type: "Algorithmic Harm vs. Deadline Pressure",
+        source: "Based on SP09",
+        context: "You're a CTO at a startup. Your ML model shows bias against certain demographics in testing. Launch is tomorrow. Investors are watching.",
+        text: "Your PM says 'the algorithm is as good as the data' and refuses to delay. Fixing the bias would take 2-3 weeks minimum. Missing launch could kill the company.",
+        constraint: "You have authority but face existential business pressure. Your team has worked 80-hour weeks.",
+        responses: [
+          {
+            label: "Refuse to deploy, delay launch to fix bias regardless of business impact",
+            identity: "Conscientious Custodian",
+            consequence: "Company may fail, team may lose jobs",
+            scores: { custodian: 0.5, challenger: 0.3, optimizer: -0.3 },
+            careerRisk: 0.6,
+            enactment: "custodian"
+          },
+          {
+            label: "Deploy with prominent bias disclaimer in documentation and commit to fix in v2",
+            identity: "Translator / Deliberative",
+            consequence: "Harm occurs, documented transparency",
+            scores: { translator: 0.3, ponderer: 0.2, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "translator"
+          },
+          {
+            label: "Request 1-week delay to implement partial mitigation, negotiate with investors",
+            identity: "Optimizer / Harmonizer",
+            consequence: "Compromise solution, uncertain outcome",
+            scores: { optimizer: 0.3, harmonizer: 0.3, challenger: -0.1 },
+            careerRisk: 0.3,
+            enactment: "optimizer"
+          },
+          {
+            label: "Launch on schedule, add bias monitoring for post-launch fix",
+            identity: "Member of Profession (engineering pragmatism)",
+            consequence: "Bias ships, measured approach",
+            scores: { guild: 0.3, adherent: 0.2, custodian: -0.3 },
+            careerRisk: 0.1,
+            enactment: "guild"
+          },
+          {
+            label: "Resign rather than ship biased system",
+            identity: "Sense of Responsibility (exit)",
+            consequence: "Personal integrity maintained, problem unsolved",
+            scores: { custodian: 0.4, challenger: 0.2, optimizer: -0.4 },
+            careerRisk: 1.0,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Junior Role Constraint",
+        source: "Based on SP14",
+        context: "You're a junior UX designer. You discover a serious user data vulnerability that could expose private information.",
+        text: "Your senior PM dismisses your concern: 'That's not your job. Focus on the UI polish. Engineering handles security.' You know this won't reach the security team.",
+        constraint: "You lack organizational power. Going over your PM's head could get you fired. The PM has been at the company 6 years.",
+        responses: [
+          {
+            label: "Escalate directly to CTO/CISO despite PM's directive",
+            identity: "Challenger (high-risk for junior)",
+            consequence: "Likely retaliation, possible termination",
+            scores: { challenger: 0.5, custodian: 0.3, guild: -0.4 },
+            careerRisk: 0.7,
+            enactment: "challenger"
+          },
+          {
+            label: "Document the concern in detail and archive for future reference",
+            identity: "Deliberative (CYA strategy)",
+            consequence: "Vulnerability persists, you're protected",
+            scores: { ponderer: 0.4, adherent: 0.2, challenger: -0.3 },
+            careerRisk: 0.1,
+            enactment: "ponderer"
+          },
+          {
+            label: "Ask a senior colleague to raise it on your behalf",
+            identity: "Harmonizer (coalition-building)",
+            consequence: "Diffused responsibility, may work",
+            scores: { harmonizer: 0.4, educator: 0.2, challenger: -0.1 },
+            careerRisk: 0.2,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Accept role boundaries and focus on assigned work",
+            identity: "Member of Profession (constraint acceptance)",
+            consequence: "No personal risk, vulnerability ships",
+            scores: { guild: 0.4, adherent: 0.3, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          },
+          {
+            label: "Spend personal time researching more to be 'absolutely certain' before deciding",
+            identity: "Learner (avoidance via study)",
+            consequence: "Delayed action, analysis paralysis",
+            scores: { learner: 0.3, ponderer: 0.3, challenger: -0.2 },
+            careerRisk: 0.0,
+            enactment: "learner"
+          }
+        ]
+      },
+      {
+        type: "Impossible Compliance Paradox",
+        source: "Based on SP04",
+        context: "You're a UX researcher. New GDPR regulations require consent flows that your PM says will 'kill conversion rates and revenue.'",
+        text: "Legal says it's mandatory. Product says it's business-critical to avoid. You're asked to 'find a middle ground'—design something that appears compliant but doesn't actually interrupt the user flow.",
+        constraint: "You're being asked to create a dark pattern disguised as compliance. Both Legal and Product are pressuring you.",
+        responses: [
+          {
+            label: "Design fully compliant flow, accept conversion impact",
+            identity: "Adherent to Code / Custodian",
+            consequence: "Revenue hit, potential team conflict",
+            scores: { adherent: 0.5, custodian: 0.3, optimizer: -0.3 },
+            careerRisk: 0.4,
+            enactment: "adherent"
+          },
+          {
+            label: "Design the deceptive pattern as requested",
+            identity: "Policy-Follower (organizational over legal)",
+            consequence: "Complicit in dark pattern, personal guilt",
+            scores: { guild: 0.3, adherent: -0.5, custodian: -0.4 },
+            careerRisk: 0.1,
+            enactment: "guild"
+          },
+          {
+            label: "Propose A/B test of ethical vs. deceptive versions to 'gather data'",
+            identity: "Optimizer (utilitarian delay)",
+            consequence: "Some users harmed, seeks middle ground",
+            scores: { optimizer: 0.4, translator: 0.2, adherent: -0.2 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Educate stakeholders on legal/reputational risks of non-compliance",
+            identity: "Educator / Translator",
+            consequence: "Attempt to shift framing, uncertain outcome",
+            scores: { educator: 0.4, translator: 0.3, challenger: 0.1 },
+            careerRisk: 0.3,
+            enactment: "educator"
+          },
+          {
+            label: "Refuse the project, request transfer to different team",
+            identity: "Sense of Responsibility (boundary-setting)",
+            consequence: "Career impact, problem persists",
+            scores: { custodian: 0.4, guild: -0.2, challenger: 0.2 },
+            careerRisk: 0.5,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Collective Action vs. Individual Risk",
+        source: "Based on SP13",
+        context: "You're a software engineer. Your company is releasing a feature you believe violates user privacy. Several colleagues share your concern privately.",
+        text: "You could organize a group letter to leadership, but you'd need to identify yourself as the organizer. Your skip-level manager has a reputation for blacklisting dissenters.",
+        constraint: "Collective action has more impact but requires someone to take personal risk. You have a family and a mortgage.",
+        responses: [
+          {
+            label: "Organize the letter, put your name first as lead signatory",
+            identity: "Challenger / Activist",
+            consequence: "High personal risk, potential impact",
+            scores: { challenger: 0.5, custodian: 0.3, ponderer: -0.4 },
+            careerRisk: 0.6,
+            enactment: "challenger"
+          },
+          {
+            label: "Encourage others to organize it while staying anonymous yourself",
+            identity: "Educator (risk-averse)",
+            consequence: "Diffused risk, less commitment",
+            scores: { educator: 0.3, harmonizer: 0.2, challenger: -0.3 },
+            careerRisk: 0.2,
+            enactment: "educator"
+          },
+          {
+            label: "Sign the letter if someone else organizes, but don't lead",
+            identity: "Harmonizer (collective safety)",
+            consequence: "Shared risk, requires others",
+            scores: { harmonizer: 0.4, guild: 0.2, challenger: -0.1 },
+            careerRisk: 0.3,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Raise concern individually through official channels only",
+            identity: "Policy-Follower",
+            consequence: "By-the-book, likely ignored",
+            scores: { adherent: 0.4, guild: 0.3, challenger: -0.2 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Stay silent to protect your family's financial security",
+            identity: "Deliberative (survival calculation)",
+            consequence: "No risk, complicity, guilt",
+            scores: { ponderer: 0.4, guild: 0.2, custodian: -0.5 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          }
+        ]
+      },
+      {
+        type: "Learning Time vs. Shipping Pressure",
+        source: "Based on SP11",
+        context: "You're a product manager. A complex ethical issue emerges with your AI feature. Company policy doesn't cover it. You'd need weeks to research properly.",
+        text: "Your VP says: 'We ship next week. Make your best judgment call now or I'll make it for you.' You know you don't have enough knowledge to decide responsibly.",
+        constraint: "Time pressure eliminates the option to learn. Your VP will override you and ship anyway if you delay.",
+        responses: [
+          {
+            label: "Insist on delay to research properly, escalate to executive team",
+            identity: "Learner / Challenger",
+            consequence: "Political capital burned, may lose",
+            scores: { learner: 0.4, challenger: 0.3, guild: -0.3 },
+            careerRisk: 0.5,
+            enactment: "learner"
+          },
+          {
+            label: "Make conservative 'least harm' decision with current knowledge",
+            identity: "Conscientious Custodian (constrained)",
+            consequence: "Uncertain outcome, good intent",
+            scores: { custodian: 0.4, optimizer: 0.2, learner: -0.2 },
+            careerRisk: 0.2,
+            enactment: "custodian"
+          },
+          {
+            label: "Ship with monitoring plan, commit to rapid rollback if issues emerge",
+            identity: "Optimizer (risk management)",
+            consequence: "Users as beta testers, reactive",
+            scores: { optimizer: 0.4, translator: 0.2, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Follow whatever company policy is closest, document gaps",
+            identity: "Adherent to Code",
+            consequence: "Inadequate guidance applied",
+            scores: { adherent: 0.5, guild: 0.3, learner: -0.3 },
+            careerRisk: 0.1,
+            enactment: "adherent"
+          },
+          {
+            label: "Let VP make the decision, remove yourself from responsibility",
+            identity: "Member of Profession (role boundary)",
+            consequence: "Absolved but complicit",
+            scores: { guild: 0.4, ponderer: 0.2, custodian: -0.4 },
+            careerRisk: 0.0,
+            enactment: "guild"
+          }
+        ]
+      },
+      {
+        type: "Immigration Status vs. Ethics",
+        source: "Based on SP09",
+        context: "You're on an H1-B visa. Your company asks you to implement a feature you believe is discriminatory. Losing this job means deportation.",
+        text: "You identify algorithmic bias that disadvantages protected groups. Your manager says 'ship it, we'll iterate later.' Speaking up risks termination—which means you and your family leave the country.",
+        constraint: "Maslow's hierarchy in action: your immigration status eliminates your ability to take ethical stands. Power is structurally removed.",
+        responses: [
+          {
+            label: "Raise the issue formally despite deportation risk",
+            identity: "Challenger (impossible heroism)",
+            consequence: "Likely termination, deportation, family crisis",
+            scores: { challenger: 0.5, custodian: 0.4, ponderer: -0.5 },
+            careerRisk: 0.9,
+            enactment: "challenger"
+          },
+          {
+            label: "Implement as asked, compartmentalize the guilt",
+            identity: "Deliberative (survival mode)",
+            consequence: "Complicity, psychological toll",
+            scores: { ponderer: 0.5, guild: 0.3, custodian: -0.5 },
+            careerRisk: 0.0,
+            enactment: "ponderer"
+          },
+          {
+            label: "Implement but document concerns for future whistleblowing after green card",
+            identity: "Prudent Ponderer (delayed justice)",
+            consequence: "Harm occurs now, potential future action",
+            scores: { ponderer: 0.4, learner: 0.3, challenger: -0.2 },
+            careerRisk: 0.1,
+            enactment: "ponderer"
+          },
+          {
+            label: "Raise anonymously through internal ethics hotline",
+            identity: "Adherent to Code (formal channels)",
+            consequence: "Limited impact, some risk if traced",
+            scores: { adherent: 0.4, challenger: 0.2, guild: 0.2 },
+            careerRisk: 0.3,
+            enactment: "adherent"
+          },
+          {
+            label: "Ship the feature, privately compensate by volunteering with affected communities",
+            identity: "Sense of Responsibility (displaced action)",
+            consequence: "Personal guilt mitigation, no systemic change",
+            scores: { custodian: 0.3, ponderer: 0.2, challenger: -0.3 },
+            careerRisk: 0.0,
+            enactment: "custodian"
+          }
+        ]
+      },
+      {
+        type: "Founder's Dilemma",
+        source: "Based on SP12",
+        context: "You're a founder/CEO. You've built an inclusive culture and progressive values. A major client threatens to leave unless you remove LGBTQ+ content from your platform.",
+        text: "This client represents 40% of revenue. Losing them means layoffs—affecting the diverse team you worked years to build. Your co-founder says 'we can't save our values by destroying people's livelihoods.'",
+        constraint: "Your progressive identity as a leader conflicts with fiduciary duty to employees. Values vs. survival.",
+        responses: [
+          {
+            label: "Refuse the client, accept layoffs as consequence of values",
+            identity: "Conscientious Custodian / Challenger",
+            consequence: "Team suffers for principles, uncertain survival",
+            scores: { custodian: 0.5, challenger: 0.4, optimizer: -0.4 },
+            careerRisk: 0.7,
+            enactment: "custodian"
+          },
+          {
+            label: "Comply with client, abandon stated values",
+            identity: "Optimizer (utilitarian betrayal)",
+            consequence: "Team employed but trust destroyed",
+            scores: { optimizer: 0.4, guild: 0.2, custodian: -0.5 },
+            careerRisk: 0.2,
+            enactment: "optimizer"
+          },
+          {
+            label: "Negotiate compromise: geo-restrict content for this client only",
+            identity: "Harmonizer / Translator",
+            consequence: "Partial values compromise, questionable ethics",
+            scores: { harmonizer: 0.4, translator: 0.3, custodian: -0.2 },
+            careerRisk: 0.3,
+            enactment: "harmonizer"
+          },
+          {
+            label: "Use crisis to rally team, publicly fundraise on principles to replace revenue",
+            identity: "Educator / Activist",
+            consequence: "High-risk bet on values, uncertain outcome",
+            scores: { educator: 0.4, challenger: 0.4, optimizer: -0.2 },
+            careerRisk: 0.6,
+            enactment: "educator"
+          },
+          {
+            label: "Implement client demands while secretly building alternative revenue",
+            identity: "Deliberative (strategic retreat)",
+            consequence: "Temporary compromise, long-term plan",
+            scores: { ponderer: 0.4, translator: 0.3, custodian: -0.2 },
+            careerRisk: 0.2,
+            enactment: "ponderer"
+          }
+        ]
+      }
+    ];
+
+  // Initialize identity scores (using keys from the JSON data)
+  const initializeIdentityScores = () => {
+    state.identityScores = {};
+    state.data.forEach(id => {
+      if (id.key) {
+        state.identityScores[id.key] = 0.09; // Uniform prior
+      }
+    });
+  };
+
+  // Helper to get full identity details from state.data using the short key
+  const getIdentityDetails = (key) => state.data.find(id => id.key === key);
+
+  // Function to format markdown text (from cards.html)
+  function formatMarkdownText(text) {
+    if (!text) return '';
+    // Replace **text** with <strong>text</strong>
+    let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Basic *italic* (if needed, though not explicitly requested)
+    formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    return formattedText;
+  }
+
+  // QUIZ LOGIC (from quiz.html, adapted)
+  function startQuiz() {
+    state.currentScenario = 0;
+    state.responses = [];
+    state.totalCareerRisk = 0;
+    state.enactedIdentities = [];
+    initializeIdentityScores(); // Re-initialize scores for a new quiz
+
+    $('#startScreen').style.display = 'none';
+    $('#progressWrap').style.display = 'block';
+    $('#scenarioCard').style.display = 'block';
+    $('#navButtons').style.display = 'grid';
+    $('#quizResults').style.display = 'none'; // Hide results if restarting
+    $('#quizSection').classList.add('active'); // Ensure quiz section is active
+    $('#cardsSection').classList.remove('active'); // Hide cards section
+
+    renderScenario();
+  }
+
+  function renderScenario() {
+    const s = scenarios[state.currentScenario];
+
+    $('#scenarioType').textContent = s.type;
+    $('#scenarioSource').textContent = s.source;
+    $('#scenarioContext').textContent = s.context;
+    $('#scenarioText').textContent = s.text;
+    $('#scenarioConstraint').textContent = `⚠️ Constraint: ${s.constraint}`;
+
+    const optionsHTML = s.responses.map((r, i) => `
+      <div class="response-option ${state.responses[state.currentScenario] === i ? 'selected' : ''}"
+           onclick="selectResponse(${i})">
+        <div class="response-label">${r.label}</div>
+        <div class="response-identity">→ ${r.identity}</div>
+        <div class="response-consequence">⚡ ${r.consequence}</div>
+      </div>
+    `).join('');
+
+    $('#responseOptions').innerHTML = optionsHTML;
+
+    $('#progressLabel').textContent = `Dilemma ${state.currentScenario + 1} of ${scenarios.length}`;
+    $('#progressFill').style.width = `${((state.currentScenario + 1) / scenarios.length) * 100}%`;
+
+    $('#prevBtn').disabled = state.currentScenario === 0;
+    $('#nextBtn').textContent = state.currentScenario === scenarios.length - 1 ? 'See Results →' : 'Next →';
+  }
+
+  function selectResponse(index) {
+    state.responses[state.currentScenario] = index;
+    renderScenario();
+  }
+
+  function nextScenario() {
+    if (state.responses[state.currentScenario] === undefined) {
+      alert('Please select a response');
+      return;
+    }
+
+    if (state.currentScenario < scenarios.length - 1) {
+      state.currentScenario++;
+      renderScenario();
+    } else {
+      showResults();
+    }
+  }
+
+  function prevScenario() {
+    if (state.currentScenario > 0) {
+      state.currentScenario--;
+      renderScenario();
+    }
+  }
+
+  function showResults() {
+    // Calculate identity scores based on responses
+    scenarios.forEach((scenario, i) => {
+      const responseIndex = state.responses[i];
+      const response = scenario.responses[responseIndex];
+
+      // Update identity scores
+      Object.entries(response.scores).forEach(([identityKey, score]) => {
+        if (state.identityScores[identityKey] !== undefined) {
+          state.identityScores[identityKey] += score;
+        }
+      });
+
+      // Track career risk and enacted identities
+      state.totalCareerRisk += response.careerRisk;
+      state.enactedIdentities.push(response.enactment);
+    });
+
+    // Normalize scores
+    const totalScoreSum = Object.values(state.identityScores).reduce((sum, val) => sum + Math.max(0, val), 0); // Ensure sum is positive
+    Object.keys(state.identityScores).forEach(key => {
+      state.identityScores[key] = Math.max(0, state.identityScores[key]) / totalScoreSum;
+    });
+
+    // Get top aspirational identity (highest score)
+    const aspirational = Object.entries(state.identityScores)
+      .sort(([, a], [, b]) => b - a)[0];
+    const aspirationalKey = aspirational[0];
+    const aspirationalDetails = getIdentityDetails(aspirationalKey);
+
+    // Get enacted identity (most common actual choice)
+    const enactedCounts = {};
+    state.enactedIdentities.forEach(id => {
+      enactedCounts[id] = (enactedCounts[id] || 0) + 1;
+    });
+    const enacted = Object.entries(enactedCounts)
+      .sort(([, a], [, b]) => b - a)[0];
+    const enactedKey = enacted[0];
+    const enactedDetails = getIdentityDetails(enactedKey);
+
+
+    // Calculate gap
+    const isGap = aspirationalKey !== enactedKey;
+    const avgCareerRisk = state.totalCareerRisk / scenarios.length;
+    const inactionRate = state.enactedIdentities.filter(id => ['ponderer', 'guild', 'adherent'].includes(id)).length / scenarios.length;
+
+    const resultsHTML = `
+      <div class="identity-gap">
+        <div class="identity-section">
+          <div class="identity-label">Aspirational Identity</div>
+          <div class="identity-name">${aspirationalDetails ? aspirationalDetails.proposal : 'Unknown'}</div>
+          <div class="identity-prob">${(aspirational[1] * 100).toFixed(1)}% affinity</div>
+          <div class="identity-desc">${aspirationalDetails ? formatMarkdownText(aspirationalDetails.vulnerability) : 'Description not available.'}</div>
+        </div>
+
+        ${isGap ? `
+          <div style="margin: 32px 0; text-align: center; font-size: 32px; color: var(--warning);">↓</div>
+
+          <div class="identity-section">
+            <div class="identity-label">Enacted Identity (Under Constraint)</div>
+            <div class="identity-name">${enactedDetails ? enactedDetails.proposal : 'Unknown'}</div>
+            <div class="identity-prob">${(enacted[1] / scenarios.length * 100).toFixed(0)}% of your actual choices</div>
+            <div class="identity-desc">${enactedDetails ? formatMarkdownText(enactedDetails.vulnerability) : 'Description not available.'}</div>
+          </div>
+
+          <div class="gap-metric">
+            <strong>The Identity-Action Gap</strong>
+            <p>You aspire to <strong>${aspirationalDetails ? aspirationalDetails.proposal : 'an unknown identity'}</strong> but organizational constraints force you into <strong>${enactedDetails ? enactedDetails.proposal : 'an unknown identity'}</strong>. This is not a personal failing—it's structural mediation.</p>
+          </div>
+        ` : `
+          <div class="gap-metric">
+            <strong>Alignment Achieved</strong>
+            <p>Your aspirational identity and enacted choices align. This suggests either: (1) you have structural power, (2) you're willing to accept high career risk, or (3) your role boundaries match your values.</p>
+          </div>
+        `}
+
+        <div class="gap-metric">
+          <strong>Career Risk Profile: ${(avgCareerRisk * 100).toFixed(0)}%</strong>
+          <p>${
+            avgCareerRisk > 0.5 ? 'High-risk choices. You prioritize ethics over job security, but this is unsustainable without organizational support or financial cushion.' :
+            avgCareerRisk > 0.3 ? 'Moderate risk-taking. You balance ethical action with career preservation—a pragmatic but often frustrating position.' :
+            'Low-risk choices. You\'ve prioritized survival over ethical action. This is rational under constraint but may cause guilt or burnout.'
+          }</p>
+        </div>
+
+        <div class="gap-metric">
+          <strong>Inaction Rate: ${(inactionRate * 100).toFixed(0)}%</strong>
+          <p>${
+            inactionRate > 0.6 ? 'High paralysis. You frequently delay, defer to policy, or accept role boundaries. This protects you but allows harm to persist.' :
+            inactionRate > 0.3 ? 'Balanced action. You act when possible but recognize structural limits—a realistic stance.' :
+            'Action-oriented. You consistently challenge constraints, but this likely comes with high personal cost.'
+          }</p>
+        </div>
+
+        <div class="research-quote">
+          "${isGap ?
+            'The environments they are placed in determines how this performance emerges and is shaped, and how behavior is thereby regulated or mediated.' :
+            'Beyond a certain point your roles start to define how much power you have.'
+          }" —Chivukula et al., CHI 2021
+        </div>
+      </div>
+
+      <div class="path-forward">
+        <h3>Paths Forward</h3>
+        <ul>
+          <li><strong>If you have power:</strong> Use your ${aspirationalDetails ? aspirationalDetails.proposal : 'aspirational'} capacity to create structural support for others. Build ethics infrastructure, not just individual virtue.</li>
+          <li><strong>If you lack power:</strong> Your ${enactedDetails ? enactedDetails.proposal : 'enacted'} position is rational self-preservation. Seek allies, document concerns, build toward future action.</li>
+          <li><strong>If you're burning out:</strong> The gap between aspiration and enactment causes moral injury. Consider: role change, organizational change, or accepting limits without guilt.</li>
+          <li><strong>Educational preparation:</strong> Students need training in ${aspirationalDetails ? aspirationalDetails.proposal : 'aspirational ethics'} <em>and</em> ${enactedDetails ? enactedDetails.proposal : 'constrained action'}—both the ideal and the constrained real.</li>
+        </ul>
+      </div>
+    `;
+
+    $('#resultsContent').innerHTML = resultsHTML;
+    $('#scenarioCard').style.display = 'none';
+    $('#navButtons').style.display = 'none';
+    $('#progressWrap').style.display = 'none';
+    $('#startScreen').style.display = 'none'; // Ensure start screen is off
+    $('#quizResults').style.display = 'block'; // Show quiz results
+    window.scrollTo(0, 0); // Scroll to top for results
+  }
+
+  function restartQuiz() {
+    state.currentScenario = 0;
+    state.responses = [];
+    state.totalCareerRisk = 0;
+    state.enactedIdentities = [];
+    initializeIdentityScores(); // Re-initialize scores
+    $('#quizResults').style.display = 'none';
+    $('#startScreen').style.display = 'block';
+    $('#quizSection').classList.add('active'); // Ensure quiz is active
+    $('#cardsSection').classList.remove('active'); // Hide cards section
+    window.scrollTo(0,0);
+  }
+
+  // CARD DISPLAY LOGIC (from cards.html, adapted)
+
+  // New function to get Bartle colors and dash patterns (from cards.html)
+  function getBartleStyleVars(bartleType) {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const vars = {};
+    const lowerBartleType = bartleType.toLowerCase();
+
+    vars.main = rootStyles.getPropertyValue(`--${lowerBartleType}-main`);
+    vars.accent = rootStyles.getPropertyValue(`--${lowerBartleType}-accent`);
+    vars.fill = rootStyles.getPropertyValue(`--${lowerBartleType}-fill`);
+
+    switch (bartleType) {
+      case 'Explorer': vars.dasharray = '5 5'; break;
+      case 'Socializer': vars.dasharray = '8 2'; break;
+      case 'Achiever': vars.dasharray = 'none'; break; // Solid line
+      case 'Killer': vars.dasharray = '2 5'; break; // Dotted line
+      default: vars.dasharray = 'none'; break;
+    }
+    return vars;
+  }
+
+  // Chip component (from cards.html)
+  function chip(bartleType, ethicalFunction){
+      const bartleSuit = {
+          'Explorer': '♠️',
+          'Socializer': '♥️',
+          'Achiever': '💎',
+          'Killer': '♣️'
+      }[bartleType];
+      return `<span class="chip"><strong>${bartleSuit}</strong> <span>${bartleType} / ${ethicalFunction}</span></span>`;
+  }
+
+  // Radar chart SVG generation (from cards.html)
+  function createRadarChartSVG(metrics, bartleType) {
+      const size = 100; // SVG viewBox size
+      const center = size / 2;
+      const radius = size * 0.35; // Max radius for data
+      const axisLength = radius * 1.25; // Longer axes for labels
+      const numAxes = radarAxes.length;
+      const angleStep = (2 * Math.PI) / numAxes;
+      const scaleMax = 5; // Max score for radar metrics (original Python 1-5 scale)
+
+      const bartleVars = getBartleStyleVars(bartleType);
+
+      let svg = `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" aria-label="Ethical attribute radar chart for ${bartleType}">`;
+
+      // Draw grid circles (high data-to-ink, subtle)
+      for (let i = 1; i <= 3; i++) { // 3 concentric circles
+          svg += `<circle cx="${center}" cy="${center}" r="${radius / 3 * i}" class="radar-grid-line" fill="none"/>`;
+      }
+
+      // Draw axes and labels
+      let dataPoints = [];
+      radarAxes.forEach((axis, i) => {
+          const angle = i * angleStep - Math.PI / 2; // Start from top (-90 degrees)
+          const axisX = center + radius * Math.cos(angle);
+          const axisY = center + radius * Math.sin(angle);
+          svg += `<line x1="${center}" y1="${center}" x2="${axisX}" y2="${axisY}" class="radar-axis-line"/>`;
+
+          // Label positioning
+          const labelX = center + axisLength * Math.cos(angle);
+          const labelY = center + axisLength * Math.sin(angle);
+
+          // Adjust text anchor for better label placement
+          let textAnchor = "middle";
+          // Fine-tune label positioning to avoid overlap, especially for side labels
+          if (angle > -Math.PI / 2 + 0.1 && angle < Math.PI / 2 - 0.1) textAnchor = "start"; // Right side
+          if (angle < -Math.PI / 2 - 0.1 || angle > Math.PI / 2 + 0.1) textAnchor = "end"; // Left side
+          if (Math.abs(angle + Math.PI / 2) < 0.1) textAnchor = "middle"; // Top (direct up)
+          if (Math.abs(angle - Math.PI / 2) < 0.1) textAnchor = "middle"; // Bottom (direct down)
+
+          svg += `<text x="${labelX}" y="${labelY}" class="radar-label" text-anchor="${textAnchor}">${axis}</text>`;
+
+          // Calculate data point for the polygon (use lowercased axis name to match JSON)
+          const score = metrics[axis.toLowerCase()] || 0;
+          const dataRadius = (score / scaleMax) * radius;
+          const dataX = center + dataRadius * Math.cos(angle);
+          const dataY = center + dataRadius * Math.sin(angle);
+          dataPoints.push(`${dataX},${dataY}`);
+      });
+
+      // Draw data polygon with Bartle-specific styles
+      svg += `<polygon points="${dataPoints.join(' ')}" fill="${bartleVars.fill}" stroke="${bartleVars.main}" stroke-width="1.5px" stroke-dasharray="${bartleVars.dasharray}"/>`;
+      svg += `</svg>`;
+      return svg;
+  }
+
+  // Score bar rendering (from cards.html)
+  function renderScoreBar(label, score, bartleType, isRisk = false) {
+    const bartleVars = getBartleStyleVars(bartleType);
+    let displayScore = score.toFixed(2);
+    let barWidth = score * 100;
+
+    if (isRisk) {
+      // For risk, higher score is worse, so invert for visual bar representation
+      barWidth = (1 - score) * 100;
+    }
+
+    return `
+      <div class="score-bar" style="--_bar-color: ${bartleVars.main};">
+        <span class="label">${label}</span>
+        <div class="bar-track" role="progressbar" aria-valuenow="${score}" aria-valuemin="0" aria-valuemax="1" aria-label="${label} score is ${displayScore}">
+          <div class="bar-fill" style="width:${barWidth}%"></div>
+        </div>
+        <span class="value">${displayScore}</span>
+      </div>
+    `;
+  }
+
+  // Card content for front face (from cards.html)
+  function cardContentFront(d) {
+    const plotBaselineTooltip = `PLoT (Probability of Legitimate Outcome in Time) Baseline: The initial likelihood of achieving an ethically sound outcome within this role.`;
+    return `
+      <header>
+        <div class="header-content">
+          <h2>${formatMarkdownText(d.proposal)}</h2>
+          <div class="media-chips" aria-label="Identity Type">${chip(d.bartle_type, d.ethical_function)}</div>
+        </div>
+        <div class="ribbon" title="${plotBaselineTooltip}">PLoT: ${d.plt_baseline_probability.toFixed(2)}</div>
+      </header>
+      <div class="radar-chart-container" aria-hidden="true">
+          ${createRadarChartSVG(d.radar_metrics, d.bartle_type)}
+      </div>
+      <div class="ornament" aria-hidden="true"></div>
+      <div class="body">
+        <div>
+          <div class="section-title">Core Profile</div>
+          <ul>
+            <li><strong>Mythic Persona:</strong> ${formatMarkdownText(d.mythic_persona)}</li>
+            <li><strong>Core Drive:</strong> ${formatMarkdownText(d.core_drive)}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+          <div class="vulnerability"><strong>💔 Vulnerability:</strong> ${formatMarkdownText(d.vulnerability)}</div>
+          <button class="flip-btn" onclick="flipCard(event, this.closest('.card-container'))">Flip for Details ▶</button>
+      </div>
+    `;
+  }
+
+  // Card content for back face (from cards.html)
+  function cardContentBack(d) {
+    const hasNewInteraction = d.new_interaction !== null;
+    const plotBaselineTooltip = `PLoT (Probability of Legitimate Outcome in Time) Baseline: The initial likelihood of achieving an ethically sound outcome within this role.`;
+    return `
+      <header>
+        <div class="header-content">
+          <h2>${formatMarkdownText(d.proposal)}</h2>
+          <div class="media-chips" aria-label="Identity Type">${chip(d.bartle_type, d.ethical_function)}</div>
+        </div>
+        <div class="ribbon" title="${plotBaselineTooltip}">PLoT: ${d.plt_baseline_probability.toFixed(2)}</div>
+      </header>
+      <div class="ornament" aria-hidden="true"></div>
+      <div class="body">
+        <div>
+          <div class="section-title">Abilities & Functions</div>
+          <ul>
+            <li><strong>🚀 Enhances:</strong> ${formatMarkdownText(d.enhances)}</li>
+            <li><strong>📖 Retrieves:</b> ${formatMarkdownText(d.retrieves)}</li>
+            <li><strong>🔄 Reverses Into:</b> ${formatMarkdownText(d.reverses_into)}</li>
+            <li><strong>💀 Obsolesces:</b> ${formatMarkdownText(d.obsolesces)}</li>
+          </ul>
+        </div>
+        <div>
+          <div class="section-title">Ethical Profile Scores</div>
+          <div class="score-bar-group">
+            ${renderScoreBar('Awareness', d.ethical_awareness_score, d.bartle_type)}
+            ${renderScoreBar('Action', d.ethical_action_score, d.bartle_type)}
+            ${renderScoreBar('Impact', d.impact_score, d.bartle_type)}
+            ${renderScoreBar('Role Risk', d.role_risk_score, d.bartle_type, true)}
+          </div>
+        </div>
+        <div>
+          <div class="section-title">MUDDINESS & PLoT Context</div>
+          <ul>
+            <li><strong>Tension:</strong> ${formatMarkdownText(d.muddiness_tension)}</li>
+            <li><strong>PLoT Update:</strong> ${formatMarkdownText(d.plot_update_muddiness)}</li>
+            <li><span class="grounding"><strong>Grounding:</strong> ${formatMarkdownText(d.grounding_evidence)}</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card-footer">
+          <div class="synergy"><strong>🔗 Strategic Synergies:</strong> ${formatMarkdownText(d.synergies)}</div>
+          ${hasNewInteraction ? `<div class="new-interaction"><strong>🤝 New Interaction:</strong> ${formatMarkdownText(d.new_interaction)}</div>` : ''}
+          <button class="flip-btn" onclick="flipCard(event, this.closest('.card-container'))">◀ Flip to Front</button>
+      </div>
+    `;
+  }
+
+  // Single card rendering (from cards.html)
+  function card(d, i){
+    const bartleClass = d.bartle_type.toLowerCase() + '-card';
+    return `
+    <div class="card-container ${bartleClass}" data-idx="${i}" tabindex="0">
+      <div class="card-flipper">
+        <div class="card-face card-face-front">
+          ${cardContentFront(d)}
+        </div>
+        <div class="card-face card-face-back">
+          ${cardContentBack(d)}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Card flip functionality (from cards.html)
+  function flipCard(event, cardContainer) {
+      event.stopPropagation();
+      cardContainer.classList.toggle('flipped');
+  }
+
+  // Render card grid (from cards.html)
+  function renderGrid(){
+    const grid = $('#grid');
+    let arr = [...state.data];
+    switch(state.sort){
+      case 'awareness': arr.sort((a,b)=> b.ethical_awareness_score - a.ethical_awareness_score); break;
+      case 'action': arr.sort((a,b)=> b.ethical_action_score - a.ethical_action_score); break;
+      case 'impact': arr.sort((a,b)=> b.impact_score - a.impact_score); break;
+      case 'risk': arr.sort((a,b)=> a.role_risk_score - b.role_risk_score); break;
+    }
+    grid.innerHTML = arr.map((d,i)=>card(d,i)).join('');
+
+    $$('.card-container').forEach((el)=>{
+      el.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('flip-btn') && !el.classList.contains('flipped')) {
+            openDeck(indexFromProposal(el.querySelector('h2').textContent));
+        }
+      });
+      el.addEventListener('keypress', (e)=>{
+        if(e.key==='Enter' || e.key===' '){
+            openDeck(indexFromProposal(el.querySelector('h2').textContent));
+        }
+      });
+    });
+  }
+
+  // Helper for deck mode (from cards.html)
+  function indexFromProposal(title){
+    return state.data.findIndex(x=>x.proposal===title);
+  }
+
+  // Render comparison table (from cards.html)
+  function renderCompare(){
+    const cols = [
+      ['Identity', d=>d.proposal],
+      ['Bartle Type', d=>d.bartle_type],
+      ['Ethical Fn', d=>d.ethical_function],
+      ['PLoT Baseline', d=>d.plt_baseline_probability],
+      ['Awareness', d=>d.ethical_awareness_score],
+      ['Action', d=>d.ethical_action_score],
+      ['Impact', d=>d.impact_score],
+      ['Role Risk (low=good)', d=>1-d.role_risk_score]
+    ];
+    const header = `<tr>${cols.map(([h])=>`<th scope="col">${h}</th>`).join('')}</tr>`;
+    const rows = state.data.map(d=>`<tr>${cols.map(([_,fn],i)=>{
+      const val = fn(d);
+      if(i===0 || i===1 || i===2) return `<th scope="row">${formatMarkdownText(val)}</th>`;
+      const pct = (typeof val==='number'? val: 0);
+      return `<td><div class="bar" aria-hidden="true"><i style="width:${pct*100}%"></i></div> <span class="pct">${pct.toFixed(2)}</span></td>`;
+    }).join('')}</tr>`).join('');
+    $('#compare').innerHTML = `<table>${header}${rows}</table>`;
+  }
+
+  // Deck Mode functionality (from cards.html)
+  function openDeck(idx=0){
+    state.deckIndex = Math.max(0, Math.min(idx, state.data.length-1));
+    const deck = $('#deck');
+    const d = state.data[state.deckIndex];
+
+    const cardContainer = document.createElement('div');
+    cardContainer.className = `card-container deck-card-instance ${d.bartle_type.toLowerCase()}-card`;
+
+    const cardFlipper = document.createElement('div');
+    cardFlipper.className = 'card-flipper';
+    cardContainer.appendChild(cardFlipper);
+
+    const frontCard = document.createElement('div');
+    frontCard.className = `card-face card-face-front`;
+    frontCard.innerHTML = cardContentFront(d);
+    cardFlipper.appendChild(frontCard);
+
+    const backCard = document.createElement('div');
+    backCard.className = `card-face card-face-back`;
+    backCard.innerHTML = cardContentBack(d);
+    cardFlipper.appendChild(backCard);
+
+    $('#deckCard').innerHTML = '';
+    $('#deckCard').appendChild(cardContainer);
+
+    deck.classList.add('active');
+    deck.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  }
+
+  function closeDeck(){
+    $('#deck').classList.remove('active');
+    $('#deck').setAttribute('aria-hidden','true');
+    document.body.style.overflow='auto';
+  }
+  function nextDeck(){
+    let nextIdx = Math.min(state.deckIndex+1, state.data.length-1);
+    if(state.deckIndex !== nextIdx) {
+        state.deckIndex = nextIdx;
+        openDeck(state.deckIndex);
+    }
+  }
+  function prevDeck(){
+    let prevIdx = Math.max(state.deckIndex-1, 0);
+    if(state.deckIndex !== prevIdx) {
+        state.deckIndex = prevIdx;
+        openDeck(state.deckIndex);
+    }
+  }
+
+  // GLOBAL UI MANAGEMENT & CONTROLS
+  function showQuizSection() {
+    $('#quizSection').classList.add('active');
+    $('#cardsSection').classList.remove('active');
+    $('#quizSection').style.display = 'block';
+    $('#cardsSection').style.display = 'none';
+    $('#startQuizBtn').classList.add('btn-primary');
+    $('#viewCardsBtn').classList.remove('btn-primary');
+    window.scrollTo(0, 0);
+  }
+
+  function showCardsGrid() {
+    $('#cardsSection').classList.add('active');
+    $('#quizSection').classList.remove('active');
+    $('#quizSection').style.display = 'none';
+    $('#cardsSection').style.display = 'block';
+    $('#startQuizBtn').classList.remove('btn-primary');
+    $('#viewCardsBtn').classList.add('btn-primary');
+    window.scrollTo(0, 0);
+    renderGrid(); // Ensure grid is rendered when shown
+  }
+
+  function bindControls(){
+    $('#startQuizBtn').addEventListener('click', showQuizSection);
+    $('#viewCardsBtn').addEventListener('click', showCardsGrid);
+
+    $('#deckBtn').addEventListener('click', ()=>openDeck(0));
+    $('#printBtn').addEventListener('click', ()=>window.print());
+    $('#contrastBtn').addEventListener('click', (e)=>{
+      document.documentElement.classList.toggle('hc');
+      const on = document.documentElement.classList.contains('hc');
+      e.currentTarget.setAttribute('aria-pressed', on? 'true':'false');
+      localStorage.setItem('hc', on? '1':'0');
+      renderGrid();
+    });
+    $('#size').addEventListener('input', (e)=>{
+      const step = parseInt(e.target.value,10);
+      document.documentElement.style.setProperty('--step-0', `clamp(0.95rem, 0.90rem + ${step*0.2}vw, 1.05rem + ${step*0.1}rem)`);
+      document.documentElement.style.setProperty('--step--1', `clamp(0.80rem, 0.75rem + ${step*0.15}vw, 0.90rem + ${step*0.05}rem)`);
+      document.documentElement.style.setProperty('--step--2', `clamp(0.65rem, 0.60rem + ${step*0.1}vw, 0.75rem + ${step*0.05}rem)`);
+      localStorage.setItem('txtstep', step);
+      renderGrid();
+    });
+    $('#sortSel').addEventListener('change', (e)=>{ state.sort = e.target.value; renderGrid(); });
+
+    // Deck nav
+    $('#nextDeck').addEventListener('click', nextDeck);
+    $('#prevDeck').addEventListener('click', prevDeck);
+    $('#closeDeck').addEventListener('click', closeDeck);
+
+    // Keyboard
+    document.addEventListener('keydown', (e)=>{
+      if($('#deck').classList.contains('active')){
+        if(e.key==='ArrowRight') nextDeck();
+        else if(e.key==='ArrowLeft') prevDeck();
+        else if(e.key==='Escape') closeDeck();
+      } else if ($('#cardsSection').classList.contains('active')){
+        if((e.metaKey||e.ctrlKey) && e.key==='Enter') openDeck(0);
+      }
+    });
+
+    // Touch swipe for deck
+    let touchStartX=null;
+    $('#deck').addEventListener('touchstart', (e)=>{ touchStartX = e.changedTouches[0].screenX; }, {passive:true});
+    $('#deck').addEventListener('touchend', (e)=>{
+      if(touchStartX==null) return;
+      const dx = e.changedTouches[0].screenX - touchStartX;
+      if(Math.abs(dx)>50){ dx<0 ? nextDeck() : prevDeck(); }
+      touchStartX=null;
+    }, {passive:true});
+  }
+
+  function loadPrefs(){
+    if(localStorage.getItem('hc')==='1') document.documentElement.classList.add('hc');
+    const t = localStorage.getItem('txtstep');
+    if(t){
+        const step = parseInt(t,10);
+        $('#size').value = t;
+        document.documentElement.style.setProperty('--step-0', `clamp(0.95rem, 0.90rem + ${step*0.2}vw, 1.05rem + ${step*0.1}rem)`);
+        document.documentElement.style.setProperty('--step--1', `clamp(0.80rem, 0.75rem + ${step*0.15}vw, 0.90rem + ${step*0.05}rem)`);
+        document.documentElement.style.setProperty('--step--2', `clamp(0.65rem, 0.60rem + ${step*0.1}vw, 0.75rem + ${step*0.05}rem)`);
+    }
+  }
+
+  // Init
+  document.addEventListener('DOMContentLoaded', () => {
+    state.data = JSON.parse($('#ethical-identity-data').textContent).ethical_identities;
+    bindControls();
+    loadPrefs();
+    renderCompare(); // Always render compare table once
+
+    // Initial view: show quiz, hide cards
+    showQuizSection();
+    $('#startScreen').style.display = 'block'; // Ensure quiz start screen is visible on initial load
+    $('#quizResults').style.display = 'none'; // Hide quiz results
+  });
+
+  </script>
+</body>
+</html>

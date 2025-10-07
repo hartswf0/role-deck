@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TILTH — The Tetrad Gamepad</title>
+<style>
+  :root {
+    /* Color Palette */
+    --bg: #1a1b1f;
+    --fg: #f6f3ee;
+    --muted: #9aa0a6;
+    --accent: #00c4ff;
+    --accent2: #63ffc7;
+    --card: #2a2c32;
+    --border: #3a3c42;
+    --screen: #1f2024;
+    --chip: #17181c;
+    --warn: #ffb703;
+
+    /* Direction Colors */
+    --enhance-color: #66d9ff;     /* cyan */
+    --obsolesce-color: #63ffc7;   /* green */
+    --retrieve-color: #ffd166;    /* gold */
+    --reverse-color: #ff7aa2;     /* magenta */
+
+    /* Spacing & Radii */
+    --r: 12px; /* Border radius */
+    --pad: 8px; /* Padding */
+    --gap: 8px; /* Gap between elements */
+  }
+
+  /* Universal box-sizing for consistent layouts */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Base styles for HTML and Body: full height, no global scroll */
+  html, body {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    overflow: hidden; /* Prevents global scroll leaks */
+  }
+
+  /* Body as a flex container to manage `.wrap` height robustly */
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Visually hidden utility for accessibility */
+  .visually-hidden {
+    position: absolute !important;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0;
+    border: 0;
+  }
+
+  /* Focus-visible for accessibility */
+  *:focus-visible {
+    outline: 2px solid var(--accent); /* Consistent focus indicator */
+    outline-offset: 2px;
+  }
+
+  /* Layout container */
+  .wrap {
+    min-height: 100svh;
+    overflow: hidden;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Main content area: centers the controller */
+  main {
+    height: 100%;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    flex-grow: 1;
+  }
+
+  /* Controller box styling */
+  .controller {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: var(--pad);
+    display: grid;
+    gap: var(--gap);
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+    max-width: 1100px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    min-height: 0;
+    position: relative; /* For absolute positioning of modals */
+  }
+
+  /* Visual indicator for active Build Mode */
+  .controller.active-build-mode {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0, 196, 255, 0.4);
+  }
+
+  /* Row layout within the controller */
+  .controller-row {
+    display: grid;
+    gap: var(--gap);
+    grid-template-columns: 160px 1fr 180px;
+    align-items: stretch; /* Stretches children to fill height */
+    height: 100%;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Left stack: D-Pad + vector field */
+  .leftStack {
+    display: grid;
+    gap: var(--gap);
+    min-height: 0;
+  }
+
+  .field {
+    background: var(--screen);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+  }
+
+  canvas#vector {
+    width: 100%;
+    height: 120px;
+    display: block;
+    border-radius: 10px;
+  }
+
+  /* D-Pad layout */
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(3, auto); /* Auto height for labels */
+    gap: 5px;
+    justify-content: center;
+  }
+
+  .dpad-item { /* New container for button and label */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px; /* Small gap between button and label */
+  }
+
+  .btn-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--screen);
+    border: 1px solid var(--border);
+    color: var(--fg);
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: inset 0 -2px 0 rgba(255,255,255,.05);
+    transition: background-color 0.08s ease-out, outline-color 0.1s ease-out;
+  }
+
+  .btn-arrow.flash {
+    filter: brightness(1.5);
+    outline: 2px solid var(--accent2);
+  }
+
+  /* Active D-Pad button styling */
+  .btn-arrow[data-op="enhance"][data-active="true"] { background: #12222a; outline: 3px solid var(--enhance-color); }
+  .btn-arrow[data-op="obsolesce"][data-active="true"] { background: #102722; outline: 3px solid var(--obsolesce-color); }
+  .btn-arrow[data-op="retrieve"][data-active="true"] { background: #272013; outline: 3px solid var(--retrieve-color); }
+  .btn-arrow[data-op="reverse"][data-active="true"] { background: #2a1622; outline: 3px solid var(--reverse-color); }
+  .btn-arrow:active { transform: translateY(1px); }
+
+  /* Arrow label styles */
+  .arrow-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .arrow-label.enhance { color: var(--enhance-color); font-weight: 600; }
+  .arrow-label.obsolesce { color: var(--obsolesce-color); font-weight: 600; }
+  .arrow-label.retrieve { color: var(--retrieve-color); font-weight: 600; }
+  .arrow-label.reverse { color: var(--reverse-color); font-weight: 600; }
+
+  /* Chat Screen layout */
+  .screen {
+    background: var(--screen);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: var(--pad);
+    display: grid;
+    /* Explicit grid rows for all children */
+    grid-template-rows: auto /* lcdbar */
+                        auto /* previewbar */
+                        auto /* previewFrame */
+                        auto /* rawCodeOutput */
+                        auto /* buildHistoryDisplay */
+                        1fr  /* content-area (messages OR options) */
+                        auto /* textarea */
+                        auto; /* settings */
+    gap: var(--gap);
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* LCD bar at the top of the screen */
+  .lcdbar {
+    display: flex;
+    gap: var(--gap);
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 0;
+  }
+
+  .chips-container {
+    display: flex;
+    align-items: center;
+    min-width: 60px;
+    flex-grow: 1;
+  }
+
+  .chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* Active chip styling for D-pad tags */
+  .chip {
+    padding: 2px 6px;
+    border-radius: 999px;
+    font-size: 10px;
+    background: var(--chip);
+    color: var(--muted);
+    border: 1px solid transparent;
+  }
+  .chip.active-dir.enhance { color: var(--enhance-color); outline: 1px solid var(--enhance-color); background: rgba(102, 217, 255, 0.1); }
+  .chip.active-dir.obsolesce { color: var(--obsolesce-color); outline: 1px solid var(--obsolesce-color); background: rgba(99, 255, 199, 0.1); }
+  .chip.active-dir.retrieve { color: var(--retrieve-color); outline: 1px solid var(--retrieve-color); background: rgba(255, 209, 102, 0.1); }
+  .chip.active-dir.reverse { color: var(--reverse-color); outline: 1px solid var(--reverse-color); background: rgba(255, 122, 162, 0.1); }
+
+
+  .lcd-right-cluster {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto; /* Pushes cluster to the right */
+  }
+
+  .lcd-right-cluster .tiny {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Thinking ticker */
+  #typing {
+    display: none; /* Hidden by default */
+    font-size: 11px;
+    color: var(--muted);
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--chip);
+  }
+
+  /* Messages area: the only scrollable content area */
+  .messages {
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    background: #202228;
+    min-height: 0;
+    grid-row: 6 / 7; /* Occupies the 1fr content-area slot */
+  }
+
+  .msg { margin: 8px 0; }
+  .msg .who { font-size: 11px; color: var(--muted); }
+
+  .bubble {
+    margin-top: 4px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: #25303a;
+    border: 1px solid var(--border);
+    line-height: 1.45;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .msg.user .bubble { background: #2b2831; }
+  .msg.system .bubble { background: #1f2430; color: #c9d4ff; }
+  .msg.assistant.force-enhance .bubble { border-left: 4px solid var(--enhance-color); }
+  .msg.assistant.force-obsolesce .bubble { border-left: 4px solid var(--obsolesce-color); }
+  .msg.assistant.force-retrieve .bubble { border-left: 4px solid var(--retrieve-color); }
+  .msg.assistant.force-reverse .bubble { border-left: 4px solid var(--reverse-color); }
+  .msg.assistant.force-warn .bubble { border-left: 4px solid var(--warn); color: var(--warn); background: #2a221f; }
+
+  /* Textarea for input */
+  textarea {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    padding: 10px;
+    font: inherit;
+    grid-row: 7 / 8; /* Direct placement in grid */
+  }
+
+  /* General button styles */
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--screen);
+    color: var(--fg);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.send { background: var(--accent); color: #000; border-color: transparent; }
+  .btn:active { transform: translateY(1px); }
+
+  /* Icon button styling for utilities */
+  .action-icon-btn {
+    background: var(--screen);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 16px;
+    width: auto;
+    height: 30px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.1s ease;
+  }
+  .action-icon-btn:hover { background: #3a3c42; }
+  .action-icon-btn:active { transform: translateY(1px); }
+  .action-icon-btn.active-mode { outline: 2px solid var(--accent); }
+
+  /* A/B area + preview controls */
+  .ab {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .round-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--screen);
+    border: 2px solid var(--border);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 -2px 0 rgba(255,255,255,.06);
+  }
+  .round-btn:active { transform: translateY(1px); }
+  .round-btn#btnA { background: #E4002B; color: #fff; border-color: #A0001D; }
+  .round-btn#btnB { background: #FFC72C; color: #333; border-color: #D3A726; }
+
+  .btn-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .previewbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .previewbar .link {
+    color: var(--enhance-color);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .preview {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    height: 32vh;
+    background: #111;
+  }
+  .preview.visible { display: block; }
+
+  /* Raw Code Output styling */
+  #rawCodeOutput {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    background: #202228;
+    margin-top: 10px;
+    grid-column: 1 / -1;
+  }
+  #rawCodeTextarea {
+    width: 100%;
+    min-height: 150px;
+    background: var(--chip);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--fg);
+    padding: 8px;
+    font-family: monospace;
+    font-size: 12px;
+    resize: vertical;
+    margin-bottom: 8px;
+    grid-row: auto; /* Override direct placement for this context */
+  }
+  .raw-code-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .raw-code-actions .btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* Build History styling */
+  #buildHistoryDisplay {
+    display: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    background: #202228;
+    margin-top: 10px;
+    grid-column: 1 / -1;
+  }
+  #buildHistoryList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-height: 150px; /* Limit height for scrollability */
+    overflow-y: auto;
+    padding: 4px;
+    border-radius: 8px;
+    background: #17181c;
+  }
+  #buildHistoryList .btn {
+      flex: 0 0 auto; /* Prevent buttons from stretching */
+      max-width: 150px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      font-size: 11px;
+      line-height: 1.2;
+      height: auto;
+      text-align: center;
+  }
+  #buildHistoryList .btn span:first-child {
+      font-weight: 600;
+      color: var(--fg);
+  }
+  #buildHistoryList .btn span:last-child {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 2px;
+  }
+
+  /* Settings area */
+  .settings {
+    display: none;
+    grid-template-columns: 1fr auto;
+    gap: var(--gap);
+    margin-top: var(--gap);
+    min-height: 0;
+    overflow: hidden;
+    grid-column: 1 / -1;
+    grid-row: 8 / 9; /* Direct placement in grid */
+  }
+  .settings input, .settings textarea, .settings select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--screen);
+    color: var(--fg);
+    font-family: inherit;
+  }
+  .settings textarea {
+    min-height: 120px;
+    resize: vertical;
+    grid-column: 1 / -1;
+  }
+  .warn { color: var(--warn); }
+
+  /* Options display, replaces messages when visible */
+  .options-display {
+    display: none;
+    grid-row: 6 / 7; /* Occupies the 1fr content-area slot */
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .options-content-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: var(--pad);
+    background: #202228;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .options-display.visible { display: block; }
+
+  .options-prompt {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0 0 8px 0;
+    text-align: center;
+  }
+
+  .option-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .option-button {
+    background: #2b3a4a;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--fg);
+    text-align: left;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: background-color 0.08s ease-out, border-color 0.2s ease;
+    flex: 1 1 220px; /* Responsive sizing */
+    border-left: 4px solid var(--border);
+  }
+  .option-button:hover { background: #354a60; }
+  .option-button.option-enhance { border-left-color: var(--enhance-color); }
+  .option-button.option-obsolesce { border-left-color: var(--obsolesce-color); }
+  .option-button.option-retrieve { border-left-color: var(--retrieve-color); }
+  .option-button.option-reverse { border-left-color: var(--reverse-color); }
+
+  /* Utilities Modal */
+  .utilities-modal {
+    position: absolute;
+    top: calc(var(--pad) + 30px + var(--gap)); /* Below lcdbar */
+    right: var(--pad);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35);
+    min-width: 150px;
+    white-space: nowrap;
+  }
+  .utilities-modal .action-icon-btn {
+    justify-content: flex-start; /* Align text to left */
+    padding: 0 8px;
+    width: 100%;
+    height: auto;
+  }
+
+  /* TILTH Scenario Loader Modal */
+  .scenario-loader-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    z-index: 2000;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .scenario-loader-modal.visible { display: flex; justify-content: center; align-items: center; }
+  .scenario-mode-toggle {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 24px;
+    padding: 8px;
+  }
+  .mode-toggle-btn {
+    background: var(--card);
+    color: var(--fg);
+    border: 2px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .mode-toggle-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .mode-toggle-btn.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+  }
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 1200px;
+    width: 100%;
+    padding: 20px;
+  }
+  .scenario-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .scenario-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 196, 255, 0.3);
+  }
+  .scenario-emoji {
+    font-size: 40px;
+    text-align: center;
+  }
+  .scenario-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--fg);
+    text-align: center;
+  }
+  .scenario-tagline {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.4;
+  }
+  .scenario-conflict {
+    font-size: 11px;
+    color: var(--accent2);
+    text-align: center;
+    padding: 4px 8px;
+    background: rgba(99, 255, 199, 0.1);
+    border-radius: 999px;
+    margin-top: 4px;
+  }
+  .scenario-modal-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    color: var(--fg);
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2001;
+  }
+  .scenario-modal-close:hover {
+    background: var(--border);
+  }
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) {
+  .controller-row {
+    grid-template-columns: 1fr 2fr 1fr; /* ~25/50/25 */
+    grid-template-rows: 1fr;
+    align-items: stretch;
+  }
+
+  .leftStack, .rightStack {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .leftStack .field { height: 80px; }
+  canvas#vector { height: 80px; }
+  .dpad {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 96px;
+    margin: 0 auto;
+    gap: 4px;
+  }
+  .dpad .btn-arrow {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  /* Ensure labels are still visible in landscape */
+  .arrow-label { display: block; }
+
+  .screen {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto /* lcdbar */
+                        auto /* previewbar */
+                        auto /* previewFrame */
+                        auto /* rawCodeOutput */
+                        auto /* buildHistoryDisplay */
+                        1fr  /* content-area (messages OR options) */
+                        auto /* textarea */
+                        auto; /* settings */
+    overflow: hidden;
+  }
+  .messages { overflow: auto; }
+  .preview { height: 20vh; }
+  /* Align textarea and settings to the correct grid rows in landscape as well */
+  textarea { grid-row: 7 / 8; }
+  .settings { grid-row: 8 / 9; }
+}
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) {
+  .controller-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 7.5fr 2.5fr; /* 75% / 25% split */
+    grid-template-areas:
+      "screen screen"
+      "left   ab";
+    gap: var(--gap);
+  }
+
+  .screen     { grid-area: screen; min-height: 0; overflow: hidden; }
+  .leftStack  { grid-area: left;  min-height: 0;}
+  .rightStack { grid-area: ab;    display: flex; align-items: center; justify-content: center; min-height: 0;}
+
+  /* Tighten controls */
+  .leftStack { gap: 5px; padding: 0 2px; }
+  .leftStack .field { height: 56px; border-radius: 8px; }
+  canvas#vector { height: 56px; }
+  .dpad {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    max-width: 110px;
+    margin: 0 auto;
+  }
+  .dpad .btn-arrow {
+    height: 32px;
+    width: 32px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+  /* Labels remain visible as per user request, adjust font size */
+  .arrow-label {
+    display: block; /* Ensure labels are visible */
+    font-size: 9px;
+  }
+
+  .ab { gap: 8px; }
+  .round-btn { width: 42px; height: 42px; font-size: 15px; }
+  .btn-label { font-size: 9px; margin-top: 4px; }
+
+  .lcdbar { gap: 5px; flex-wrap: wrap; align-items: center; }
+  .chips { gap: 4px; }
+  .action-icon-btn { height: 26px; font-size: 11px; border-radius: 999px; }
+  .messages { min-height: 0; overflow-y: auto; }
+  .preview { height: 20vh; }
+  textarea { min-height: 48px; font-size: 12px; }
+  /* Align textarea and settings to the correct grid rows in portrait as well */
+  textarea { grid-row: 7 / 8; }
+  .settings { grid-row: 8 / 9; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main>
+    <section class="controller" aria-label="Controller with chat" id="mainController">
+      <div class="controller-row">
+        <!-- LEFT: vector + D-pad -->
+        <div class="leftStack">
+          <div class="field"><canvas id="vector" width="320" height="120" aria-label="Direction vector field"></canvas></div>
+          <div>
+            <div class="dpad" id="dpad">
+              <!-- D-pad buttons with labels -->
+              <div></div> <!-- Empty grid cell for spacing -->
+              <div class="dpad-item">
+                <button class="btn-arrow" data-op="enhance" aria-label="Enhance (Up)">↑</button>
+                <span class="arrow-label enhance">Enhance</span>
+              </div>
+              <div></div> <!-- Empty grid cell for spacing -->
+
+              <div class="dpad-item">
+                <button class="btn-arrow" data-op="retrieve" aria-label="Retrieve (Left)">←</button>
+                <span class="arrow-label retrieve">Retrieve</span>
+              </div>
+              <div></div> <!-- Empty grid cell for center -->
+              <div class="dpad-item">
+                <button class="btn-arrow" data-op="obsolesce" aria-label="Obsolesce (Right)">→</button>
+                <span class="arrow-label obsolesce">Obsolesce</span>
+              </div>
+
+              <div></div> <!-- Empty grid cell for spacing -->
+              <div class="dpad-item">
+                <button class="btn-arrow" data-op="reverse" aria-label="Reverse (Down)">↓</button>
+                <span class="arrow-label reverse">Reverse</span>
+              </div>
+              <div></div> <!-- Empty grid cell for spacing -->
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER: Chat screen IN the controller -->
+        <div class="screen">
+          <div class="lcdbar">
+            <div class="chips-container">
+              <div class="chips" id="chips"></div>
+            </div>
+            <div class="lcd-right-cluster">
+              <span id="modeBadge" class="tiny">EXPLORE · Options-First</span>
+              <span id="chainBadge" class="tiny"></span>
+              <div id="lcd" class="tiny">dirs: 0</div>
+              <div id="typing" class="typing-animation">Thinking…</div>
+
+              <a href="HUB.html" class="action-icon-btn" title="Return to Hub" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">🏠</a>
+              <button id="loadScenarioBtn" class="action-icon-btn" title="Load TILTH Scenario">🌱</button>
+              <button id="fullscreenBtn" aria-label="Toggle Fullscreen" class="action-icon-btn" title="Toggle Fullscreen">⛶</button>
+              <button id="toggleSettings" aria-label="Toggle Settings" class="action-icon-btn" title="Settings">⚙</button>
+              <button id="toggleUtilitiesBtn" class="action-icon-btn" title="More options">⠇</button>
+            </div>
+          </div>
+
+          <!-- Utilities Modal - initially hidden -->
+          <div id="utilitiesModal" class="utilities-modal" style="display:none;">
+            <button id="lockDirBtn" class="action-icon-btn" title="Lock/Unlock direction">🔑 Lock Dir</button>
+            <button id="autoStepBtn" class="action-icon-btn" title="Auto-step chain">↻ Auto Step</button>
+            <button id="toggleBuildModeBtn" class="action-icon-btn" aria-label="Toggle Build Mode" title="Toggle Build Mode">🛠 Build Mode</button>
+            <button id="compareBtn" class="action-icon-btn" title="Compare last two (A/B) or Grade Options" aria-label="Compare last two (A/B) or Grade Options">≈ Compare / Grade</button>
+            <button id="autoOptionsBtn" class="action-icon-btn" title="Auto-Grade & Pick Next Option" aria-label="Auto-Grade and Pick Next Option" style="display:none;">⚡ Auto Options</button>
+          </div>
+
+          <!-- TILTH Scenario Loader Modal -->
+          <div id="scenarioLoaderModal" class="scenario-loader-modal">
+            <button id="scenarioModalClose" class="scenario-modal-close" aria-label="Close">×</button>
+            <div class="scenario-mode-toggle">
+              <button id="productModeBtn" class="mode-toggle-btn active">Product Problems</button>
+              <button id="designerModeBtn" class="mode-toggle-btn">Designer Dilemmas</button>
+            </div>
+            <div class="scenario-grid" id="scenarioGrid">
+              <!-- Scenario cards will be inserted here by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Options display as an alternative to messages -->
+          <div id="optionsDisplay" class="options-display" style="display:none;">
+            <div class="options-content-wrapper">
+                <p class="options-prompt">OPTIONS MODE — choose one to continue:</p>
+                <div class="option-buttons" id="optionButtons"></div>
+            </div>
+          </div>
+
+          <div class="previewbar" id="previewBar" style="display:none;">
+            <span class="tiny">Artifact preview ready →</span>
+            <a id="previewLink" class="link" target="_blank" rel="noopener">Open in new tab</a>
+            <button id="embedToggle" class="btn">Toggle Embed</button>
+          </div>
+          <iframe id="previewFrame" class="preview" title="Artifact Preview"></iframe>
+
+          <!-- Raw Code Output Section -->
+          <div id="rawCodeOutput" style="display:none;">
+              <label for="rawCodeTextarea" class="visually-hidden">Raw Code Output</label>
+              <textarea id="rawCodeTextarea" readonly></textarea>
+              <div class="raw-code-actions">
+                  <button id="copyRawCodeBtn" class="btn">Copy Code</button>
+                  <button id="downloadRawCodeBtn" class="btn">Download Code</button>
+                  <button id="openRawCodeBlobBtn" class="btn">Open as Blob URL</button>
+              </div>
+          </div>
+
+          <!-- Build History Section -->
+          <div id="buildHistoryDisplay" style="display:none;">
+            <p class="tiny" style="color:var(--muted); text-align: center; margin-top: 0;">Build History</p>
+            <div id="buildHistoryList">
+              <!-- History items will be rendered here -->
+            </div>
+          </div>
+
+          <!-- Messages div is the flexible, scrollable area -->
+          <div class="messages" id="messages" aria-live="polite"></div>
+
+          <!-- Input textarea and Settings, directly in grid -->
+          <label class="visually-hidden" for="input">Message</label>
+          <textarea id="input" placeholder="Type your idea to BUILD, or set D-pad & press A for OPTIONS."></textarea>
+
+          <div id="settings" class="settings" style="display:none;">
+            <label for="systemPromptInput" class="visually-hidden">System Prompt</label>
+            <textarea id="systemPromptInput" placeholder="System instructions for the AI"></textarea>
+            <label for="apiKey" class="visually-hidden">OpenAI API Key</label>
+            <input id="apiKey" placeholder="OpenAI API Key (optional)" autocomplete="off" />
+            <button class="btn" id="clearKey">Clear</button>
+
+            <label for="builderPromptSelect" style="grid-column:1/-1;">Builder Prompt Type:</label>
+            <select id="builderPromptSelect" style="grid-column:1/-1;">
+              <option value="bretVictor">Bret Victor Builder (Recommended)</option>
+              <option value="simpleHtml">Simple HTML Builder</option>
+              <option value="custom">Custom Prompt</option>
+            </select>
+            <textarea id="customBuilderPromptInput" placeholder="Enter your custom builder prompt here. Use <<<CONTEXT>>>, <<<USER_TEXT>>>, <<<FORCES_LIST>>> placeholders." style="display:none; grid-column:1/-1;"></textarea>
+
+            <div class="tiny warn" style="grid-column:1/-1">If you enter a key here in the browser it may be stored locally and exposed. Prefer a serverless proxy for production.</div>
+          </div>
+        </div>
+
+        <!-- RIGHT: A/B buttons and quick actions -->
+        <div class="rightStack">
+          <div class="ab">
+            <div>
+              <button class="round-btn" id="btnA" aria-label="Send (A)">A</button>
+              <div class="btn-label" id="btnALabel">Send</div>
+            </div>
+            <div>
+              <button class="round-btn" id="btnB" aria-label="Save (B)">B</button>
+              <div class="btn-label">Save</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Load TILTH Scenarios -->
+<script src="tilth-scenarios.js"></script>
+<script src="tilth-designer-scenarios.js"></script>
+
+<script>
+// ============================
+// Direction-aware Prompt Pack — trimmed & strict
+// ============================
+const MASTER_SYSTEM_PROMPT = `You are the **Directional Builder** copilot.
+
+CONTRACT (non-negotiable)
+1) When NOT in Build Mode, ANY user text → **exactly four options** (one per direction: Enhance, Obsolesce, Retrieve, Reverse). Never chat instead.
+2) If a direction is locked, STILL return four options, but make the locked direction’s option the most elaborated and chain-aware.
+3) When in Build Mode, output ONLY a complete single-file HTML document (<!DOCTYPE html> + inline CSS/JS) with a top-right status ribbon showing:
+   • MODE: BUILD
+   • last input (truncated)
+   • applied directions
+   • chain info: <dir> depth <n> (if any)
+
+DIRECTION SEMANTICS
+↑ Enhance — amplify a core affordance.
+→ Obsolesce — surface what is displaced.
+← Retrieve — revive a prior/forgotten form.
+↓ Reverse — show inversion at overextension.
+
+FORMATS
+- OPTIONS MODE =>
+# Options (Forces: E/O/Rv/Rs)
+1. Title — one-line pitch.
+   *How it embodies forces:* …
+2. …
+3. …
+4. …
+
+- BUILD MODE =>
+Emit ONLY valid single-file HTML (no markdown, no prose). Include the status ribbon above.
+
+STYLE
+Short, concrete, no fluff. In Options Mode ALWAYS return exactly four options.`;
+
+const OPTIONS_MODE_PROMPT = `You are in **OPTIONS MODE** (Options-First).
+Context (last turns, condensed):
+<<<CONTEXT>>>
+
+User idea seed:
+<<<USER_TEXT>>>
+
+Directions THIS TURN: <<<FORCES_LIST>>> (one-turn)
+If a direction is locked, prioritize depth/continuity for that direction, but STILL return exactly four options (E/O/Rv/Rs) using the standard format.`;
+
+const BRET_VICTOR_BUILDER_PROMPT = `You are in **BUILD MODE**. You are a World-Class Interface Designer & Prototyper, specializing in Bret Victor's principles of dynamic media, cognitive augmentation, and explorable explanations.
+Context (last turns, condensed):
+<<<CONTEXT>>>
+
+User input THIS TURN (idea for the component):
+<<<USER_TEXT>>>
+
+Directions THIS TURN: <<<FORCES_LIST>>> (these directions should deeply inform the design choices, interactive affordances, and information presentation of the artifact).
+
+Your task is to design and implement a single-file HTML artifact that radically transforms the user's idea ("<<<USER_TEXT>>>") into a system that allows humans to understand and manipulate complexity in ways previously impossible, using the following principles:
+
+**Bret Victor's Principles for Media for Thinking the Unthinkable:**
+1.  **Surface the Invisible**: Expose internal state, data flows, or algorithmic steps that are usually hidden. Provide live visualizations mapping hidden variables.
+2.  **Overcome Cognitive Limits**: Go beyond static text; offer dynamic, linked representations that augment human sensory bounds.
+3.  **Support Multiple Modes of Thought**: Enable Interactive (direct manipulation), Visual (synchronized views), and Symbolic (formal logic) thinking.
+4.  **Enable Rapid What-If Exploration**: Make parameter tweaks yield immediate feedback. Allow hypothesis testing with controls.
+5.  **Link Perspectives**: Synchronize multiple views (e.g., code, data, visualization) to correlate cause and effect.
+6.  **Abstract and Generalize**: Represent instances in a shared parameter space; enable saving/sharing as reusable templates.
+
+Integrate these principles into the artifact's design, considering how the active directions (<<<FORCES_LIST>>>) should specifically shape each principle's application. For example:
+-   **Enhance**: Amplify a core affordance, add more dynamic elements, or increase data density.
+-   **Obsolesce**: Focus on simplification, remove non-essential features, highlight what it replaces.
+-   **Retrieve**: Employ retro UI elements, revive classic interaction patterns, or focus on foundational concepts.
+-   **Reverse**: Introduce counter-intuitive interactions, show inverse relationships, or explore alternative states.
+
+Output ONLY a complete single-file HTML document (<!DOCTYPE html> with inline CSS/JS). Include a top-right status ribbon with: MODE BUILD, last input (truncated), applied directions, chain dir+depth. Do NOT include any markdown, prose, or commentary outside the HTML structure. Ensure the HTML is fully self-contained.`;
+
+const SIMPLE_HTML_BUILDER_PROMPT = `You are in **BUILD MODE**. You are a helpful assistant.
+Context (last turns, condensed):
+<<<CONTEXT>>>
+
+User input THIS TURN:
+<<<USER_TEXT>>>
+
+Directions THIS TURN: <<<FORCES_LIST>>> (these directions should influence styling and component choice for the HTML artifact).
+
+Your task is to generate a simple, clean, and single-file HTML page based on the user's input. Focus on fundamental markup and basic inline CSS/JS.
+
+Output ONLY a complete single-file HTML document (<!DOCTYPE html> with inline CSS/JS). Include a top-right status ribbon with: MODE BUILD, last input (truncated), applied directions, chain dir+depth. Do NOT include any markdown, prose, or commentary outside the HTML structure. Ensure the HTML is fully self-contained.`;
+
+const BUILDER_PROMPTS = {
+  "bretVictor": BRET_VICTOR_BUILDER_PROMPT,
+  "simpleHtml": SIMPLE_HTML_BUILDER_PROMPT,
+  "custom": "" // Will be populated from UI
+};
+
+const CHAT_MODE_PROMPT = `You are a helpful assistant. Your primary goal is to engage with and refine the user's *current stated idea or question* (from "USER_INPUT: <<<USER_TEXT>>>" below), using the context and directions as secondary influences. Do NOT output HTML or options.
+Context (last turns, condensed):
+<<<CONTEXT>>>
+
+USER_INPUT: <<<USER_TEXT>>>
+
+Directions THIS TURN: <<<FORCES_LIST>>> (one-turn, influencing tone/focus)
+Respond conversationally to refine the user's idea or provide guidance.`;
+
+const AB_SCORE_PROMPT = `Compare A vs B using: Novelty, Coherence, Direction Fit, Historiography Signal. Return JSON only as {"compare":{...}}.`;
+
+const GRADE_OPTIONS_PROMPT = `You are an expert evaluator.
+Context (last turns, condensed):
+<<<CONTEXT>>>
+
+Current D-pad directions: <<<FORCES_LIST>>>
+
+Evaluate the following potential artifact options provided previously. For each, give a brief grade and explain why. Then, based on this evaluation and the current D-pad directions, generate **four new, distinct and refined recommendations** for further development. These recommendations should follow the standard Options Mode format.
+
+Here are the previous options to evaluate:
+<<<CURRENT_OPTIONS_LIST>>>
+
+---
+Your response should start with the evaluation, followed by a separator "---" on a new line, and then the four new recommendations in the exact Options Mode format.
+
+Example Response:
+*Evaluation of previous options:*
+**Option 1: [Previous Title]** - Grade: Good fit. (Explanation)
+**Option 2: [Previous Title]** - Grade: Needs work. (Explanation)
+
+---
+# Recommendations (Forces: ...)
+1. New Recommendation 1
+   *How it embodies forces:* ...
+2. New Recommendation 2
+   *How it embodies forces:* ...
+3. New Recommendation 3
+   *How it embodies forces:* ...
+4. New Recommendation 4
+   *How it embodies forces:* ...
+`;
+
+const bootOptionsPrompt = `# Options (Forces: none)
+1. Minimalist Blog — A simple, elegant platform focused on text.
+   *How it embodies forces:* Focuses on core content, removes distractions.
+2. Feature-Rich Wiki — A collaborative content creation and management system.
+   *How it embodies forces:* Enhances information sharing and community contribution.
+3. Retro Terminal Interface — A command-line style interface for interacting with data.
+   *How it embodies forces:* Retrieves an old-school computing aesthetic, reversing GUI norms.
+4. Dynamic Story Generator — An AI-powered tool to create branching narratives.
+   *How it embodies forces:* Explores emergent storytelling, enhancing creative possibilities.
+`;
+
+const MICRO = {
+  onFlash: {
+    enhance: 'Direction set: ↑ Enhance (this turn only).',
+    obsolesce: 'Direction set: → Obsolesce (this turn only).',
+    retrieve: 'Direction set: ← Retrieve (this turn only).',
+    reverse: 'Direction set: ↓ Reverse (this turn only).'
+  },
+  options: 'No text detected. Entering **Options Mode** with directions.',
+  optionsFirstWithText: 'Text detected. Options-First: generating 4 options.',
+  build: 'Text detected. Entering **Build Mode**. Will emit single-file HTML.',
+  mockWarning: 'Note: No API key provided. Running in **Mock Mode**.',
+  apiError: 'API Error: Could not reach OpenAI model. Check key and network. Using offline template.',
+  buildModeOn: 'Build Mode **ON**. Press **A** to build.',
+  exploreModeOn: 'Explore Mode **ON**. Press **A** with text to chat, or empty input & directions for options.',
+  noOptionsToGrade: 'No options are currently displayed to grade. Generate options first.'
+};
+
+// ============================
+// State Management
+// ============================
+const state = {
+  flashes: { enhance: false, obsolesce: false, retrieve: false, reverse: false },
+  messages: [],
+  apiKey: '',
+  systemPrompt: MASTER_SYSTEM_PROMPT,
+  currentOptions: [],
+  isLoading: false,
+  awaitingOptionPick: false,
+  buildModeActive: false,
+  lastTwoAssistant: [],
+  lastPreviewUrl: null,
+  lastLlmError: null,
+  lastRawLlmOutput: '',
+  optionsFirst: true,
+  lockedDir: null,
+  chains: { enhance: [], obsolesce: [], retrieve: [], reverse: [] },
+  autoChain: { enabled: false, steps: 3, samplingTemp: 0.9 },
+  buildHistory: [],
+  autoOptions: { enabled: false, steps: 3 },
+  selectedBuilderPrompt: "bretVictor",
+  utilitiesModalOpen: false,
+};
+
+// ============================
+// DOM Element References
+// ============================
+const el = {
+  mainController: document.getElementById('mainController'),
+  arrows: Array.from(document.querySelectorAll('.btn-arrow')),
+  arrowLabels: Array.from(document.querySelectorAll('.arrow-label')), // NEW: Reference to labels
+  lcd: document.getElementById('lcd'),
+  chips: document.getElementById('chips'),
+  messages: document.getElementById('messages'),
+  input: document.getElementById('input'),
+  btnA: document.getElementById('btnA'),
+  btnALabel: document.getElementById('btnALabel'),
+  btnB: document.getElementById('btnB'),
+  vector: document.getElementById('vector'),
+  apiKey: document.getElementById('apiKey'),
+  clearKey: document.getElementById('clearKey'),
+  toggleSettings: document.getElementById('toggleSettings'),
+  settings: document.getElementById('settings'),
+  fullscreenBtn: document.getElementById('fullscreenBtn'),
+  optionsDisplay: document.getElementById('optionsDisplay'),
+  optionButtons: document.getElementById('optionButtons'),
+  typing: document.getElementById('typing'),
+  compareBtn: document.getElementById('compareBtn'),
+  previewBar: document.getElementById('previewBar'),
+  previewLink: document.getElementById('previewLink'),
+  embedToggle: document.getElementById('embedToggle'),
+  previewFrame: document.getElementById('previewFrame'),
+  toggleBuildModeBtn: document.getElementById('toggleBuildModeBtn'),
+  rawCodeOutput: document.getElementById('rawCodeOutput'),
+  rawCodeTextarea: document.getElementById('rawCodeTextarea'),
+  copyRawCodeBtn: document.getElementById('copyRawCodeBtn'),
+  downloadRawCodeBtn: document.getElementById('downloadRawCodeBtn'),
+  openRawCodeBlobBtn: document.getElementById('openRawCodeBlobBtn'),
+  modeBadge: document.getElementById('modeBadge'),
+  chainBadge: document.getElementById('chainBadge'),
+  lockDirBtn: document.getElementById('lockDirBtn'),
+  autoStepBtn: document.getElementById('autoStepBtn'),
+  systemPromptInput: document.getElementById('systemPromptInput'),
+  buildHistoryDisplay: document.getElementById('buildHistoryDisplay'),
+  buildHistoryList: document.getElementById('buildHistoryList'),
+  autoOptionsBtn: document.getElementById('autoOptionsBtn'),
+  builderPromptSelect: document.getElementById('builderPromptSelect'),
+  customBuilderPromptInput: document.getElementById('customBuilderPromptInput'),
+  toggleUtilitiesBtn: document.getElementById('toggleUtilitiesBtn'),
+  utilitiesModal: document.getElementById('utilitiesModal'),
+  loadScenarioBtn: document.getElementById('loadScenarioBtn'),
+  scenarioLoaderModal: document.getElementById('scenarioLoaderModal'),
+  scenarioGrid: document.getElementById('scenarioGrid'),
+  scenarioModalClose: document.getElementById('scenarioModalClose'),
+  productModeBtn: document.getElementById('productModeBtn'),
+  designerModeBtn: document.getElementById('designerModeBtn'),
+};
+
+// ============================
+// WebAudio Blips & Haptics
+// ============================
+function blip(freq = 880, dur = 0.05) {
+  try {
+    const ctx = blip.ctx || (blip.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'square';
+    o.frequency.value = freq;
+    g.gain.value = 0.06;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    setTimeout(() => { o.stop(); }, dur * 1000);
+  } catch (e) {
+    /* console.warn("Audio blip failed:", e); */
+  }
+}
+
+function haptic(ms = 30) {
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+
+// ============================
+// General Helpers
+// ============================
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function getActiveForces() {
+  return Object.entries(state.flashes).filter(([, v]) => v).map(([k]) => k);
+}
+
+function generateChipsHtml() {
+  return getActiveForces().map(k => `<span class="chip ${k} active-dir">${capitalize(k)}</span>`).join('');
+}
+
+function setLoadingState(on) {
+  state.isLoading = on;
+  el.input.disabled = on;
+  el.btnA.disabled = on;
+  el.arrows.forEach(b => b.disabled = on);
+  // Disable utility buttons if modal is open
+  if (state.utilitiesModalOpen) {
+    el.lockDirBtn.disabled = on;
+    el.autoStepBtn.disabled = on;
+    el.toggleBuildModeBtn.disabled = on;
+    el.compareBtn.disabled = on;
+    el.autoOptionsBtn.disabled = on;
+  }
+  el.fullscreenBtn.disabled = on;
+  el.toggleSettings.disabled = on;
+  el.toggleUtilitiesBtn.disabled = on;
+
+  el.typing.style.display = on ? 'block' : 'none';
+}
+
+function showTypingIndicator(msg = 'Thinking…') {
+  el.typing.textContent = msg;
+  setLoadingState(true);
+}
+
+function hideTypingIndicator() {
+  setLoadingState(false);
+}
+
+function renderMarkdown(s) {
+  const escapeHtml = (text) => text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[m]));
+  let html = escapeHtml(s);
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
+function addMessage(role, content, forceClass) {
+  state.messages.push({ role, content });
+  const who = role === 'user' ? 'You' : role === 'system' ? 'System' : 'Assistant';
+  const forceCls = role === 'assistant' && forceClass ? ` ${forceClass}` : '';
+  el.messages.insertAdjacentHTML('beforeend', `<div class="msg ${role}${forceCls}"><div class="who">${who}</div><div class="bubble">${role === 'assistant' ? renderMarkdown(content) : content.replace(/</g, '&lt;')}</div></div>`);
+  el.messages.scrollTop = el.messages.scrollHeight;
+  if (role === 'assistant') {
+    state.lastTwoAssistant.push(content);
+    if (state.lastTwoAssistant.length > 2) state.lastTwoAssistant.shift();
+  }
+}
+
+// ============================
+// D-Pad & UI Rendering
+// ============================
+function getChainDepth(dir) {
+  return (state.chains?.[dir] || []).length;
+}
+
+function extractTitleFromText(text) {
+  const m = (text || '').split(/\n/)[0].match(/^([^—–:]{3,80})([—–:]\s*.*)?$/);
+  return (m ? m[1] : (text || '').slice(0, 60)).trim();
+}
+
+function pushToChain(dir, node) {
+  if (!state.chains[dir]) state.chains[dir] = [];
+  state.chains[dir].push({ ...node, ts: Date.now() });
+}
+
+function setLockedDirection(dir) {
+  state.lockedDir = dir;
+  renderBadges();
+  persistState();
+}
+
+function mapOptionsToDirections(opts) {
+  const dirs = ['enhance', 'obsolesce', 'retrieve', 'reverse'];
+  return (opts || []).slice(0, 4).map((text, i) => ({ dir: dirs[i], text }));
+}
+
+function renderBadges() {
+  if (el.modeBadge) {
+    el.modeBadge.textContent = state.buildModeActive
+      ? 'BUILD · Single-file output'
+      : (state.optionsFirst ? 'EXPLORE · Options-First' : 'EXPLORE · Chat-First');
+  }
+  if (el.chainBadge) {
+    const d = state.lockedDir;
+    let badgeText = '';
+    if (d) {
+      badgeText = `${capitalize(d)} Chain (${getChainDepth(d)})`;
+      if (state.autoChain.enabled) badgeText += ' ↻ Auto';
+    } else if (state.autoOptions.enabled) {
+      badgeText = 'Options · ⚡ Auto';
+    }
+    el.chainBadge.textContent = badgeText;
+  }
+  updateAutoOptionsButtonState();
+}
+
+function updateModeUI() {
+  el.toggleBuildModeBtn.classList.toggle('active-mode', state.buildModeActive);
+  el.mainController.classList.toggle('active-build-mode', state.buildModeActive);
+  el.btnALabel.textContent = state.buildModeActive ? 'Build' : 'Send';
+  el.input.placeholder = state.buildModeActive ?
+    'Type your final idea to BUILD the artifact.' :
+    'Type to chat/refine idea, or set D-pad & press A for options.';
+
+  if (!state.buildModeActive) {
+    el.rawCodeOutput.style.display = 'none';
+    el.buildHistoryDisplay.style.display = 'none';
+  } else {
+    if (state.buildHistory.length > 0) {
+      el.buildHistoryDisplay.style.display = 'block';
+    } else {
+      el.buildHistoryDisplay.style.display = 'none';
+    }
+  }
+  renderDpadAndChips();
+  renderBadges();
+}
+
+function drawVectorField() {
+  const c = el.vector;
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#2b2e35';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 32) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
+  }
+  for (let y = 0; y < h; y += 24) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+
+  const arrows = [];
+  const style = getComputedStyle(document.documentElement);
+  if (state.flashes.enhance) arrows.push({ dx: 0, dy: -40, col: style.getPropertyValue('--enhance-color') });
+  if (state.flashes.obsolesce) arrows.push({ dx: 40, dy: 0, col: style.getPropertyValue('--obsolesce-color') });
+  if (state.flashes.retrieve) arrows.push({ dx: -40, dy: 0, col: style.getPropertyValue('--retrieve-color') });
+  if (state.flashes.reverse) arrows.push({ dx: 0, dy: 40, col: style.getPropertyValue('--reverse-color') });
+
+  let sx = w / 2, sy = h / 2;
+  arrows.forEach(a => drawArrow(ctx, sx, sy, a.dx, a.dy, a.col, 2));
+
+  const sum = arrows.reduce((acc, a) => ({ dx: acc.dx + a.dx, dy: acc.dy + a.dy }), { dx: 0, dy: 0 });
+  if (arrows.length) drawArrow(ctx, sx, sy, sum.dx, sum.dy, 'var(--accent)', 3);
+}
+
+function drawArrow(ctx, x, y, dx, dy, color, lw) {
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len, uy = dy / len;
+  const ex = x + dx, ey = y + dy;
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(ex, ey);
+  ctx.stroke();
+
+  const s = 8 + lw;
+  const hx = ex - ux * s, hy = ey - uy * s;
+  ctx.beginPath();
+  ctx.moveTo(ex, ey);
+  ctx.lineTo(hx - uy * s * 0.5, hy + ux * s * 0.5);
+  ctx.lineTo(hx + uy * s * 0.5, hy - ux * s * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function renderDpadAndChips() {
+  const activeForces = getActiveForces();
+  el.lcd.textContent = `dirs: ${activeForces.length}`;
+  el.chips.innerHTML = generateChipsHtml();
+
+  el.arrows.forEach(button => {
+    const op = button.dataset.op;
+    button.dataset.active = String(state.flashes[op]);
+  });
+  // Update arrow labels to reflect active state colors
+  el.arrowLabels.forEach(label => {
+      const dir = Array.from(label.classList).find(cls => ['enhance', 'obsolesce', 'retrieve', 'reverse'].includes(cls));
+      if (dir) {
+          label.classList.toggle('active-dir', state.flashes[dir]);
+      }
+  });
+
+  drawVectorField();
+}
+
+function showOptions(options) {
+  el.optionButtons.innerHTML = '';
+  const typed = Array.isArray(options) && typeof options[0] === 'object';
+  (typed ? options : mapOptionsToDirections(options)).forEach(o => {
+    const b = document.createElement('button');
+    b.className = `option-button option-${o.dir}`;
+    b.innerHTML = renderMarkdown(o.text);
+    b.onclick = () => pickOption(o);
+    el.optionButtons.appendChild(b);
+  });
+  const hdr = state.lockedDir ? `OPTIONS — ${capitalize(state.lockedDir)} chain (all four shown)` : 'OPTIONS MODE — choose one to continue';
+  document.querySelector('.options-prompt').textContent = hdr;
+
+  el.optionsDisplay.style.display = 'block';
+  el.messages.style.display = 'none';
+  state.awaitingOptionPick = true;
+  updateAutoOptionsButtonState();
+}
+
+function hideOptions() {
+  el.optionsDisplay.style.display = 'none';
+  el.messages.style.display = 'block';
+  state.awaitingOptionPick = false;
+  // IMPORTANT: Do NOT clear el.input.value here, as per user's request to keep topic
+  updateAutoOptionsButtonState();
+}
+
+// ============================
+// TILTH Scenario Loader
+// ============================
+let scenarioMode = 'product'; // 'product' or 'designer'
+
+function renderScenarioGrid() {
+  const scenarios = scenarioMode === 'designer' 
+    ? (window.TILTH_DESIGNER_SCENARIOS || [])
+    : (window.TILTH_SCENARIOS || []);
+  
+  if (!scenarios.length || !el.scenarioGrid) return;
+  
+  el.scenarioGrid.innerHTML = scenarios.map(s => `
+    <div class="scenario-card" data-scenario-id="${s.id}">
+      <div class="scenario-emoji">${s.emoji}</div>
+      <div class="scenario-title">${s.name}</div>
+      <div class="scenario-tagline">${s.tagline}</div>
+      <div class="scenario-conflict">${s.coreConflict}</div>
+    </div>
+  `).join('');
+  
+  // Add click handlers
+  el.scenarioGrid.querySelectorAll('.scenario-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const scenarioId = card.dataset.scenarioId;
+      loadTilthScenario(scenarioId);
+    });
+  });
+}
+
+function loadTilthScenario(scenarioId) {
+  const scenarios = scenarioMode === 'designer'
+    ? (window.TILTH_DESIGNER_SCENARIOS || [])
+    : (window.TILTH_SCENARIOS || []);
+    
+  const scenario = scenarios.find(s => s.id === scenarioId);
+  if (!scenario) return;
+  
+  // Close modal
+  el.scenarioLoaderModal.classList.remove('visible');
+  
+  // Load prompt into input
+  el.input.value = scenario.prompt;
+  
+  // Reset and set suggested directions
+  state.flashes = { enhance: false, obsolesce: false, retrieve: false, reverse: false };
+  scenario.suggestedDirections.forEach(dir => {
+    if (state.flashes.hasOwnProperty(dir)) {
+      state.flashes[dir] = true;
+    }
+  });
+  
+  renderDpadAndChips();
+  blip(800);
+  haptic(50);
+  
+  // Different message for designer mode
+  const modeLabel = scenarioMode === 'designer' ? 'Designer Dilemma' : 'Scenario';
+  const roleInfo = scenario.role ? `\n**Your Role:** ${scenario.role}` : '';
+  
+  addMessage('system', `**TILTH ${modeLabel} Loaded: ${scenario.name}**\n\n${scenario.emoji} ${scenario.tagline}${roleInfo}\n\n**Core Tension:** ${scenario.coreConflict}\n**Stakeholders:** ${scenario.stakeholders.join(', ')}\n\nSuggested directions have been set. Press **A** to explore options or toggle **Build Mode** to create an artifact.`);
+  persistState();
+}
+
+function switchScenarioMode(mode) {
+  scenarioMode = mode;
+  
+  // Update button states
+  if (el.productModeBtn && el.designerModeBtn) {
+    el.productModeBtn.classList.toggle('active', mode === 'product');
+    el.designerModeBtn.classList.toggle('active', mode === 'designer');
+  }
+  
+  // Re-render grid
+  renderScenarioGrid();
+  blip(600);
+}
+
+function openScenarioModal() {
+  if (!el.scenarioLoaderModal) return;
+  renderScenarioGrid();
+  el.scenarioLoaderModal.classList.add('visible');
+  blip(700);
+}
+
+function closeScenarioModal() {
+  if (!el.scenarioLoaderModal) return;
+  el.scenarioLoaderModal.classList.remove('visible');
+}
+
+// ============================
+// Artifact Preview Helpers
+// ============================
+function extractHtmlFrom(text) {
+  if (!text) return null;
+  const fence = text.match(/```html\s*([\s\S]*?)```/i);
+  if (fence && fence[1]) return fence[1].trim();
+  const doctypeIdx = text.indexOf('<!DOCTYPE html');
+  if (doctypeIdx !== -1) return text.slice(doctypeIdx).trim();
+  return null;
+}
+
+function makeBlobUrl(html) {
+  if (state.lastPreviewUrl) URL.revokeObjectURL(state.lastPreviewUrl);
+  const fullHtml = html.startsWith('<!DOCTYPE html') ? html : `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Preview</title></head><body>${html}</body></html>`;
+  const url = URL.createObjectURL(new Blob([fullHtml], { type: 'text/html' }));
+  state.lastPreviewUrl = url;
+  return url;
+}
+
+function showPreview(url) {
+  el.previewBar.style.display = 'flex';
+  el.previewLink.href = url;
+}
+
+function toggleEmbed() {
+  if (!state.lastPreviewUrl) return;
+  const visible = el.previewFrame.classList.toggle('visible');
+  if (visible) {
+    el.previewFrame.src = state.lastPreviewUrl;
+  }
+}
+
+function showRawCodeOutput(code) {
+  el.rawCodeTextarea.value = code;
+  el.rawCodeOutput.style.display = 'block';
+  state.lastRawLlmOutput = code;
+}
+
+function hideRawCodeOutput() {
+  el.rawCodeOutput.style.display = 'none';
+  el.rawCodeTextarea.value = '';
+  state.lastRawLlmOutput = '';
+}
+
+function copyRawCode() {
+  el.rawCodeTextarea.select();
+  document.execCommand('copy');
+  // Simple visual feedback for copy
+  const originalText = el.copyRawCodeBtn.textContent;
+  el.copyRawCodeBtn.textContent = 'Copied!';
+  setTimeout(() => { el.copyRawCodeBtn.textContent = originalText; }, 1000);
+}
+
+function downloadRawCode() {
+  const filename = `artifact-${new Date().toISOString().slice(0, 10)}.html`;
+  const blob = new Blob([state.lastRawLlmOutput], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+function openRawCodeAsBlobUrl() {
+  if (state.lastRawLlmOutput) {
+    const url = URL.createObjectURL(new Blob([state.lastRawLlmOutput], { type: 'text/html' }));
+    window.open(url, '_blank');
+  } else {
+    alert('No code to open.');
+  }
+}
+
+// ============================
+// Build History Functions
+// ============================
+function renderBuildHistory() {
+  if (!el.buildHistoryList) return;
+  el.buildHistoryList.innerHTML = '';
+  if (state.buildHistory.length === 0) {
+    if (state.buildModeActive) el.buildHistoryDisplay.style.display = 'none';
+    return;
+  }
+  if (state.buildModeActive) {
+    el.buildHistoryDisplay.style.display = 'block';
+  } else {
+    el.buildHistoryDisplay.style.display = 'none';
+  }
+
+  for (let i = state.buildHistory.length - 1; i >= 0; i--) {
+    const entry = state.buildHistory[i];
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.margin = '4px';
+    btn.title = `Prompt: "${entry.userPrompt}" | Dirs: ${entry.directions.join(', ')}`;
+    btn.innerHTML = `<span>${entry.title || `Build ${state.buildHistory.length - i}`}</span><br><span style="font-size: 0.8em; color: var(--muted);">${new Date(entry.timestamp).toLocaleTimeString()}</span>`;
+    btn.onclick = () => loadBuildFromHistory(i);
+    el.buildHistoryList.appendChild(btn);
+  }
+}
+
+function loadBuildFromHistory(index) {
+  const entry = state.buildHistory[index];
+  if (!entry) return;
+
+  hideOptions();
+  hideRawCodeOutput();
+
+  el.rawCodeTextarea.value = entry.rawCode;
+  el.rawCodeOutput.style.display = 'block';
+  state.lastRawLlmOutput = entry.rawCode;
+
+  const html = extractHtmlFrom(entry.rawCode) || entry.rawCode || 'No HTML content generated.';
+  const url = makeBlobUrl(html);
+  showPreview(url);
+  el.previewFrame.classList.add('visible');
+  addMessage('system', `Loaded build: "${entry.title}" (${new Date(entry.timestamp).toLocaleString()})`);
+  persistState();
+}
+
+// ============================
+// LLM Interaction
+// ============================
+async function callLLM(messages) {
+  const key = state.apiKey.trim();
+  if (!key) {
+    if (state.messages.length === 0 || state.messages[state.messages.length - 1].content !== MICRO.mockWarning) {
+      addMessage('system', MICRO.mockWarning);
+    }
+    const lastUserPromptContent = messages[messages.length - 1].content;
+    const isOptionsRequest = lastUserPromptContent.includes('**OPTIONS MODE**');
+    const isChatRequest =
+      lastUserPromptContent.includes('Your primary goal is to engage with and refine') ||
+      lastUserPromptContent.includes('USER_INPUT:');
+    const isGradeRequest = lastUserPromptContent.includes('Evaluate the following potential artifact options');
+    const isBuildRequest = lastUserPromptContent.includes('You are in **BUILD MODE**');
+
+    if (isOptionsRequest) {
+      return `# Options (Forces: ${getActiveForces().map(f => f[0]).join('/') || '-'})\n\n1. Responsive micro-site — quick scaffold.\n   *How it embodies forces:* maps directions to layout and tone.\n2. Retro skin — revives print-era spreads within a web shell.\n3. Feedless canvas — obsolesces infinite scroll in favor of scenes.\n4. Overclock mirror — pushes effects to show reversal risk.`;
+    } else if (isChatRequest) {
+      const userTextInput = lastUserPromptContent.match(/USER_INPUT: (.*)/)?.[1] || 'your idea';
+      return `Okay, let's explore that idea! With the active directions of ${getActiveForces().join(', ')}. What aspects are you most interested in refining or discussing further about "${userTextInput}"?`;
+    } else if (isGradeRequest) {
+      const optionsListContentMatch = lastUserPromptContent.match(/<<<CURRENT_OPTIONS_LIST>>>\s*([\s\S]*?)(?=\n---|\Z)/);
+      const options = optionsListContentMatch ? optionsListContentMatch[1].split('\n').filter(line => line.trim() !== '') : [];
+      let mockEvaluation = '*Evaluation of previous options:*\n';
+      options.forEach((opt, i) => {
+        const titleMatch = opt.match(/^\d+\.\s*(.*?)(?=\s*—|$)/);
+        const title = titleMatch ? titleMatch[1].trim() : `Option ${i + 1}`;
+        const grade = (i % 2 === 0) ? 'Strong candidate' : 'Good potential';
+        mockEvaluation += `**Option ${i + 1}: ${title}** - Grade: ${grade}. (Mock explanation)\n`;
+      });
+      return `${mockEvaluation}\n---\n# Recommendations (Forces: ${getActiveForces().map(f => f[0]).join('/') || '-'})\n1. Refined idea from previous options (Enhance)\n   *How it embodies forces:* Focuses on key strengths identified in evaluation.\n2. Alternative direction influenced by Retrieve\n   *How it embodies forces:* Explores an inverted approach based on evaluation insights.\n3. Simplified approach from Options (Obsolesce)\n   *How it embodies forces:* Distills an option to its most essential element.\n4. Historic revival concept (Retrieve)\n   *How it embodies forces:* Brings back a successful element from a past iteration.`;
+    } else if (isBuildRequest) {
+      const userText = (messages.slice().reverse().find(m => m.role === 'user')?.content || 'artifact').slice(0, 200);
+      const dirs = getActiveForces();
+      const theme = dirs.includes('retrieve') ? 'serif' : 'system-ui';
+      const accent = dirs.includes('enhance') ? '#00c4ff' : dirs.includes('reverse') ? '#ff7aa2' : dirs.includes('obsolesce') ? '#63ffc7' : '#ffd166';
+      const escapedUserText = userText.replace(/'/g, "\\'");
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Artifact — ${userText}</title><style>html,body{margin:0;background:#0f1115;color:#eaeef2;font-family:${theme},ui-sans-serif,system-ui} .ribbon{position:fixed;top:8px;right:8px;background:${accent};color:#000;padding:6px 10px;border-radius:999px;font-size:12px} main{min-height:100vh;display:grid;place-items:center;padding:24px} .card{max-width:720px;background:#141821;border:1px solid #2a2e38;border-radius:16px;padding:24px;box-shadow:0 64px 24px rgba(0,0,0,.35)} h1{margin:0 0 12px;font-size:clamp(28px,6vw,48px)} p{line-height:1.6;color:#c7ced9} button{background:${accent};color:#081018;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer} .note{font-size:12px;opacity:.7;margin-top:10px}</style></head><body><div class="ribbon" title="Directions this turn">${dirs.join(' | ') || '—'}</div><main><section class="card"><h1>${userText}</h1><p>This page is autogenerated in BUILD MODE (Mock). Edit the input and send again to rebuild. Directions steer tone & affordances.</p><button id="action">Try Action</button><div class="note">Retrieve adds serif, Enhance amps accent, Obsolesce softens UI, Reverse shifts accent magenta.</div></section></main><script>document.getElementById('action').addEventListener('click',()=>{alert('Action on: ' + '${escapedUserText}');});<\/script></body></html>`;
+    }
+    return `Mock response: No specific mock for this request type. User input: ${messages[messages.length - 1].content.slice(0, 100)}...`;
+  }
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.6 })
+    });
+    if (!res.ok) {
+      const errorBody = await res.text();
+      throw new Error(`OpenAI API returned status ${res.status}: ${errorBody.slice(0, 100)}...`);
+    }
+    const data = await res.json();
+    let content = '';
+    if (data && Array.isArray(data.choices) && data.choices.length > 0 &&
+      data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+      content = data.choices[0].message.content.trim();
+    }
+    return content;
+  } catch (e) {
+    console.error("LLM API Error:", e);
+    state.lastLlmError = MICRO.apiError + ` (${e.message || 'unknown error'})`;
+    return state.lastLlmError;
+  }
+}
+
+function condenseContext(messagesToCondense = state.messages, n = 3) {
+  return messagesToCondense.slice(-n).map(m => `${m.role.toUpperCase()}: ${m.content.replace(/\n/g, ' ')}`).join('\n');
+}
+
+async function getOptions(contextMessages = state.messages, seedText = '') {
+  const forces = getActiveForces();
+  const sys = state.systemPrompt;
+  const userText = seedText || (contextMessages.length > 0 && contextMessages[contextMessages.length - 1].role === 'user' ? contextMessages[contextMessages.length - 1].content : '');
+  const user = OPTIONS_MODE_PROMPT.replace('<<<CONTEXT>>>', condenseContext(contextMessages)).replace('<<<USER_TEXT>>>', userText).replace('<<<FORCES_LIST>>>', forces.join(', ') || '—');
+  const messagesForLLM = [{ role: 'system', content: sys }, { role: 'user', content: user }];
+  const result = await callLLM(messagesForLLM);
+  if (typeof result !== 'string') {
+    return null;
+  }
+  return result;
+}
+
+async function getChatReply(userText) {
+  const forces = getActiveForces();
+  const sys = state.systemPrompt;
+  const user = CHAT_MODE_PROMPT.replace('<<<CONTEXT>>>', condenseContext()).replace('<<<USER_TEXT>>>', userText).replace('<<<FORCES_LIST>>>', forces.join(', ') || '—');
+  const messagesForLLM = [{ role: 'system', content: sys }, ...state.messages, { role: 'user', content: user }];
+  const result = await callLLM(messagesForLLM);
+  if (typeof result !== 'string') {
+    return state.lastLlmError || 'I encountered an error trying to chat. Please try again.';
+  }
+  return result;
+}
+
+async function getGradedRecommendations(optionsToGrade) {
+  const forces = getActiveForces();
+  const sys = state.systemPrompt;
+  const currentOptionsList = optionsToGrade.map((opt, i) => `${i + 1}. ${opt.text}`).join('\n');
+  const user = GRADE_OPTIONS_PROMPT
+    .replace('<<<CONTEXT>>>', condenseContext())
+    .replace('<<<FORCES_LIST>>>', forces.join(', ') || '—')
+    .replace('<<<CURRENT_OPTIONS_LIST>>>', currentOptionsList);
+
+  const messagesForLLM = [{ role: 'system', content: sys }, { role: 'user', content: user }];
+  const result = await callLLM(messagesForLLM);
+  if (typeof result !== 'string') {
+    return null;
+  }
+  return result;
+}
+
+
+async function getBuildReply(userText) {
+  const forces = getActiveForces();
+  const sys = state.systemPrompt;
+  let chainInfo = '';
+  if (state.lockedDir && state.chains[state.lockedDir].length > 0) {
+    chainInfo = `\nChain Info: ${capitalize(state.lockedDir)} depth ${getChainDepth(state.lockedDir)}. Last item in chain: ${extractTitleFromText(state.chains[state.lockedDir][getChainDepth(state.lockedDir) - 1].content)}`;
+  }
+
+  const activeBuilderPromptTemplate = state.selectedBuilderPrompt === 'custom'
+    ? BUILDER_PROMPTS.custom
+    : BUILDER_PROMPTS[state.selectedBuilderPrompt];
+
+  const userPromptContent = activeBuilderPromptTemplate
+    .replace('<<<CONTEXT>>>', condenseContext())
+    .replace(/<<<USER_TEXT>>>/g, userText)
+    .replace('<<<FORCES_LIST>>>', forces.join(', ') || '—') + chainInfo;
+
+  const messagesForLLM = [{ role: 'system', content: sys }, ...state.messages, { role: 'user', content: userPromptContent }];
+  const result = await callLLM(messagesForLLM);
+  if (typeof result !== 'string') {
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Error Building Artifact</title><style>body{background:#1a1b1f;color:#e44d26;font-family:ui-sans-serif,system-ui;text-align:center;padding:50px;} h1{color:#e44d26;} p{color:#9aa0a6;}</style></head><body><h1>Error building artifact!</h1><p>${result || 'An unknown error occurred while building the artifact.'}</p><p>Please check your API key, system prompt, or network connection.</p></body></html>`;
+  }
+  return result;
+}
+
+async function getABCompare(aText, bText) {
+  const sys = state.systemPrompt;
+  const user = `${AB_SCORE_PROMPT}\n\nCandidate A:\n${aText}\n\nCandidate B:\n${bText}`;
+  const messagesForLLM = [{ role: 'system', content: sys }, { role: 'user', content: user }];
+  const result = await callLLM(messagesForLLM);
+  if (typeof result !== 'string') {
+    state.lastLlmError = result || 'Failed to get A/B comparison.';
+    return JSON.stringify({ error: state.lastLlmError });
+  }
+  return result;
+}
+
+function parseOptions(raw) {
+  const out = [];
+  const rx = /(?:^|\n)\s*\d+\.\s*([\s\S]*?)(?=(?:\n\s*\d+\.|\s*$))/g;
+  let m;
+  while ((m = rx.exec(raw)) !== null) {
+    if (m && m[1]) out.push(m[1].trim());
+  }
+  return out.slice(0, 4);
+}
+
+// ============================
+// Chain & Auto-Step Logic
+// ============================
+async function stepChainOnce(dir) {
+  const depth = getChainDepth(dir);
+  const last = state.chains[dir][depth - 1];
+  if (!last) { addMessage('system', `No seed in ${capitalize(dir)} chain yet.`); return; }
+  el.input.value = last.content;
+
+  const wasOptionsFirst = state.optionsFirst; state.optionsFirst = true;
+  state.flashes = { enhance: false, obsolesce: false, retrieve: false, reverse: false };
+  state.flashes[dir] = true; renderDpadAndChips();
+
+  setLoadingState(true); showTypingIndicator(`Stepping ${capitalize(dir)} chain (depth ${depth + 1})…`);
+  const raw = await getOptions([...state.messages, { role: 'user', content: last.content }], last.content);
+  hideTypingIndicator(); state.optionsFirst = wasOptionsFirst;
+  const opts = raw ? parseOptions(raw) : [];
+  if (opts.length !== 4) { addMessage('assistant', 'Chain step failed to get four options.', 'force-warn'); setLoadingState(false); return; }
+
+  const typedOptions = mapOptionsToDirections(opts);
+  const pick = typedOptions.find(x => x.dir === dir) || typedOptions[Math.floor(Math.random() * typedOptions.length)];
+  pushToChain(dir, { title: extractTitleFromText(pick.text), content: pick.text });
+  addMessage('assistant', `**${capitalize(dir)} · step ${getChainDepth(dir)}**<br>${renderMarkdown(pick.text)}`, `force-${dir}`);
+  setLoadingState(false); persistState();
+  el.input.value = pick.text;
+}
+
+async function autoStepChain(dir, n = state.autoChain.steps) {
+  for (let i = 0; i < n; i++) {
+    if (!state.autoChain.enabled || state.lockedDir !== dir || state.isLoading) break;
+    await stepChainOnce(dir);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+  state.autoChain.enabled = false;
+  addMessage('system', `Auto-step for ${capitalize(dir)} chain completed.`);
+  persistState();
+  renderBadges();
+}
+
+// ============================
+// Auto-Grade and Pick Options
+// ============================
+function updateAutoOptionsButtonState() {
+  if (el.autoOptionsBtn) {
+    el.autoOptionsBtn.style.display = (!state.buildModeActive && state.awaitingOptionPick && el.optionsDisplay.style.display !== 'none') ? 'flex' : 'none';
+    el.autoOptionsBtn.classList.toggle('active-mode', state.autoOptions.enabled);
+  }
+}
+
+async function autoGradeAndPick(n = state.autoOptions.steps) {
+  for (let i = 0; i < n; i++) {
+    if (!state.autoOptions.enabled || state.buildModeActive || state.isLoading) break;
+
+    setLoadingState(true);
+    showTypingIndicator(`Auto-grading and picking options (step ${i + 1}/${n})…`);
+    blip(600);
+
+    const gradedResponse = await getGradedRecommendations(state.currentOptions);
+    hideTypingIndicator();
+
+    if (typeof gradedResponse !== 'string') {
+      addMessage('assistant', state.lastLlmError || 'Auto-grade failed. Stopping.', 'force-warn');
+      state.autoOptions.enabled = false;
+      break;
+    }
+
+    const [evaluationPart, recommendationsPart] = gradedResponse.split('---');
+    if (evaluationPart) {
+      addMessage('assistant', evaluationPart.trim());
+    }
+
+    let newOptions = [];
+    if (recommendationsPart) {
+      newOptions = parseOptions(recommendationsPart.trim());
+      if (newOptions.length > 0) {
+        state.currentOptions = mapOptionsToDirections(newOptions);
+        showOptions(state.currentOptions);
+        addMessage('system', 'New recommendations generated.');
+      } else {
+        addMessage('assistant', 'Could not parse new recommendations. Stopping auto-grade.', 'force-warn');
+        state.autoOptions.enabled = false;
+        break;
+      }
+    } else {
+      addMessage('assistant', 'AI response for grading did not contain recommendations. Stopping auto-grade.', 'force-warn');
+      state.autoOptions.enabled = false;
+      break;
+    }
+
+    if (newOptions.length > 0) {
+      const pickedOption = state.lockedDir ? state.currentOptions.find(o => o.dir === state.lockedDir) || state.currentOptions[0] : state.currentOptions[0];
+      pickOption(pickedOption);
+      addMessage('system', `Automatically picked: **${extractTitleFromText(pickedOption.text)}** (${capitalize(pickedOption.dir)}).`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    } else {
+      addMessage('system', 'No options to pick. Stopping auto-grade.', 'force-warn');
+      state.autoOptions.enabled = false;
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+  state.autoOptions.enabled = false;
+  updateAutoOptionsButtonState();
+  persistState();
+  renderBadges();
+}
+
+// ============================
+// Send / Save / Compare Logic
+// ============================
+async function send() {
+  if (state.isLoading) return;
+
+  const text = el.input.value.trim();
+  const hasText = !!text;
+  const anyFlash = getActiveForces().length > 0;
+
+  state.lastLlmError = null;
+  hideRawCodeOutput();
+  if (el.optionsDisplay.style.display !== 'none') {
+    hideOptions();
+  }
+
+  if (state.buildModeActive) {
+    el.buildHistoryDisplay.style.display = (state.buildHistory.length > 0) ? 'block' : 'none';
+  } else {
+    el.buildHistoryDisplay.style.display = 'none';
+  }
+
+  // Scenario 1: BUILD ARTIFACT (Build Mode is active and has text)
+  if (state.buildModeActive && hasText) {
+    setLoadingState(true);
+    showTypingIndicator('Building artifact…');
+    blip(900);
+    addMessage('system', MICRO.build);
+    addMessage('user', text);
+
+    const replyContent = await getBuildReply(text);
+    hideTypingIndicator();
+
+    if (state.lastLlmError || typeof replyContent !== 'string' || replyContent.includes('Error building artifact!')) {
+      addMessage('assistant', state.lastLlmError || replyContent || 'Failed to build artifact. (No content generated)', 'force-warn');
+      const url = makeBlobUrl('Error: No content for preview.');
+      showPreview(url);
+      setLoadingState(false);
+      state.flashes = { enhance: false, obsolesce: false, retrieve: false, reverse: false };
+      renderDpadAndChips();
+      persistState();
+      return;
+    }
+
+    state.lastRawLlmOutput = replyContent;
+    showRawCodeOutput(replyContent);
+    const primaryForce = getActiveForces()[0];
+    const forceClass = primaryForce ? `assistant force-${primaryForce}` : 'assistant';
+    addMessage('assistant', '# Build artifact generated. Preview below. Raw code is also available.', forceClass);
+
+    state.buildHistory.push({
+      timestamp: new Date().toISOString(),
+      userPrompt: text,
+      directions: getActiveForces(),
+      rawCode: replyContent,
+      title: extractTitleFromText(text) || `Build from "${text.substring(0, Math.min(text.length, 30))}"`
+    });
+    renderBuildHistory();
+
+    const html = extractHtmlFrom(replyContent) || replyContent || 'No HTML content generated.';
+    const url = makeBlobUrl(html); showPreview(url);
+    setLoadingState(false);
+    el.input.value = ''; // Clear input only after successful build
+    state.flashes = { enhance: false, obsolesce: false, retrieve: false, reverse: false };
+    renderDpadAndChips();
+    persistState();
+    state.awaitingOptionPick = false;
+    if (state.lockedDir) state.chains[state.lockedDir] = [];
+    setLockedDirection(null);
+    return;
+  } else if (state.buildModeActive && !hasText) {
+    addMessage('system', 'Please type something in the input field to build an artifact, or toggle Explore Mode to generate options or chat.');
+    persistState();
+    return;
+  }
+
+  // --- Explore Mode (Build OFF) ---
+  if (!state.buildModeActive) {
+    if (state.optionsFirst && hasText) {
+      setLoadingState(true); showTypingIndicator('Generating 4 options…'); blip(700);
+      addMessage('user', text);
+      addMessage('system', MICRO.optionsFirstWithText);
+      const raw = await getOptions([...state.messages], text);
+      hideTypingIndicator();
+      if (typeof raw !== 'string') { addMessage('assistant', state.lastLlmError || 'Failed to retrieve options.', 'force-warn'); setLoadingState(false); return; }
+      const opts = parseOptions(raw);
+      if (opts.length !== 4) { addMessage('assistant', 'Expected four options; got malformed response.', 'force-warn'); setLoadingState(false); return; }
+      state.currentOptions = mapOptionsToDirections(opts);
+      showOptions(state.currentOptions);
+      setLoadingState(false);
+      // el.input.value = ''; // IMPORTANT: Do NOT clear input here
+      persistState();
+      addMessage('system', 'Options generated. Select one, or type text to chat and refine, or toggle Build Mode to build. Press ≈ to grade current options.');
+      return;
+    }
+
+    if (!hasText && anyFlash) {
+      setLoadingState(true); showTypingIndicator('Generating 4 options…'); blip(700);
+      addMessage('system', MICRO.options);
+      const raw = await getOptions([...state.messages], '');
+      hideTypingIndicator();
+      if (typeof raw !== 'string') { addMessage('assistant', state.lastLlmError || 'Failed to retrieve options.', 'force-warn'); setLoadingState(false); return; }
+      const opts = parseOptions(raw);
+      if (opts.length !== 4) { addMessage('assistant', 'Expected four options; got malformed response.', 'force-warn'); setLoadingState(false); return; }
+      state.currentOptions = mapOptionsToDirections(opts);
+      showOptions(state.currentOptions);
+      setLoadingState(false);
+      // el.input.value = ''; // IMPORTANT: Do NOT clear input here
+      persistState();
+      addMessage('system', 'Options generated. Select one, or type text to chat and refine, or toggle Build Mode to build. Press ≈ to grade current options.');
+      return;
+    }
+
+    if (!state.optionsFirst && hasText) {
+      setLoadingState(true); showTypingIndicator('Refining idea…'); blip(700); addMessage('user', text);
+      const chatResponse = await getChatReply(text); hideTypingIndicator();
+      if (typeof chatResponse !== 'string') { addMessage('assistant', state.lastLlmError || chatResponse || 'Failed to get chat response.', 'force-warn'); setLoadingState(false); return; }
+      addMessage('assistant', chatResponse); setLoadingState(false);
+      // el.input.value = ''; // IMPORTANT: Do NOT clear input here
+      persistState(); state.awaitingOptionPick = false; return;
+    }
+
+    addMessage('system', 'Type a seed to get four options, or set a D-pad direction.'); return;
+  }
+}
+
+function pickOption(o) {
+  blip(800); haptic(40);
+  const { dir, text } = typeof o === 'string' ? { dir: 'retrieve', text: o } : o;
+  el.input.value = text;
+  hideOptions();
+  addMessage('system', `Picked (${capitalize(dir)}). Seed moved to input. Press **A** to step chain, or toggle Build to build.`);
+  if (!state.lockedDir || state.lockedDir !== dir || getChainDepth(dir) === 0) {
+    state.chains[dir] = [];
+  }
+  pushToChain(dir, { title: extractTitleFromText(text), content: text });
+  if (!state.lockedDir) setLockedDirection(dir);
+  persistState();
+  if (state.autoChain.enabled && state.lockedDir === dir) autoStepChain(dir, state.autoChain.steps).catch(() => { });
+  renderBadges();
+  updateAutoOptionsButtonState();
+}
+
+function saveTranscript() {
+  const blob = new Blob([JSON.stringify({ transcript: state.messages, systemPrompt: state.systemPrompt, buildHistory: state.buildHistory, savedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tetrad-chat-snapshot.json'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+async function compareLastTwo() {
+  if (state.isLoading) return;
+
+  if (!state.buildModeActive && state.awaitingOptionPick && state.currentOptions.length > 0) {
+    setLoadingState(true);
+    showTypingIndicator('Grading options and generating recommendations…');
+    blip(600);
+
+    const gradedResponse = await getGradedRecommendations(state.currentOptions);
+    hideTypingIndicator();
+
+    if (typeof gradedResponse !== 'string') {
+      addMessage('assistant', state.lastLlmError || 'Failed to grade options and get recommendations. Please try again.', 'force-warn');
+      setLoadingState(false);
+      persistState();
+      return;
+    }
+
+    const [evaluationPart, recommendationsPart] = gradedResponse.split('---');
+    if (evaluationPart) {
+      addMessage('assistant', evaluationPart.trim());
+    }
+    if (recommendationsPart) {
+      const newOptions = parseOptions(recommendationsPart.trim());
+      if (newOptions.length > 0) {
+        state.currentOptions = mapOptionsToDirections(newOptions);
+        showOptions(state.currentOptions);
+        addMessage('system', 'New recommendations generated. Select one, type to refine, or toggle Build Mode.');
+      } else {
+        addMessage('assistant', 'Could not parse recommendations from the AI response.', 'force-warn');
+      }
+    } else {
+      addMessage('assistant', 'AI response for grading did not contain recommendations in the expected format.', 'force-warn');
+    }
+
+    setLoadingState(false);
+    state.awaitingOptionPick = true;
+    persistState();
+    updateAutoOptionsButtonState();
+    return;
+  } else if (state.lastTwoAssistant.length >= 2) {
+    setLoadingState(true); showTypingIndicator('Comparing A/B…'); blip(600);
+    const [a, b] = state.lastTwoAssistant;
+    const res = await getABCompare(a, b);
+    hideTypingIndicator();
+    setLoadingState(false);
+
+    if (typeof res !== 'string') {
+      addMessage('assistant', state.lastLlmError || res || 'Failed to get A/B comparison.', 'force-warn');
+      state.lastLlmError = null;
+      return;
+    }
+    addMessage('assistant', `\`\`\`json\n${res}\n\`\`\``, 'assistant');
+    persistState();
+    return;
+  } else {
+    addMessage('system', MICRO.noOptionsToGrade + ' Or generate at least two assistant replies for A/B comparison.');
+    persistState();
+  }
+}
+
+// ============================
+// Event Listeners
+// ============================
+el.arrows.forEach(button => {
+  button.addEventListener('click', () => {
+    if (state.isLoading) return;
+    const op = button.dataset.op;
+    state.flashes[op] = !state.flashes[op];
+    button.classList.add('flash');
+    setTimeout(() => button.classList.remove('flash'), 120);
+    blip(880); haptic();
+    renderDpadAndChips();
+    persistState();
+    addMessage('system', MICRO.onFlash[op]);
+  });
+});
+
+el.btnA.addEventListener('click', () => { blip(500); haptic(50); send(); });
+el.btnB.addEventListener('click', saveTranscript);
+el.embedToggle.addEventListener('click', toggleEmbed);
+
+el.toggleUtilitiesBtn.addEventListener('click', () => {
+  state.utilitiesModalOpen = !state.utilitiesModalOpen;
+  el.utilitiesModal.style.display = state.utilitiesModalOpen ? 'flex' : 'none';
+  persistState();
+});
+
+// TILTH Scenario Loader event listeners
+if (el.loadScenarioBtn) {
+  el.loadScenarioBtn.addEventListener('click', () => {
+    openScenarioModal();
+    if (state.utilitiesModalOpen) {
+      state.utilitiesModalOpen = false;
+      el.utilitiesModal.style.display = 'none';
+    }
+  });
+}
+
+if (el.scenarioModalClose) {
+  el.scenarioModalClose.addEventListener('click', closeScenarioModal);
+}
+
+if (el.scenarioLoaderModal) {
+  el.scenarioLoaderModal.addEventListener('click', (e) => {
+    if (e.target === el.scenarioLoaderModal) {
+      closeScenarioModal();
+    }
+  });
+}
+
+// Scenario mode toggle buttons
+if (el.productModeBtn) {
+  el.productModeBtn.addEventListener('click', () => switchScenarioMode('product'));
+}
+
+if (el.designerModeBtn) {
+  el.designerModeBtn.addEventListener('click', () => switchScenarioMode('designer'));
+}
+
+el.toggleBuildModeBtn.addEventListener('click', () => {
+  state.buildModeActive = !state.buildModeActive;
+  updateModeUI();
+  persistState();
+  const message = state.buildModeActive ? MICRO.buildModeOn : MICRO.exploreModeOn;
+  addMessage('system', message);
+  hideOptions();
+  hideRawCodeOutput();
+  renderBuildHistory();
+  updateAutoOptionsButtonState();
+});
+
+el.copyRawCodeBtn.addEventListener('click', copyRawCode);
+el.downloadRawCodeBtn.addEventListener('click', downloadRawCode);
+el.openRawCodeBlobBtn.addEventListener('click', openRawCodeAsBlobUrl);
+
+if (el.lockDirBtn) {
+  el.lockDirBtn.addEventListener('click', () => {
+    const active = getActiveForces();
+    if (state.lockedDir && active.includes(state.lockedDir)) {
+      setLockedDirection(null);
+      addMessage('system', 'Direction unlocked.');
+    } else if (active.length > 0) {
+      setLockedDirection(active[0]);
+      addMessage('system', `Direction locked to ${capitalize(active[0])}.`);
+    } else {
+      setLockedDirection('retrieve');
+      addMessage('system', 'No active direction. Locked to Retrieve as default.');
+    }
+    renderBadges();
+    persistState();
+  });
+}
+
+if (el.autoStepBtn) {
+  el.autoStepBtn.addEventListener('click', () => {
+    const d = state.lockedDir;
+    if (!d) { addMessage('system', 'Lock a direction first (toggle a D-pad & press 🔑).'); return; }
+    state.autoChain.enabled = !state.autoChain.enabled;
+    if (state.autoChain.enabled) {
+      addMessage('system', `Auto-step for ${capitalize(d)} chain enabled for ${state.autoChain.steps} steps.`);
+      autoStepChain(d, state.autoChain.steps).finally(() => {
+        if (state.autoChain.enabled) {
+          state.autoChain.enabled = false;
+          addMessage('system', `Auto-step for ${capitalize(d)} chain completed.`);
+        }
+        renderBadges();
+        persistState();
+      });
+    } else {
+      addMessage('system', `Auto-step for ${capitalize(d)} chain disabled.`);
+    }
+    renderBadges();
+    persistState();
+  });
+}
+
+if (el.autoOptionsBtn) {
+  el.autoOptionsBtn.addEventListener('click', () => {
+    if (!state.awaitingOptionPick || state.buildModeActive || state.isLoading || el.optionsDisplay.style.display === 'none') {
+      addMessage('system', 'Auto-grade & pick can only be used in Explore Mode when options are displayed.');
+      return;
+    }
+    state.autoOptions.enabled = !state.autoOptions.enabled;
+    if (state.autoOptions.enabled) {
+      addMessage('system', `Auto-grade & pick enabled for ${state.autoOptions.steps} steps.`);
+      autoGradeAndPick(state.autoOptions.steps).finally(() => {
+        if (state.autoOptions.enabled) {
+          state.autoOptions.enabled = false;
+          addMessage('system', 'Auto-grade & pick process completed.');
+        }
+        updateAutoOptionsButtonState();
+        persistState();
+      });
+    } else {
+      addMessage('system', 'Auto-grade & pick disabled.');
+    }
+    updateAutoOptionsButtonState();
+    persistState();
+  });
+}
+
+window.addEventListener('keydown', (e) => {
+  if (state.isLoading) return;
+  const map = { ArrowUp: 'enhance', ArrowRight: 'obsolesce', ArrowLeft: 'retrieve', ArrowDown: 'reverse' };
+
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    blip(520); haptic(50); send();
+  } else if (map[e.key]) {
+    e.preventDefault();
+    const op = map[e.key];
+    state.flashes[op] = !state.flashes[op];
+    renderDpadAndChips();
+    blip(880); haptic();
+    addMessage('system', MICRO.onFlash[op]);
+  }
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    // Close scenario modal if open
+    if (el.scenarioLoaderModal && el.scenarioLoaderModal.classList.contains('visible')) {
+      closeScenarioModal();
+    }
+    // Close utilities modal if open
+    if (state.utilitiesModalOpen) {
+      state.utilitiesModalOpen = false;
+      el.utilitiesModal.style.display = 'none';
+      persistState();
+    }
+    // Close settings if open
+    if (el.settings.style.display === 'grid') {
+      el.settings.style.display = 'none';
+    }
+  }
+});
+
+el.compareBtn.addEventListener('click', compareLastTwo);
+
+el.toggleSettings.addEventListener('click', () => {
+  el.settings.style.display = el.settings.style.display === 'grid' ? 'none' : 'grid';
+  if (state.utilitiesModalOpen) {
+    state.utilitiesModalOpen = false;
+    el.utilitiesModal.style.display = 'none';
+  }
+});
+
+el.apiKey.addEventListener('input', () => { state.apiKey = el.apiKey.value; persistState(); });
+el.clearKey.addEventListener('click', () => { state.apiKey = ''; el.apiKey.value = ''; persistState(); });
+if (el.systemPromptInput) el.systemPromptInput.addEventListener('input', () => { state.systemPrompt = el.systemPromptInput.value; persistState(); });
+el.fullscreenBtn.addEventListener('click', () => { if (document.fullscreenElement) { document.exitFullscreen(); } else { document.documentElement.requestFullscreen().catch(() => { }); } });
+
+el.builderPromptSelect.addEventListener('change', () => {
+  state.selectedBuilderPrompt = el.builderPromptSelect.value;
+  if (state.selectedBuilderPrompt === 'custom') {
+    el.customBuilderPromptInput.style.display = 'block';
+  } else {
+    el.customBuilderPromptInput.style.display = 'none';
+  }
+  persistState();
+});
+
+el.customBuilderPromptInput.addEventListener('input', () => {
+  BUILDER_PROMPTS.custom = el.customBuilderPromptInput.value;
+  persistState();
+});
+
+// ============================
+// Persistence
+// ============================
+function persistState() {
+  try {
+    localStorage.setItem('tetrad-directional-v2', JSON.stringify({
+      flashes: state.flashes,
+      messages: state.messages,
+      apiKey: state.apiKey ? 'TEMP_STORED' : '', // Never store actual key
+      systemPrompt: state.systemPrompt,
+      buildModeActive: state.buildModeActive,
+      lockedDir: state.lockedDir,
+      chains: state.chains,
+      buildHistory: state.buildHistory,
+      selectedBuilderPrompt: state.selectedBuilderPrompt,
+      customBuilderPrompt: BUILDER_PROMPTS.custom,
+      utilitiesModalOpen: state.utilitiesModalOpen
+    }));
+  } catch (e) {
+    console.error("Failed to persist state:", e);
+  }
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem('tetrad-directional-v2');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    Object.assign(state.flashes, d.flashes || {});
+    state.messages = Array.isArray(d.messages) ? d.messages : [];
+    state.systemPrompt = d.systemPrompt || MASTER_SYSTEM_PROMPT;
+    if (el.systemPromptInput) el.systemPromptInput.value = state.systemPrompt;
+    state.buildModeActive = d.buildModeActive || false;
+    state.lockedDir = d.lockedDir || null;
+    state.chains = d.chains || { enhance: [], obsolesce: [], retrieve: [], reverse: [] };
+    state.buildHistory = Array.isArray(d.buildHistory) ? d.buildHistory : [];
+    state.selectedBuilderPrompt = d.selectedBuilderPrompt || "bretVictor";
+    BUILDER_PROMPTS.custom = d.customBuilderPrompt || "";
+    if (el.builderPromptSelect) el.builderPromptSelect.value = state.selectedBuilderPrompt;
+    if (el.customBuilderPromptInput) {
+      el.customBuilderPromptInput.value = BUILDER_PROMPTS.custom;
+      if (state.selectedBuilderPrompt === 'custom') {
+        el.customBuilderPromptInput.style.display = 'block';
+      }
+    }
+    state.utilitiesModalOpen = d.utilitiesModalOpen || false;
+    if (el.utilitiesModal) el.utilitiesModal.style.display = state.utilitiesModalOpen ? 'flex' : 'none';
+  } catch (e) {
+    console.error("Failed to restore state:", e);
+  }
+}
+
+// ============================
+// Tests
+// ============================
+async function runTests() {
+  const tests = [];
+  const t = (name, fn) => {
+    try {
+      fn();
+      tests.push({ name, ok: true });
+    } catch (err) {
+      tests.push({ name, ok: false, err: String(err) });
+    }
+  };
+
+  t('MASTER_SYSTEM_PROMPT is a string', () => { if (typeof MASTER_SYSTEM_PROMPT !== 'string') throw 'not string'; });
+  t('Mock decides correctly for prompts', async () => {
+    let result;
+    result = await callLLM([{ role: 'user', content: '**OPTIONS MODE** test' }]);
+    if (typeof result !== 'string' || !result.includes('# Options')) throw 'Mock options fail';
+
+    result = await callLLM([{ role: 'user', content: 'USER_INPUT: test chat' }]);
+    if (typeof result !== 'string' || !result.includes('Okay, let\'s explore that idea!')) throw 'Mock chat fail';
+
+    result = await callLLM([{ role: 'user', content: 'Evaluate the following potential artifact options\n<<<CURRENT_OPTIONS_LIST>>>\n1. Option A' }]);
+    if (typeof result !== 'string' || !result.includes('*Evaluation of previous options:*')) throw 'Mock evaluate fail';
+
+    result = await callLLM([{ role: 'user', content: 'You are in **BUILD MODE** test' }]);
+    if (typeof result !== 'string' || !result.includes('<!DOCTYPE html>')) throw 'Mock build fail';
+  });
+  t('extractHtmlFrom finds fenced block', () => { const s = '```html\n<html>ok</html>\n```'; const h = extractHtmlFrom(s); if (!h || !h.includes('<html>ok</html>')) throw 'no html or incorrect content'; });
+  t('extractHtmlFrom finds doctype', () => { const s = 'Intro\n<!DOCTYPE html><html><head></head><body></body></html>'; const h = extractHtmlFrom(s); if (!h || !h.startsWith('<!DOCTYPE html>')) throw 'doctype not found'; });
+  t('makeBlobUrl returns blob:', () => { const url = makeBlobUrl('<!DOCTYPE html><title>X</title>'); if (!url.startsWith('blob:')) throw 'not blob url'; });
+  const pass = tests.filter(x => x.ok).length;
+  const fail = tests.length - pass;
+  const summary = `✅ Tests passed: ${pass}/${tests.length}${fail ? ` • ❌ Failed: ${fail}` : ''}`;
+  console.log('Directional Builder Tests:', tests);
+  addMessage('system', summary);
+  if (fail) { tests.filter(x => !x.ok).forEach(x => addMessage('system', `Test failed: ${x.name} — ${x.err}`)); }
+}
+
+// ============================
+// Bootstrapping
+// ============================
+async function boot() {
+  restoreState();
+  renderDpadAndChips();
+  updateModeUI();
+
+  if (state.messages.length === 0) {
+    addMessage('assistant', '**Welcome to TILTH — The Tetrad Gamepad**\n\n🌱 **Click the sprout button** to load one of 16 Feed Loop scenarios from 8 ethical workplace negotiations.\n\n**Two Game Modes:**\n\n**1. Product Problems** — Redesign the problematic product itself\n   * Focus: The artifact/system that causes harm\n   * Task: Design ethical alternatives using Tetrad directions\n   * Example: Redesign an addictive learning platform\n\n**2. Designer Dilemmas** — YOU are the designer facing the ethical crisis\n   * Focus: The organizational/systemic problem\n   * Task: Design infrastructure to solve second-order issues\n   * Example: As the designer, create metrics that value learning over addiction\n\n**How to Play:**\n1. Click 🌱 to open scenario loader\n2. Choose **Product Problems** or **Designer Dilemmas**\n3. Select a scenario (auto-fills prompt & sets directions)\n4. Press **A** to explore 4 design options\n5. Pick an option to iterate\n6. Toggle **Build Mode** (🛠) for complete HTML artifact\n\n**Tetrad Directions:**\n↑ **Enhance** — Amplify a core affordance\n→ **Obsolesce** — Surface what is displaced\n← **Retrieve** — Revive a prior/forgotten form\n↓ **Reverse** — Show inversion at overextension\n\nReady? **Click 🌱 to begin!**');
+  } else {
+    // If messages exist, ensure options are hidden by default on boot
+    el.messages.style.display = 'block';
+    el.optionsDisplay.style.display = 'none';
+  }
+  if (el.systemPromptInput) el.systemPromptInput.value = state.systemPrompt;
+  await runTests();
+  renderBadges();
+  renderBuildHistory();
+}
+
+boot();
+</script>
+</body>
+</html>

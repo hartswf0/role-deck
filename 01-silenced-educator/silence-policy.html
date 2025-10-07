@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silence Policy</title>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #1a1612; 
+            overflow: hidden; 
+            font-family: 'Helvetica Neue', sans-serif;
+            filter: contrast(1.1) saturate(0.9);
+        }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #text-overlay {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5vw;
+            font-weight: 700;
+            color: #e8e8e8;
+            letter-spacing: 0.3vw;
+            text-align: center;
+            font-family: 'Courier', monospace;
+            opacity: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5vw;
+            font-weight: 900;
+            color: rgba(255,255,255,0.1);
+            letter-spacing: 1vw;
+            text-transform: uppercase;
+            font-family: 'Helvetica', sans-serif;
+            opacity: 0;
+            mix-blend-mode: overlay;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="text-overlay">VOLUNTARY SESSION</div>
+    <div id="title">SILENCE POLICY</div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textEl = document.getElementById('text-overlay');
+        const titleEl = document.getElementById('title');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let startTime = null;
+        let audioStarted = false;
+        
+        // Audio setup - fluorescent hum with breathing sidechain
+        const fluorescentNoise = new Tone.Noise('pink').toDestination();
+        fluorescentNoise.volume.value = -25;
+        
+        const fluorescentTone = new Tone.Synth({
+            oscillator: { type: 'sine' },
+            envelope: { attack: 0, decay: 0, sustain: 1, release: 0 }
+        }).toDestination();
+        fluorescentTone.volume.value = -30;
+        
+        const compressor = new Tone.Compressor(-20, 3).toDestination();
+        const breathOsc = new Tone.Oscillator(0.3, 'sine').connect(compressor);
+        
+        // TTS voice
+        const synth = new Tone.Synth().toDestination();
+        
+        // Fork clicks
+        const clickSynth = new Tone.MetalSynth().toDestination();
+        clickSynth.volume.value = -25;
+        
+        document.body.addEventListener('click', async () => {
+            if (!audioStarted) {
+                await Tone.start();
+                startTime = Date.now();
+                audioStarted = true;
+                
+                // Fluorescent hum
+                fluorescentNoise.start();
+                fluorescentTone.triggerAttack('B3');
+                breathOsc.start();
+                
+                // Fork clicks
+                [0.3, 0.8, 1.5, 2.1].forEach(time => {
+                    setTimeout(() => clickSynth.triggerAttackRelease('G4', '0.05'), time * 1000);
+                });
+                
+                // Muted voice attempt at 3s
+                setTimeout(() => {
+                    if ('speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance('privacy');
+                        utterance.rate = 0.7;
+                        utterance.pitch = 0.8;
+                        utterance.volume = 0.3;
+                        speechSynthesis.speak(utterance);
+                        
+                        setTimeout(() => speechSynthesis.cancel(), 300);
+                    }
+                }, 3000);
+                
+                // Stop ambient at 7s
+                setTimeout(() => {
+                    fluorescentNoise.stop();
+                    fluorescentTone.triggerRelease();
+                }, 7000);
+                
+                animate();
+            }
+        });
+        
+        // Napkin particles
+        const napkins = Array(15).fill().map(() => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height * 0.5 + canvas.height * 0.5,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2 - 1,
+            rotation: Math.random() * Math.PI * 2,
+            rotSpeed: (Math.random() - 0.5) * 0.1,
+            size: 20 + Math.random() * 20,
+            frozen: false
+        }));
+        
+        function drawLunchroom(t) {
+            // Fluorescent flicker
+            const flicker = t < 2 ? (Math.random() > 0.9 ? 0.85 : 1) : 1;
+            const brightness = Math.floor(26 * flicker);
+            ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${brightness - 4})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Projector light cone
+            if (t > 1) {
+                const alpha = Math.min(0.4, (t - 1) * 0.2);
+                const gradient = ctx.createRadialGradient(
+                    canvas.width * 0.8, canvas.height * 0.2, 0,
+                    canvas.width * 0.5, canvas.height * 0.4, canvas.width * 0.6
+                );
+                gradient.addColorStop(0, `rgba(240,240,200,${alpha})`);
+                gradient.addColorStop(1, 'rgba(240,240,200,0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Napkins flutter then freeze
+            if (t > 2.5 && t < 5) {
+                napkins.forEach(napkin => {
+                    if (!napkin.frozen && t > 4.5) {
+                        napkin.frozen = true;
+                    }
+                    
+                    if (!napkin.frozen) {
+                        napkin.x += napkin.vx;
+                        napkin.y += napkin.vy;
+                        napkin.rotation += napkin.rotSpeed;
+                    }
+                    
+                    ctx.save();
+                    ctx.translate(napkin.x, napkin.y);
+                    ctx.rotate(napkin.rotation);
+                    ctx.fillStyle = '#f5f5f0';
+                    ctx.fillRect(-napkin.size/2, -napkin.size/2, napkin.size, napkin.size * 0.7);
+                    ctx.restore();
+                });
+            }
+        }
+        
+        function updateText(t) {
+            if (t > 1 && t < 2.5) {
+                textEl.style.opacity = Math.min(1, (t - 1) * 1.5);
+            } else if (t >= 2.5 && t < 4) {
+                // Letters collapse to static
+                const chars = 'VOLUNTARY SESSION'.split('');
+                const glitchChars = '█▓▒░╳╬═║'.split('');
+                const glitchProgress = (t - 2.5) / 1.5;
+                
+                const newText = chars.map(char => {
+                    if (char === ' ') return ' ';
+                    return Math.random() < glitchProgress ? 
+                        glitchChars[Math.floor(Math.random() * glitchChars.length)] : char;
+                }).join('');
+                
+                textEl.textContent = newText;
+                textEl.style.opacity = 1 - glitchProgress * 0.5;
+            } else if (t >= 4) {
+                textEl.style.opacity = 0;
+            }
+            
+            // Title emerges from feedback
+            if (t > 5.5) {
+                const titleAlpha = Math.min(1, (t - 5.5) / 2);
+                titleEl.style.opacity = titleAlpha * 0.8;
+            }
+        }
+        
+        function animate() {
+            if (!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            if (elapsed > 8) return;
+            
+            drawLunchroom(elapsed);
+            updateText(elapsed);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Startup prompt
+        ctx.fillStyle = '#1a1612';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#666';
+        ctx.font = '20px Helvetica';
+        ctx.textAlign = 'center';
+        ctx.fillText('CLICK TO START', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>

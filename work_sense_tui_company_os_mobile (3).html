@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TILTH • FEED LOOP — Operational TUI</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --affective:#FFA726; --interpersonal:#EF5350; --cultural:#26A69A; --signaling:#29B6F6; --structural:#5C6BC0; --cognitive:#AB47BC; --temporal:#90A4AE;
+      --bg:#0a0e14; --surface:#151920; --border:#2d3340; --text:#b3b9c5; --text-dim:#6c7380; --text-bright:#e6e8eb; --accent:#59c2ff; --success:#7fd962; --warn:#ff8a65;
+    }
+    body { font-family:'Courier New','Monaco',monospace; background:var(--bg); color:var(--text); line-height:1.4; overflow-x:hidden; font-size:13px; padding-bottom:3rem; }
+
+    /* Header */
+    .header { background:var(--surface); border-bottom:2px solid var(--border); padding:.75rem; }
+    .title-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:.5rem; }
+    .title { font-size:14px; color:var(--accent); letter-spacing:.05em; }
+    .sys-info { font-size:10px; color:var(--text-dim); }
+    .breadcrumb { font-size:11px; color:var(--text-dim); }
+    .breadcrumb span { color:var(--success); }
+
+    /* Navigation */
+    .nav { background:var(--bg); border-bottom:1px solid var(--border); display:grid; grid-template-columns:repeat(3,1fr); }
+    .nav-btn { padding:1rem .75rem; background:none; border:none; border-right:1px solid var(--border); border-bottom:1px solid var(--border); color:var(--text-dim); font:12px inherit; cursor:pointer; text-align:left; transition:.15s; position:relative; }
+    .nav-btn:nth-child(3n){ border-right:none; }
+    .nav-btn:hover { background:var(--surface); }
+    .nav-btn.active { background:var(--surface); color:var(--accent); border-bottom:2px solid var(--accent); }
+    .nav-btn::before { content:"○"; margin-right:.5rem; font-size:8px; vertical-align:middle; }
+    .nav-btn.active::before { content:"●"; color:var(--accent); }
+
+    /* Content */
+    .content { padding:.75rem; }
+    .view { display:none; }
+    .view.active { display:block; animation:fadeIn .2s; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    /* Panel */
+    .panel { background:var(--surface); border:1px solid var(--border); margin-bottom:.75rem; }
+    .panel-header { padding:.6rem .75rem; border-bottom:1px solid var(--border); font-size:11px; color:var(--text-bright); display:flex; align-items:center; justify-content:space-between; }
+    .panel-header::before { content:"├"; color:var(--border); margin-right:.5rem; }
+    .panel-header.c-affective{border-left:3px solid var(--affective)}
+    .panel-header.c-interpersonal{border-left:3px solid var(--interpersonal)}
+    .panel-header.c-cultural{border-left:3px solid var(--cultural)}
+    .panel-header.c-signaling{border-left:3px solid var(--signaling)}
+    .panel-header.c-structural{border-left:3px solid var(--structural)}
+    .panel-header.c-cognitive{border-left:3px solid var(--cognitive)}
+    .panel-header.c-temporal{border-left:3px solid var(--temporal)}
+    .panel-count { font-size:10px; color:var(--text-dim); }
+    .panel-body { padding:.75rem; font-size:12px; }
+
+    /* Cards, lists */
+    .grid{ display:grid; gap:.75rem; }
+    .list{ display:flex; flex-direction:column; gap:.5rem; }
+    .card{ border:1px solid var(--border); background:rgba(0,0,0,.15); padding:.6rem .75rem; }
+    .card h4{ color:var(--accent); font-size:12px; margin-bottom:.25rem }
+    .muted{ color:var(--text-dim); font-size:10px }
+
+    /* Buttons */
+    .btn{ display:inline-block; padding:.5rem .7rem; border:2px solid var(--accent); color:var(--accent); background:transparent; font:12px inherit; cursor:pointer; margin-right:.4rem; margin-top:.3rem }
+    .btn.alt{ border-color:var(--success); color:var(--success) }
+    .btn.warn{ border-color:var(--warn); color:var(--warn) }
+    .btn.small{ padding:.25rem .5rem; font-size:11px }
+
+    /* Two-column for episode player */
+    .cols{ display:grid; gap:.75rem; }
+    @media(min-width:820px){ .cols{ grid-template-columns:1.2fr .8fr } }
+
+    /* Code & table */
+    .code{ background:rgba(0,0,0,.3); border:1px solid var(--border); padding:.75rem; margin:.5rem 0; overflow-x:auto; font-size:10px; line-height:1.6 }
+    .table{ width:100%; border-collapse:collapse; margin:.5rem 0; font-size:10px }
+    .table th,.table td{ border:1px solid var(--border); padding:.5rem; text-align:left }
+    .table th{ background:rgba(0,0,0,.3); color:var(--text-bright); font-size:9px; text-transform:uppercase }
+
+    /* Status Bar */
+    .status{ position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:2px solid var(--border); padding:.5rem .75rem; font-size:10px; color:var(--text-dim); display:flex; justify-content:space-between; z-index:100 }
+    .status-label{ color:var(--accent) }
+
+    /* Utility */
+    .pill{ display:inline-block; border:1px solid var(--border); padding:.18rem .45rem; font-size:10px; color:var(--text-dim); margin-right:.35rem }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{ width:6px; height:6px }
+    ::-webkit-scrollbar-track{ background:var(--bg) }
+    ::-webkit-scrollbar-thumb{ background:var(--border) }
+
+    @media(min-width:640px){ body{ font-size:14px } .nav{ grid-template-columns:repeat(6,1fr) } .nav-btn{ font-size:13px } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="title-bar">
+      <div class="title">TILTH • FEED LOOP — OS</div>
+      <div class="sys-info">v1.0 (offline‑first)</div>
+    </div>
+    <div class="breadcrumb">/<span id="current-path">start</span></div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav">
+    <button class="nav-btn active" data-view="start">START</button>
+    <button class="nav-btn" data-view="investigate">INVESTIGATE</button>
+    <button class="nav-btn" data-view="episodes">OPENINGS</button>
+    <button class="nav-btn" data-view="agronica">AGRONICA</button>
+    <button class="nav-btn" data-view="ecosystem">FARMOS</button>
+    <button class="nav-btn" data-view="archive">ARCHIVE</button>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- START -->
+    <div class="view active" id="start">
+      <div class="panel">
+        <div class="panel-header">A TILTH INVESTIGATION — FEED LOOP <span class="panel-count">Field Guide</span></div>
+        <div class="panel-body">
+          <div class="grid">
+            <div class="card">
+              <h4>Intro</h4>
+              <div>↓ SCROLL TO ENTER ARCHIVE ↓ • "A field guide to post‑human agriculture." Built as a working TUI: choices, evidence, leaked files, decision log.</div>
+              <button class="btn" data-goto="investigate">→ ENTER INVESTIGATION</button>
+              <button class="btn alt" data-goto="episodes">🎬 WATCH FULL MOVIE</button>
+            </div>
+            <div class="card">
+              <h4>Opening Sequence (storyboard)</h4>
+<pre class="code">[0:00–0:02] Black. AUDIO: mycelium contact mic; 40Hz sub‑bass.
+[0:02–0:04] Macro seed split; root tendril; iridescent moisture.
+[0:04–0:05] Hard cut: keyboard → glitch → soil; code becomes compost.
+[0:05–0:06] Feed icons spin like spores → mycorrhizal networks.
+[0:06–0:07] Lens made of roots & fiber; soil particles in void.
+[0:07–0:08] Particles spell TILTH; tone → whisper: "A field guide..."</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVESTIGATE: operational player -->
+    <div class="view" id="investigate">
+      <div class="panel">
+        <div class="panel-header">TILTH INVESTIGATION <span class="panel-count" id="case-indicator">Case: 01/08</span></div>
+        <div class="panel-body cols">
+          <div>
+            <div class="card">
+              <h4 id="ep-title">01 — Nutrient Lock</h4>
+              <div id="ep-synopsis" class="muted">Employees face a learning gate that starves dissent.</div>
+            </div>
+            <div class="card">
+              <h4>Make a choice</h4>
+              <div id="choice-list" class="list"></div>
+            </div>
+            <div class="card">
+              <h4>What actually happened</h4>
+              <div id="outcome" class="muted">Make a choice to reveal recorded outcome.</div>
+            </div>
+            <button class="btn" id="prev-ep">◀ PREV</button>
+            <button class="btn" id="next-ep">NEXT ▶</button>
+            <button class="btn alt" id="log-claim">＋ Log hypothesis</button>
+          </div>
+          <div>
+            <div class="card">
+              <h4>Evidence Locker <span class="muted" id="evidence-count">(0)</span></h4>
+              <div id="evidence" class="list"></div>
+            </div>
+            <div class="card">
+              <h4>Decision Log</h4>
+              <div id="decisions" class="list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EPISODE OPENINGS -->
+    <div class="view" id="episodes">
+      <div class="panel">
+        <div class="panel-header">Episode Title Cards <span class="panel-count">8</span></div>
+        <div class="panel-body list" id="openings-list"></div>
+      </div>
+    </div>
+
+    <!-- AGRONICA DOSSIER -->
+    <div class="view" id="agronica">
+      <div class="panel">
+        <div class="panel-header">Agronica Corporation <span class="panel-count">Where growth is cultivated.</span></div>
+        <div class="panel-body list">
+          <div class="card"><h4>Founded</h4><div>2041 — Post‑Pandemic Tech Boom</div></div>
+          <div class="card"><h4>HQ</h4><div>Vertical Farm Complex, Sacramento Delta</div></div>
+          <div class="card"><h4>Core Product</h4><div>FarmOS — platform for human yield optimization</div></div>
+          <div class="card"><h4>Mission</h4><div>"Every human system is a garden... FarmOS provides the soil."</div></div>
+          <div class="card"><h4>Corporate Evolution</h4><div class="muted">2041 Grow More → 2043 Grow Right → 2045 Grow Smart → 2047 Grow With Us → 2049 Grow Us</div></div>
+          <div class="card"><h4>Palette / Sonic / Architecture</h4><div>Greens #5a6c57 / #c8d4c0; Pinks #e8b4b8 / #d4a5a5; Sound: irrigation hiss + Slack ding; Glass/steel farms glowing like data centers.</div></div>
+          <div class="card"><h4>Business Model</h4><div>Public: "infrastructure for human flourishing". Actual: resell "agrarian analytics" (behavioral data) to insurers, employers, advertisers, governments. Leaked: "From seed to harvest, we know what grows—and what doesn’t."</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FARMOS ECOSYSTEM -->
+    <div class="view" id="ecosystem">
+      <div class="panel">
+        <div class="panel-header">FarmOS Ecosystem <span class="panel-count">8 apps</span></div>
+        <div class="panel-body list" id="apps-list"></div>
+      </div>
+    </div>
+
+    <!-- ARCHIVE / LEAKED FILES -->
+    <div class="view" id="archive">
+      <div class="panel">
+        <div class="panel-header">Ethics Archive <span class="panel-count">Leaked Files</span></div>
+        <div class="panel-body list" id="files-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Research Framework</div>
+        <div class="panel-body">
+          Weberian ideal‑types + identity‑claims research (CHI '21). Use the Decision Log to capture hypotheses and falsifiers.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status">
+    <div><span class="status-label">VIEW:</span> <span id="status-view">START</span></div>
+    <div><span class="status-label">EP:</span> <span id="status-ep">01</span> / 08 • <span class="status-label">EVIDENCE:</span> <span id="status-ev">0</span></div>
+  </div>
+
+  <script>
+    // ----- Router -----
+    const nav = document.querySelectorAll('.nav-btn');
+    const views = document.querySelectorAll('.view');
+    const statusView = document.getElementById('status-view');
+    const currentPath = document.getElementById('current-path');
+    function switchView(id){
+      nav.forEach(n=>n.classList.toggle('active', n.dataset.view===id));
+      views.forEach(v=>v.classList.toggle('active', v.id===id));
+      statusView.textContent = id.toUpperCase();
+      currentPath.textContent = id;
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    nav.forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.view)));
+
+    // ----- Data Model -----
+    const EPISODES = [
+      { id:1, title:'Nutrient Lock', synopsis:'A learning gate starves dissent; engagement is measured as yield.', choices:[
+        { id:'A', text:'Ship GrowthPath with mandatory unlocks', outcome:'Unlocks starve critical paths; dissenters labelled low‑yield. Incident PR-41 filed.' },
+        { id:'B', text:'Delay launch for cultural review', outcome:'AutoGrow forecasts miss; leadership cuts review to hit quarter; partial fix ships; harm reduced but not removed.' },
+        { id:'C', text:'Make unlocks optional + publish rationale', outcome:'Adoption slower; public trust up; Agronica spins as "evidence‑led" then quietly deprecates metric.' }
+      ], file:'File 01 — The Silenced Educator' },
+      { id:2, title:'First Fruit', synopsis:'Launch hunger meets safety debt in YieldMatch.', choices:[
+        { id:'A', text:'Ship feature flag to 5% w/ opt‑out buried', outcome:'Harm clusters in immigrant communities; opt‑out unseen; internal memo flags risk as "edge".' },
+        { id:'B', text:'Block on consent redesign', outcome:'Quarter slips; execs route around team; later incident confirms team call was right.' },
+        { id:'C', text:'Publish A/B guardrails + stop metrics at threshold', outcome:'Churn increases short‑term; long‑term brand damage avoided.' }
+      ], file:'File 02 — The Deadline Sovereign' },
+      { id:3, title:'Apprentice Rows', synopsis:'TalentFarm permissions keep juniors as seedlings.', choices:[
+        { id:'A', text:'Lock juniors to read‑only for 90 days', outcome:'Shadow work rises; leakage to spreadsheets; audit trail fails.' },
+        { id:'B', text:'Graduated trust via pairing', outcome:'Incidents drop; mentorship load rises; net throughput up.' },
+        { id:'C', text:'Open by default; punish abuse', outcome:'One high‑profile breach triggers clampdown; culture whiplash.' }
+      ], file:'File 03 — The Bounded Apprentice' },
+      { id:4, title:'Consent Harvest', synopsis:'ConsentGarden sweet UI, dark patterns below.', choices:[
+        { id:'A', text:'Keep growth copy; add tiny info icon', outcome:'Regulator inquiry later; consent claims judged misleading.' },
+        { id:'B', text:'Explicit toggles, equal weight choices', outcome:'KPIs dip; legal risk drops; pattern library updated.' },
+        { id:'C', text:'Require justification for each data flow', outcome:'Dev time +30%; data minimization unlocks new trust narrative.' }
+      ], file:'File 04 — The Two‑Headed Compliance' },
+      { id:5, title:'Root Union', synopsis:'UnionSprout gains traction; API access killed.', choices:[
+        { id:'A', text:'Revoke token citing ToS', outcome:'Organizing chills; leak sparks blowback; first organizer deported.' },
+        { id:'B', text:'Create fair‑use corridor', outcome:'Execs balk; corridor later becomes compliance baseline after scandal.' },
+        { id:'C', text:'Ignore; monitor quietly', outcome:'Movement grows; later crackdown magnifies harm.' }
+      ], file:'File 05 — The Fragile Collective' },
+      { id:6, title:'Flood Learning', synopsis:'AutoGrow misreads abstinence as abandonment.', choices:[
+        { id:'A', text:'Tune model w/ proxy labels', outcome:'Proxy encodes bias; near‑miss incident triggers data diet.' },
+        { id:'B', text:'Install human deferral gate', outcome:'Latency up; false harms down; ops accepts trade.' },
+        { id:'C', text:'Ship and watch', outcome:'Silent failure for months; harm surfaces via press.' }
+      ], file:'File 06 — The Epistemic Rush' },
+      { id:7, title:'Conditional Harvest', synopsis:'MigrantHarvest tracks people as crop risk.', choices:[
+        { id:'A', text:'Ship ICE integration', outcome:'Backlash + lawsuits; internal exodus; board doubles down.' },
+        { id:'B', text:'Risk score only with consent', outcome:'Scores weaponized anyway by partners; consent UX questioned.' },
+        { id:'C', text:'Kill feature; publish stance', outcome:'Gov contracts lost; community partnerships gained.' }
+      ], file:'File 07 — The Conditional Person' },
+      { id:8, title:'Geo‑Fencing the Garden', synopsis:'GlobalGrow tiers ethics by region.', choices:[
+        { id:'A', text:'Dynamic ethics by locale', outcome:'Pride flags toggle with GPS; trust collapses when leaked.' },
+        { id:'B', text:'One policy worldwide', outcome:'Sales drop in some regions; long‑term brand recovers.' },
+        { id:'C', text:'Silent defaults + partner levers', outcome:'Plausible deniability; internal discomfort festers.' }
+      ], file:'File 08 — The Values Treasurer' }
+    ];
+
+    const APPS = [
+      ['GrowthPath','Corporate Learning','skill trees, soil health reports'],
+      ['YieldMatch','Dating / Social','compatibility as yield'],
+      ['TalentFarm','Hiring','seed → seedling → plant permissions'],
+      ['ConsentGarden','Data Consent','dark patterns vs honest choice'],
+      ['UnionSprout','Organizing (banned)','worker tool via API'],
+      ['AutoGrow AI','Machine Learning','predict churn; misread humans'],
+      ['MigrantHarvest','Visa Compliance','ICE integration risk'],
+      ['GlobalGrow','Enterprise','geo‑fenced ethics']
+    ];
+
+    const FILES = EPISODES.map(e=>({title:e.file, episode:e.id}));
+
+    // ----- State -----
+    const Store = {
+      key:'tilth_os_state_v1',
+      load(){ try{ return JSON.parse(localStorage.getItem(this.key)) || {ep:1, evidence:[], decisions:[], claims:[]}; }catch{ return {ep:1, evidence:[], decisions:[], claims:[]}; } },
+      save(s){ localStorage.setItem(this.key, JSON.stringify(s)); }
+    };
+    let state = Store.load();
+
+    // ----- UI binding helpers -----
+    const el = sel => document.querySelector(sel);
+    const list = (root, items) => { root.innerHTML=''; items.forEach(n=>root.appendChild(n)); };
+
+    // ----- Populate static lists -----
+    const openingsList = el('#openings-list');
+    EPISODES.forEach(e=>{
+      const d=document.createElement('div'); d.className='card';
+      d.innerHTML = `<h4>${String(e.id).padStart(2,'0')} — ${e.title}</h4><div class="muted">Studio card: minimal CSS, grain, wipes.</div>`;
+      openingsList.appendChild(d);
+    });
+
+    const appsList = el('#apps-list');
+    APPS.forEach(([name,kind,desc])=>{
+      const d=document.createElement('div'); d.className='card';
+      d.innerHTML = `<h4>${name} — ${kind}</h4><div class="muted">${desc}</div>`;
+      appsList.appendChild(d);
+    });
+
+    const filesList = el('#files-list');
+    FILES.forEach(f=>{
+      const d=document.createElement('div'); d.className='card';
+      d.innerHTML = `<h4>${f.title}</h4><div class="muted">Linked to Episode ${String(f.episode).padStart(2,'0')}</div><button class="btn small" data-open-file="${f.episode}">Open</button>`;
+      filesList.appendChild(d);
+    });
+
+    filesList.addEventListener('click',(e)=>{
+      const ep = e.target?.dataset?.openFile; if(ep){ state.ep = Number(ep); renderEpisode(); switchView('investigate'); Store.save(state); }
+    });
+
+    // ----- Episode player -----
+    const statusEp = el('#status-ep');
+    const statusEv = el('#status-ev');
+    const caseIndicator = el('#case-indicator');
+    const title = el('#ep-title');
+    const synopsis = el('#ep-synopsis');
+    const choiceList = el('#choice-list');
+    const outcome = el('#outcome');
+    const evidenceView = el('#evidence');
+    const decisionsView = el('#decisions');
+
+    function renderEpisode(){
+      const ep = EPISODES.find(x=>x.id===state.ep);
+      statusEp.textContent = String(ep.id).padStart(2,'0');
+      caseIndicator.textContent = `Case: ${String(ep.id).padStart(2,'0')}/08`;
+      title.textContent = `${String(ep.id).padStart(2,'0')} — ${ep.title}`;
+      synopsis.textContent = ep.synopsis;
+      outcome.textContent = 'Make a choice to reveal recorded outcome.';
+
+      // choices
+      choiceList.innerHTML='';
+      ep.choices.forEach(c=>{
+        const btn=document.createElement('button');
+        btn.className='btn';
+        btn.textContent = c.text;
+        btn.addEventListener('click',()=>{
+          outcome.textContent = c.outcome;
+          state.decisions.push({ep:ep.id, choice:c.id, text:c.text, outcome:c.outcome, t:Date.now()});
+          // evidence stub
+          const ev = {ep:ep.id, kind:'memo', title:EPISODES[ep.id-1].file, note:`Choice ${c.id} viewed`, t:Date.now()};
+          state.evidence.push(ev);
+          Store.save(state);
+          renderEvidence();
+          renderDecisions();
+        });
+        const row=document.createElement('div'); row.className='card'; row.appendChild(btn); choiceList.appendChild(row);
+      });
+
+      renderEvidence();
+      renderDecisions();
+    }
+
+    function renderEvidence(){
+      evidenceView.innerHTML='';
+      state.evidence.filter(e=>e.ep===state.ep).slice(-6).reverse().forEach(ev=>{
+        const d=document.createElement('div'); d.className='card';
+        const time=new Date(ev.t).toLocaleString();
+        d.innerHTML = `<h4>E${String(ev.ep).padStart(2,'0')} • ${ev.kind.toUpperCase()}</h4><div class="muted">${ev.title} — ${ev.note} · ${time}</div>`;
+        evidenceView.appendChild(d);
+      });
+      statusEv.textContent = state.evidence.length;
+      el('#evidence-count').textContent = `(${state.evidence.length})`;
+    }
+
+    function renderDecisions(){
+      decisionsView.innerHTML='';
+      state.decisions.filter(d=>d.ep===state.ep).slice(-6).reverse().forEach(dv=>{
+        const time=new Date(dv.t).toLocaleTimeString();
+        const d=document.createElement('div'); d.className='card';
+        d.innerHTML = `<h4>Choice ${dv.choice}</h4><div class="muted">${dv.text}</div><div>${dv.outcome}</div><div class="muted">${time}</div>`;
+        decisionsView.appendChild(d);
+      });
+    }
+
+    // navigation in player
+    el('#prev-ep').addEventListener('click',()=>{ state.ep = state.ep>1? state.ep-1 : 8; Store.save(state); renderEpisode(); });
+    el('#next-ep').addEventListener('click',()=>{ state.ep = state.ep<8? state.ep+1 : 1; Store.save(state); renderEpisode(); });
+
+    // hypothesis logger
+    el('#log-claim').addEventListener('click',()=>{
+      const ep = EPISODES.find(x=>x.id===state.ep);
+      const text = prompt(`Hypothesis for ${ep.title}:`);
+      if(text){
+        state.decisions.push({ep:ep.id, choice:'H', text:`HYPOTHESIS — ${text}`, outcome:'Pending falsifier', t:Date.now()});
+        Store.save(state); renderDecisions();
+      }
+    });
+
+    // ----- Keyboard nav -----
+    document.addEventListener('keydown', (e) => {
+      const active = document.querySelector('.nav-btn.active');
+      const arr = Array.from(nav); const current = arr.indexOf(active);
+      if (e.key === 'ArrowRight' || e.key === 'l') {
+        const next = (current + 1) % arr.length; switchView(arr[next].dataset.view);
+      } else if (e.key === 'ArrowLeft' || e.key === 'h') {
+        const prev = (current - 1 + arr.length) % arr.length; switchView(arr[prev].dataset.view);
+      } else if (e.key==='j'){ el('#next-ep').click(); }
+      else if (e.key==='k'){ el('#prev-ep').click(); }
+    });
+
+    // ----- Init -----
+    function boot(){
+      renderEpisode();
+    }
+    boot();
+  </script>
+</body>
+</html>

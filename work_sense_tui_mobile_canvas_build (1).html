@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AGRONICA // WORK‑SENSE [INTERNAL CONSOLE]</title>
+  <style>
+    /* RESET */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%;background:#0a0e14;color:#b3b9c5;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Ubuntu Mono", Consolas, monospace}
+    body{margin:0;line-height:1.45;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
+
+    :root{
+      --affective:#ffa726;--interpersonal:#ef5350;--cultural:#26a69a;--signaling:#29b6f6;--structural:#5c6bc0;--cognitive:#ab47bc;--temporal:#90a4ae;
+      --bg:#0a0e14;--surface:#121722;--surface-2:#151b26;--border:#263041;--muted:#6e7380;--bright:#e6e8eb;--accent:#59c2ff;--ok:#7fd962;--warn:#ffcc66;--err:#ff6b6b
+    }
+
+    /* LAYOUT */
+    .app{display:grid;grid-template-rows:auto auto 1fr auto;height:100dvh}
+
+    /* HEADER */
+    .hdr{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--border)}
+    .bar{display:flex;gap:.6rem;align-items:center;padding:.55rem .75rem}
+    .brand{color:var(--accent);font-weight:700;letter-spacing:.04em;font-size:12px}
+    .kern{opacity:.7}
+    .meta{margin-left:auto;color:var(--muted);font-size:11px}
+    .crumb{border-top:1px solid var(--border);font-size:11px;color:var(--muted);padding:.4rem .75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .crumb b{color:var(--ok)}
+
+    /* NAV */
+    .nav{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);background:var(--bg)}
+    .tab{appearance:none;border:0;border-right:1px solid var(--border);background:none;color:#7b8290;padding:.65rem .4rem;font-size:12px}
+    .tab:last-child{border-right:0}
+    .tab[aria-selected="true"]{color:var(--accent);background:var(--surface)}
+
+    /* QUICK */
+    .quick{display:flex;gap:.5rem;padding:.5rem .75rem;background:var(--bg);border-bottom:1px solid var(--border)}
+    .chip{border:1px solid var(--border);background:var(--surface-2);color:var(--muted);padding:.35rem .55rem;border-radius:.4rem;font-size:11px}
+
+    /* SEARCH / CMD */
+    .cmd{display:flex;gap:.45rem;padding:.5rem .75rem;background:var(--bg);border-top:1px solid var(--border)}
+    .cmd input{flex:1;background:#0e1420;border:1px solid var(--border);border-radius:.4rem;padding:.55rem .6rem;color:#c8ceda;font-size:12px}
+    .cmd button{background:var(--surface-2);border:1px solid var(--border);color:#8b93a3;padding:.55rem .7rem;border-radius:.4rem;font-size:12px}
+
+    /* SCROLLER */
+    .views{overflow:auto;-webkit-overflow-scrolling:touch}
+    .view{display:none;animation:fade .14s ease-out}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+
+    /* PANELS */
+    .p{background:var(--surface);border:1px solid var(--border);margin:.75rem;border-radius:.5rem;overflow:hidden}
+    .ph{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:12px;color:var(--bright)}
+    .ph .count{font-size:11px;color:var(--muted)}
+    .pb{padding:.75rem;font-size:12px}
+
+    .ph[data-c="affective"]{border-left:3px solid var(--affective)}
+    .ph[data-c="interpersonal"]{border-left:3px solid var(--interpersonal)}
+    .ph[data-c="cultural"]{border-left:3px solid var(--cultural)}
+    .ph[data-c="signaling"]{border-left:3px solid var(--signaling)}
+    .ph[data-c="structural"]{border-left:3px solid var(--structural)}
+    .ph[data-c="cognitive"]{border-left:3px solid var(--cognitive)}
+    .ph[data-c="temporal"]{border-left:3px solid var(--temporal)}
+
+    /* GRID / CARDS */
+    .grid{display:grid;gap:.6rem;padding:.75rem}
+    .card{border:1px solid var(--border);background:var(--surface-2);border-radius:.5rem;overflow:hidden}
+    .ch{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:12px}
+    .tag{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+    .cb{padding:.7rem .75rem;font-size:12px}
+
+    /* LISTS */
+    .tlist{display:flex;flex-direction:column;gap:.5rem}
+    .li{border-left:2px solid var(--border);background:#0f1520;padding:.6rem .75rem;border-radius:.25rem}
+    .li strong{color:var(--accent)}
+    .li em{color:#94a0b2}
+
+    /* TABLE */
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid var(--border);padding:.45rem .5rem}
+    th{background:#0f1722;color:#d9dee7;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+    td{font-size:12px}
+
+    /* STATUS */
+    .status{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--surface);border-top:1px solid var(--border);font-size:11px}
+    .live{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:.35rem}
+    .badge{padding:.2rem .45rem;border:1px solid var(--border);border-radius:.35rem;font-size:10px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="bar">
+        <div class="brand">AGRONICA<span class="kern">/</span>OS</div>
+        <div class="meta" id="meta">shift: unopened · env: prod · role: observer</div>
+      </div>
+      <div class="crumb">/<b id="crumb">home</b></div>
+    </header>
+
+    <!-- NAV -->
+    <nav class="nav" role="tablist" aria-label="Primary">
+      <button class="tab" aria-selected="true" data-view="home">Home</button>
+      <button class="tab" aria-selected="false" data-view="ledger">Ledger</button>
+      <button class="tab" aria-selected="false" data-view="rituals">Rituals</button>
+      <button class="tab" aria-selected="false" data-view="signals">Signals</button>
+      <button class="tab" aria-selected="false" data-view="patch">Patch</button>
+    </nav>
+
+    <!-- QUICK FLAGS -->
+    <div class="quick">
+      <div class="chip">weather: stable</div>
+      <div class="chip">terrain: open</div>
+      <div class="chip">frame: flexible</div>
+      <div class="chip">river: on‑time</div>
+    </div>
+
+    <!-- COMMAND -->
+    <div class="cmd">
+      <input id="cmd" placeholder=": sense | draft | patch | badge @user | help" autocomplete="off" inputmode="text"/>
+      <button id="run">Run</button>
+    </div>
+
+    <!-- VIEWS -->
+    <main class="views" id="views">
+      <!-- HOME / OPS LOG -->
+      <section class="view active" id="v-home" data-title="home">
+        <div class="p">
+          <div class="ph" data-c="signaling">OPS LOG <span class="count" id="logCount">—</span></div>
+          <div class="pb">
+            <table id="logTable"><thead><tr><th>t</th><th>unit</th><th>event</th><th>note</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="grid" id="fieldGrid"><!-- cards injected --></div>
+      </section>
+
+      <!-- LEDGER -->
+      <section class="view" id="v-ledger" data-title="ledger">
+        <div class="p">
+          <div class="ph" data-c="structural">ROLE LEDGER <span class="count" id="roleCount">—</span></div>
+          <div class="pb">
+            <table id="roleTable"><thead><tr><th>holder</th><th>role card</th><th>scope</th><th>since</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="p">
+          <div class="ph" data-c="interpersonal">OPEN TRADES <span class="count" id="tradeCount">—</span></div>
+          <div class="pb">
+            <div class="tlist" id="tradeList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RITUALS -->
+      <section class="view" id="v-rituals" data-title="rituals">
+        <div class="p">
+          <div class="ph" data-c="temporal">CADENCE <span class="count" id="cadenceCount">—</span></div>
+          <div class="pb">
+            <table id="cadenceTable"><thead><tr><th>ritual</th><th>window</th><th>tells</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="p">
+          <div class="ph" data-c="cultural">HOUSE RULES <span class="count" id="ruleCount">—</span></div>
+          <div class="pb" id="rules">
+            <!-- rules injected -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SIGNALS -->
+      <section class="view" id="v-signals" data-title="signals">
+        <div class="p">
+          <div class="ph" data-c="signaling">BADGES <span class="count" id="badgeCount">—</span></div>
+          <div class="pb">
+            <table id="badgeTable"><thead><tr><th>badge</th><th>who</th><th>reason</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="p">
+          <div class="ph" data-c="affective">WEATHER FEED <span class="count" id="weatherCount">—</span></div>
+          <div class="pb" id="weather">
+            <!-- weather notes injected -->
+          </div>
+        </div>
+      </section>
+
+      <!-- PATCH NOTES -->
+      <section class="view" id="v-patch" data-title="patch">
+        <div class="p">
+          <div class="ph" data-c="structural">PATCH NOTES <span class="count" id="patchCount">—</span></div>
+          <div class="pb">
+            <table id="patchTable"><thead><tr><th>id</th><th>change</th><th>impact</th><th>window</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="p">
+          <div class="ph" data-c="cognitive">FRAMES <span class="count">library</span></div>
+          <div class="pb" id="frames">
+            <div class="tlist">
+              <div class="li"><strong>&lt;Reduce Hand Size&gt;</strong><br><em>Limit duties per holder to prevent overload.</em></div>
+              <div class="li"><strong>&lt;Swap to Teach&gt;</strong><br><em>Trade duties with intent to transfer skill.</em></div>
+              <div class="li"><strong>&lt;Windowed Experiment&gt;</strong><br><em>Try a change for a fixed time; measure; revert or commit.</em></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- STATUS -->
+    <footer class="status">
+      <div><span class="live"></span><span id="stat">ready</span></div>
+      <div class="badge" id="match">0 matches</div>
+    </footer>
+  </div>
+
+  <script>
+    // ======== IN‑WORLD DATA (seed) ========
+    const DATA = {
+      ops:[
+        {t:"08:40", unit:"signaling", event:"story", note:"Q4 pivot framed as course correction"},
+        {t:"09:05", unit:"affective", event:"vibe", note:"calm/alert; coffee density high"},
+        {t:"10:15", unit:"structural", event:"draft", note:"release shepherd reassigned to Nora"},
+        {t:"11:20", unit:"temporal", event:"window", note:"3‑week async standup trial opened"},
+        {t:"13:10", unit:"cultural", event:"patch notes", note:"house rule: write it; don't wing it"}
+      ],
+      fields:[
+        {key:"affective", label:"AFFECTIVE", tag:"weather", pitch:"Room temperature for work. Sparks, fades, and flow."},
+        {key:"interpersonal", label:"INTERPERSONAL", tag:"terrain", pitch:"Hands, trades, assists. Where presence shapes path."},
+        {key:"cultural", label:"CULTURAL", tag:"soil", pitch:"Table stakes and house rules. What grows here by default."},
+        {key:"signaling", label:"SIGNALING", tag:"air", pitch:"Tells, badges, legends. Meaning in motion."},
+        {key:"structural", label:"STRUCTURAL", tag:"frame", pitch:"Stacks, ledgers, patches. Form follows aim."},
+        {key:"cognitive", label:"COGNITIVE", tag:"view", pitch:"Models and frames. From metrics to stories."},
+        {key:"temporal", label:"TEMPORAL", tag:"river", pitch:"Seasons, cadence, windows. Time we can shape."}
+      ],
+      roles:[
+        {holder:"Nora", card:"Release Shepherd", scope:"handoff → comms", since:"2025‑10‑01"},
+        {holder:"Imran", card:"Incident Lead", scope:"page triage → postmortems", since:"2025‑09‑12"},
+        {holder:"Jules", card:"Signals Keeper", scope:"badges → tells", since:"2025‑08‑21"},
+        {holder:"Ari", card:"Product Shepherd", scope:"roadmap → release notes", since:"2025‑06‑03"}
+      ],
+      trades:[
+        {title:"Swap: Oncall Triage ↔ Release Comms", note:"Ari ⇄ Imran for sprint season", status:"open"},
+        {title:"Assist: Incident Review Coverage", note:"Nora covers Imran 2x weeks", status:"active"}
+      ],
+      cadence:[
+        {ritual:"Garden Day", window:"Fri 14:00‑17:00", tells:"quiet repo; small PRs; docs bloom"},
+        {ritual:"Role Draft", window:"Mon 10:00‑11:00", tells:"hands lighten; trades logged"},
+        {ritual:"Ledger Review", window:"Wed 16:00‑16:20", tells:"no red gaps; badges issued"}
+      ],
+      rules:[
+        "Table Stakes: write it; don't wing it.",
+        "Ping Window: respond within 24h async.",
+        "Swap to Teach: trades name a learning goal.",
+        "Two‑person greenlight for policy changes."
+      ],
+      badges:[
+        {badge:"Patch Hero", who:"Nora", reason:"staged & rolled back safely"},
+        {badge:"Quiet Power", who:"Jules", reason:"raised signal quality w/o fanfare"}
+      ],
+      weather:[
+        "Warm curiosity in roadmap channel.",
+        "Low friction heat around QA ownership (watch).",
+        "Evening cool‑down planned after push."
+      ],
+      patches:[
+        {id:"P‑137", change:"Reduce Hand Size: cap duties at 5 per holder", impact:"less overload, clearer focus", window:"2025‑10‑13 → 2025‑11‑03"},
+        {id:"P‑138", change:"Windowed Experiment: async standup", impact:"test autonomy; keep tells", window:"2025‑10‑12 → 2025‑11‑02"}
+      ]
+    };
+
+    // ======== HELPERS ========
+    const $ = (q, c=document)=>c.querySelector(q);
+    const $$ = (q, c=document)=>Array.from(c.querySelectorAll(q));
+    const views = { home: $('#v-home'), ledger: $('#v-ledger'), rituals: $('#v-rituals'), signals: $('#v-signals'), patch: $('#v-patch') };
+    const tabs = $$('.tab');
+    const scroller = $('#views');
+
+    function setView(name){
+      Object.entries(views).forEach(([k,el])=>{ el.classList.toggle('active', k===name); });
+      tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.view===name));
+      $('#crumb').textContent = name;
+      $('#stat').textContent = 'view → ' + name;
+    }
+
+    tabs.forEach(t=>t.addEventListener('click', ()=>setView(t.dataset.view)));
+
+    // ======== HYDRATE ========
+    (function render(){
+      // ops log
+      const body=$('#logTable tbody'); body.innerHTML='';
+      DATA.ops.forEach(o=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${o.t}</td><td>${o.unit}</td><td>${o.event}</td><td>${o.note}</td>`; body.appendChild(tr); });
+      $('#logCount').textContent = DATA.ops.length + ' events';
+
+      // field cards
+      const fieldGrid = $('#fieldGrid'); fieldGrid.innerHTML='';
+      DATA.fields.forEach(f=>{ const card=document.createElement('article'); card.className='card'; card.dataset.field=f.key; card.innerHTML=`<div class="ch">${f.label} <span class="tag">${f.tag}</span></div><div class="cb">${f.pitch}</div>`; fieldGrid.appendChild(card); });
+      fieldGrid.addEventListener('click',e=>{const c=e.target.closest('.card'); if(!c) return; setView('ledger');});
+
+      // roles
+      const roleBody=$('#roleTable tbody'); roleBody.innerHTML='';
+      DATA.roles.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.holder}</td><td>${r.card}</td><td>${r.scope}</td><td>${r.since}</td>`; roleBody.appendChild(tr); });
+      $('#roleCount').textContent = DATA.roles.length + ' holders';
+
+      // trades
+      const tl=$('#tradeList'); tl.innerHTML='';
+      DATA.trades.forEach(t=>{ const div=document.createElement('div'); div.className='li'; div.innerHTML=`<strong>${t.title}</strong><br><em>${t.note}</em> — ${t.status}`; tl.appendChild(div); });
+      $('#tradeCount').textContent = DATA.trades.length + ' items';
+
+      // cadence
+      const cadBody=$('#cadenceTable tbody'); cadBody.innerHTML='';
+      DATA.cadence.forEach(c=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${c.ritual}</td><td>${c.window}</td><td>${c.tells}</td>`; cadBody.appendChild(tr); });
+      $('#cadenceCount').textContent = DATA.cadence.length + ' rituals';
+
+      // rules
+      const rules=$('#rules'); rules.innerHTML=''; DATA.rules.forEach(r=>{ const div=document.createElement('div'); div.className='li'; div.innerHTML=`<strong>•</strong> ${r}`; rules.appendChild(div); });
+      $('#ruleCount').textContent = DATA.rules.length + ' rules';
+
+      // badges
+      const bBody=$('#badgeTable tbody'); bBody.innerHTML='';
+      DATA.badges.forEach(b=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${b.badge}</td><td>${b.who}</td><td>${b.reason}</td>`; bBody.appendChild(tr); });
+      $('#badgeCount').textContent = DATA.badges.length + ' active';
+
+      // weather
+      const w=$('#weather'); w.innerHTML=''; DATA.weather.forEach(n=>{ const d=document.createElement('div'); d.className='li'; d.innerHTML=`<strong>note</strong> — <em>${n}</em>`; w.appendChild(d); });
+      $('#weatherCount').textContent = DATA.weather.length + ' notes';
+
+      // patches
+      const pBody=$('#patchTable tbody'); pBody.innerHTML='';
+      DATA.patches.forEach(p=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${p.id}</td><td>${p.change}</td><td>${p.impact}</td><td>${p.window}</td>`; pBody.appendChild(tr); });
+      $('#patchCount').textContent = DATA.patches.length + ' changes';
+    })();
+
+    // ======== COMMANDS ========
+    const input=$('#cmd');
+    const run=$('#run');
+
+    function postLog(unit,event,note){
+      const now=new Date(); const t=now.toTimeString().slice(0,5);
+      DATA.ops.unshift({t,unit,event,note});
+      const body=$('#logTable tbody'); const tr=document.createElement('tr'); tr.innerHTML=`<td>${t}</td><td>${unit}</td><td>${event}</td><td>${note}</td>`; body.prepend(tr);
+      $('#logCount').textContent = DATA.ops.length + ' events';
+      $('#stat').textContent = `logged: ${event}`;
+    }
+
+    function cmdExecute(raw){
+      const s=(raw||'').trim(); if(!s) return;
+      const [verb,...rest]=s.split(' ');
+      if(verb==='help'){ postLog('signaling','help','verbs: sense|draft|patch|badge @user text'); return; }
+      if(verb==='sense'){ postLog('affective','scan', rest.join(' ')||'room check'); return; }
+      if(verb==='badge'){
+        const who=rest[0]||'someone'; const reason=rest.slice(1).join(' ')||'good work';
+        DATA.badges.unshift({badge:'On-the-Spot', who, reason});
+        const bBody=$('#badgeTable tbody'); const tr=document.createElement('tr'); tr.innerHTML=`<td>On-the-Spot</td><td>${who}</td><td>${reason}</td>`; bBody.prepend(tr);
+        $('#badgeCount').textContent = DATA.badges.length + ' active';
+        postLog('signaling','badge', `${who} — ${reason}`); return;
+      }
+      if(verb==='patch'){
+        const id='P-'+Math.floor(Math.random()*900+100);
+        const change=rest.join(' ')||'Windowed Experiment';
+        const now=new Date(); const end=new Date(Date.now()+1000*60*60*24*7);
+        const w=`${now.toISOString().slice(0,10)} → ${end.toISOString().slice(0,10)}`;
+        DATA.patches.unshift({id, change, impact:'TBD', window:w});
+        const pBody=$('#patchTable tbody'); const tr=document.createElement('tr'); tr.innerHTML=`<td>${id}</td><td>${change}</td><td>TBD</td><td>${w}</td>`; pBody.prepend(tr);
+        $('#patchCount').textContent = DATA.patches.length + ' changes';
+        postLog('structural','patch', change); return;
+      }
+      if(verb==='draft'){
+        setView('ledger'); postLog('structural','draft','open role draft'); return;
+      }
+      postLog('cognitive','unknown', s);
+    }
+
+    run.addEventListener('click',()=>{cmdExecute(input.value); input.value='';});
+    input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ cmdExecute(input.value); input.value=''; }});
+
+    // swipe nav (mobile)
+    let sx=null, sy=null; scroller.addEventListener('touchstart',e=>{const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY;},{passive:true});
+    scroller.addEventListener('touchend',e=>{const t=e.changedTouches[0]; if(sx===null) return; const dx=t.clientX-sx; const dy=Math.abs(t.clientY-sy);
+      if(Math.abs(dx)>60 && dy<40){ const order=['home','ledger','rituals','signals','patch']; const cur=order.findIndex(v=>views[v].classList.contains('active')); const nxt=dx<0? Math.min(order.length-1, cur+1) : Math.max(0, cur-1); setView(order[nxt]); }
+      sx=sy=null;},{passive:true});
+
+    // boot note
+    setView('home');
+  </script>
+</body>
+</html>

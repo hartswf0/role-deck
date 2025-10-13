@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>WORK‑SENSE [TUI] — Company OS</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root{
+      --affective:#FFA726; --interpersonal:#EF5350; --cultural:#26A69A; --signaling:#29B6F6;
+      --structural:#5C6BC0; --cognitive:#AB47BC; --temporal:#90A4AE;
+      --bg:#0a0e14; --surface:#151920; --border:#2d3340; --text:#b3b9c5; --text-dim:#6c7380; --text-bright:#e6e8eb; --accent:#59c2ff; --success:#7fd962; --warn:#ff8a65;
+    }
+    html,body{height:100%; background:var(--bg); color:var(--text); font:13px/1.45 "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";}
+    code, .mono{font-family:"Courier New", Monaco, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+
+    /* Header */
+    .header{position:sticky; top:0; z-index:20; background:linear-gradient(180deg,var(--surface),#11151c); border-bottom:2px solid var(--border); padding:.6rem .75rem}
+    .title-bar{display:flex; align-items:center; justify-content:space-between}
+    .title{font-size:14px; letter-spacing:.06em; color:var(--accent)}
+    .sys{font-size:10px; color:var(--text-dim)}
+    .crumb{margin-top:.35rem; font-size:11px; color:var(--text-dim)}
+    .crumb span{color:var(--success)}
+
+    /* Nav */
+    .nav{display:grid; grid-template-columns:repeat(2,1fr); border-bottom:1px solid var(--border)}
+    .tab{padding:.9rem .75rem; background:none; border:none; border-right:1px solid var(--border); border-bottom:1px solid var(--border); color:var(--text-dim); font:12px inherit; text-align:left; cursor:pointer}
+    .tab:nth-child(2n){border-right:none}
+    .tab.active{color:var(--accent); background:var(--surface); border-bottom:2px solid var(--accent)}
+    .tab::before{content:"○"; font-size:8px; margin-right:.5rem}
+    .tab.active::before{content:"●"; color:var(--accent)}
+
+    /* Content */
+    .wrap{padding:.75rem; padding-bottom:4.25rem}
+    .view{display:none; animation:fade .18s ease}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+
+    /* Panels */
+    .panel{background:var(--surface); border:1px solid var(--border); margin-bottom:.75rem}
+    .ph{padding:.6rem .75rem; border-bottom:1px solid var(--border); color:var(--text-bright); font-size:11px; display:flex; align-items:center; justify-content:space-between}
+    .ph::before{content:"├"; color:var(--border); margin-right:.5rem}
+    .ph.a{border-left:3px solid var(--affective)}
+    .ph.i{border-left:3px solid var(--interpersonal)}
+    .ph.c{border-left:3px solid var(--cultural)}
+    .ph.s{border-left:3px solid var(--signaling)}
+    .ph.r{border-left:3px solid var(--structural)}
+    .ph.g{border-left:3px solid var(--cognitive)}
+    .ph.t{border-left:3px solid var(--temporal)}
+    .pc{padding:.75rem; font-size:12px}
+
+    /* Grids, tags */
+    .grid{display:grid; gap:.75rem}
+    .kvs{display:flex; flex-wrap:wrap; gap:.5rem}
+    .tag{border:1px solid var(--border); padding:.2rem .5rem; font-size:10px; color:var(--text-dim)}
+    .kpi{display:grid; grid-template-columns:1fr auto; gap:.35rem; padding:.5rem .6rem; border:1px dashed var(--border); font-size:11px}
+
+    /* Lists */
+    .list{display:flex; flex-direction:column; gap:.5rem}
+    .item{padding:.6rem .75rem; background:rgba(0,0,0,.18); border:1px solid var(--border)}
+    .item h4{font-size:12px; color:var(--accent); margin-bottom:.25rem}
+    .muted{color:var(--text-dim); font-size:11px}
+
+    /* Code block */
+    pre.code{font-size:10px; line-height:1.6; background:rgba(0,0,0,.28); border:1px solid var(--border); padding:.75rem; overflow-x:auto}
+
+    /* Table */
+    table{width:100%; border-collapse:collapse; font-size:10px}
+    th,td{border:1px solid var(--border); padding:.45rem .5rem; text-align:left}
+    th{background:rgba(0,0,0,.3); color:var(--text-bright); text-transform:uppercase; font-size:9px}
+
+    /* Status bar */
+    .status{position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:2px solid var(--border); padding:.5rem .75rem; font-size:10px; color:var(--text-dim); display:flex; justify-content:space-between; z-index:30}
+    .status b{color:var(--accent)}
+
+    @media(min-width:640px){html{font-size:14px}.nav{grid-template-columns:repeat(4,1fr)}.tab{font-size:13px}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-bar">
+      <div class="title mono">WORK‑SENSE.TUI</div>
+      <div class="sys mono">v1.1 · mobile‑first</div>
+    </div>
+    <div class="crumb mono">/<span id="crumb">root</span></div>
+  </header>
+
+  <nav class="nav">
+    <button class="tab active" data-view="company">COMPANY</button>
+    <button class="tab" data-view="catalog">CATALOG</button>
+    <button class="tab" data-view="ops">OPS</button>
+    <button class="tab" data-view="fields">FIELDS</button>
+    <button class="tab" data-view="defs">DEFS</button>
+    <button class="tab" data-view="flow">FLOW</button>
+  </nav>
+
+  <main class="wrap">
+    <!-- COMPANY OVERVIEW -->
+    <section id="company" class="view active">
+      <div class="panel">
+        <div class="ph s">WORK‑SENSE — Fictional Company Dossier<span class="muted">public brief</span></div>
+        <div class="pc">
+          <p><b>WORK‑SENSE</b> is a cooperative media‑systems studio that builds low‑tech, high‑reliability tools for ethical work: investigation decks, scenario editors, and time‑aware interfaces. The company’s thesis: <i>ethics is a system you can operate</i>.</p>
+          <div class="kvs" style="margin-top:.6rem">
+            <span class="tag">Founded: 2025</span>
+            <span class="tag">Type: Worker‑owned co‑op</span>
+            <span class="tag">HQ: Sim Francisco</span>
+            <span class="tag">Motto: "Clarity, then courage."</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph r">Mission • Strategy • Advantage<span class="muted">company core</span></div>
+        <div class="pc grid">
+          <div class="kpi"><div><b>Mission</b></div><div>Make ethical practice operable in everyday work.</div></div>
+          <div class="kpi"><div><b>Strategy</b></div><div>Ship single‑file artifacts that run offline on phones; teach with toys that work like tools.</div></div>
+          <div class="kpi"><div><b>Unfair Advantage</b></div><div>Seven‑Field Lexicon + Role Deck + Scenario Engine—used together as a compact “Company OS”.</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph g">Brand Voice & Aesthetic<span class="muted">expression</span></div>
+        <div class="pc">
+          <ul class="list">
+            <li class="item"><h4>Voice</h4><div>Royal‑snarky, crisp, truthful. Short sentences. Verbs over adjectives. No fluff.</div></li>
+            <li class="item"><h4>Aesthetic</h4><div>Bauhaus‑minimal. Paper‑black (#0a0e14), accent‑blue (#59c2ff), 1‑2px strokes. Vector only.</div></li>
+            <li class="item"><h4>Taglines</h4><div>“Operate your ethics.” · “Rules make the argument.” · “Time is the interface.”</div></li>
+            <li class="item"><h4>Do / Don’t</h4><div>Do show structure. Do reveal state. Don’t center text for vibes. Don’t hide uncertainty.</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph c">Policies & Rituals<span class="muted">operating culture</span></div>
+        <div class="pc">
+          <table>
+            <thead><tr><th>Ritual</th><th>Why</th><th>Cadence</th></tr></thead>
+            <tbody>
+              <tr><td>Ethics Stand‑Down</td><td>Pause shipping; surface hidden risks.</td><td>bi‑weekly, 30m</td></tr>
+              <tr><td>Field Walks</td><td>Observe real users in real places.</td><td>monthly</td></tr>
+              <tr><td>Red Team / Blue Team</td><td>Argue the rules; prove failure modes.</td><td>per major release</td></tr>
+              <tr><td>Post‑Narrative</td><td>Tell the story of what the system argued.</td><td>end of sprint</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph s">Comms Frames<span class="muted">for press & site</span></div>
+        <div class="pc grid">
+          <div class="item"><h4>1) Systems, Not Slogans</h4><div>We ship instruments that structure decisions, not dashboards that decorate them.</div></div>
+          <div class="item"><h4>2) Brutal Simplicity</h4><div>Single files. Works offline. Survives bad networks and worse meetings.</div></div>
+          <div class="item"><h4>3) Evidence as Design</h4><div>Interfaces that show their own assumptions and limits.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT CATALOG: pulled from role‑deck universe names -->
+    <section id="catalog" class="view">
+      <div class="panel"><div class="ph r">Product Catalog<span class="muted">company offer</span></div>
+        <div class="pc list">
+          <div class="item"><h4>Role Deck</h4><div>A deck of roles for investigations and workshops. Cut‑outs reveal how ethics lives in practice. (Source repo basis.)</div><div class="muted">Use: kickoffs, conflict mapping, policy rehearsal</div></div>
+          <div class="item"><h4>Feed‑Loop</h4><div>Scenario editor for media attention ecologies; shows feedback loops between content, incentives, and harm.</div><div class="muted">Use: newsroom audits, platform A/B postmortems</div></div>
+          <div class="item"><h4>Centaur Box</h4><div>Human‑in‑the‑loop reliability testbed; measures when automation should defer to people.</div><div class="muted">Use: ops handoff, escalation design</div></div>
+          <div class="item"><h4>Tetrad Pad</h4><div>McLuhan‑tetrad sketcher: Enhance / Obsolesce / Retrieve / Reverse. Fast policy framing.</div></div>
+          <div class="item"><h4>Identity Bridge</h4><div>Consent‑aware identity claims and audit trails.</div></div>
+          <div class="item"><h4>Ethics Index</h4><div>Living glossary with seven fields; shared language for decisions.</div></div>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph g">Personas • Buyers • Proof</div>
+        <div class="pc grid">
+          <div class="kpi"><div><b>Primary Buyer</b></div><div>Heads of Product / Editorial / Trust & Safety</div></div>
+          <div class="kpi"><div><b>Economic Buyer</b></div><div>COO / GC / CISO</div></div>
+          <div class="kpi"><div><b>Social Proof</b></div><div>Pilots with universities, civic labs, and two mid‑market platforms</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OPS: Operating model, pricing, support -->
+    <section id="ops" class="view">
+      <div class="panel"><div class="ph r">Operating Model</div>
+        <div class="pc">
+          <ul class="list">
+            <li class="item"><h4>Delivery</h4><div>1) Single‑file artifacts · 2) Short on‑site workshops · 3) Company OS rollout (Role Deck + Index + Flow)</div></li>
+            <li class="item"><h4>Licensing</h4><div>Creative Commons BY‑NC‑SA for research kits; commercial license for enterprise use.</div></li>
+            <li class="item"><h4>Support</h4><div>90‑day stabilization window; security disclosures via private mailbox; public postmortems.</div></li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel"><div class="ph t">Pricing Signals</div>
+        <div class="pc">
+          <table>
+            <thead><tr><th>Package</th><th>Contents</th><th>Signal Price*</th></tr></thead>
+            <tbody>
+              <tr><td>Starter</td><td>Deck + Index + 1 workshop</td><td>$9k</td></tr>
+              <tr><td>Studio</td><td>+ Scenario Engine + 2 sprints</td><td>$28k</td></tr>
+              <tr><td>Ops</td><td>+ Centaur Box + policy rehearsal</td><td>$54k</td></tr>
+            </tbody>
+          </table>
+          <div class="muted" style="margin-top:.4rem">*Signals intent; final pricing depends on scope & risk.</div>
+        </div>
+      </div>
+      <div class="panel"><div class="ph s">Metrics that Matter</div>
+        <div class="pc grid">
+          <div class="kpi"><div><b>Decision Latency</b></div><div>↓ time from signal → action</div></div>
+          <div class="kpi"><div><b>Harm Avoided</b></div><div>count near‑misses surfaced pre‑launch</div></div>
+          <div class="kpi"><div><b>Deferral Rate</b></div><div>% times automation yields to human</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIELDS (Seven‑Field Lexicon adapted to company) -->
+    <section id="fields" class="view">
+      <div class="panel"><div class="ph s">Seven Fields Map<span class="muted">company language</span></div>
+        <div class="pc">
+          <div class="list">
+            <div class="item"><h4 class="mono">AFFECTIVE • WEATHER</h4><div>How it feels to work here now. We monitor vibe, mood, energy; we DO something if it drifts.</div></div>
+            <div class="item"><h4 class="mono">INTERPERSONAL • TERRAIN</h4><div>Presence, warmth, resonance, friction. Teams are paired by chemistry, not just charts.</div></div>
+            <div class="item"><h4 class="mono">CULTURAL • SOIL</h4><div>Ethos: "Ship truth." Practices: write post‑narratives; reward risk‑taking with receipts.</div></div>
+            <div class="item"><h4 class="mono">SIGNALING • AIR</h4><div>Signals, frames, metaphors. We argue with rules; we show our math.</div></div>
+            <div class="item"><h4 class="mono">STRUCTURAL • FRAME</h4><div>Rhythm, clarity, momentum. Weekly cadence, decision records, reversible vs. one‑way doors.</div></div>
+            <div class="item"><h4 class="mono">COGNITIVE • VIEW</h4><div>Mindset: investigative. Awareness over certainty. Intuition logged, then tested.</div></div>
+            <div class="item"><h4 class="mono">TEMPORAL • RIVER</h4><div>Tempo, cadence, season. Time is a first‑class design material.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph g">Field → Tool Bindings</div>
+        <div class="pc">
+          <table>
+            <thead><tr><th>Field</th><th>Primary Tool</th><th>Expression in UI</th></tr></thead>
+            <tbody>
+              <tr><td>Affective</td><td>Pulse Meter</td><td>tiny sparkline + emoji‑free labels</td></tr>
+              <tr><td>Interpersonal</td><td>Pairing Map</td><td>affinity edges, conflict flags</td></tr>
+              <tr><td>Cultural</td><td>Ethics Index</td><td>definitions with live examples</td></tr>
+              <tr><td>Signaling</td><td>Frame Switcher</td><td>change metaphor, watch effect</td></tr>
+              <tr><td>Structural</td><td>Rhythm Board</td><td>cadence lanes; reversible/irreversible</td></tr>
+              <tr><td>Cognitive</td><td>Hypothesis Log</td><td>claims with falsifiers</td></tr>
+              <tr><td>Temporal</td><td>Recursive Time Alley</td><td>year→second break‑outs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEFS: compact glossary examples for site copy & training -->
+    <section id="defs" class="view">
+      <div class="panel"><div class="ph s">Definitions • Samples</div>
+        <div class="pc">
+<pre class="code mono">&lt;Vibe&gt; = [emergence](mood, energy, context)
+[co-create] : &lt;Person&gt; × &lt;Person&gt; → &lt;Vibe&gt;
+
+&lt;Aura&gt; = [persistence](presence, reputation, consistency)
+[cultivate] : &lt;Action&gt;* → &lt;Aura&gt;
+
+&lt;Culture&gt; = [system]({Norm},{Value},{Practice})
+[encode] : &lt;Value&gt; → &lt;Norm&gt; → &lt;Practice&gt;
+</pre>
+          <div class="muted" style="margin-top:.35rem">Use these blocks across brand, training, and product docs for a consistent “Company OS”.</div>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph r">Brand Micro‑Guide</div>
+        <div class="pc list">
+          <div class="item"><h4>Buttons</h4><div>Rectangular, 2px border, text‑only labels. States: [idle, armed, active].</div></div>
+          <div class="item"><h4>Empty States</h4><div>Say what’s missing, show an example, offer the smallest next action.</div></div>
+          <div class="item"><h4>Accessibility</h4><div>Role, Name, Value for every custom control. Keyboard parity. High contrast.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLOW: a sample day narrative as website copy / onboarding card set -->
+    <section id="flow" class="view">
+      <div class="panel"><div class="ph t">Operational Flow • One Day</div>
+        <div class="pc list">
+          <div class="item"><h4>01 — Check the Weather</h4><div>Pulse Meter flags a wobble in mood; PM schedules a 10‑minute reset.</div></div>
+          <div class="item"><h4>02 — Pair by Chemistry</h4><div>Resonance map suggests a swap; friction drops.</div></div>
+          <div class="item"><h4>03 — Frame the Work</h4><div>Switch to “Experiment” frame; risk posture loosens, ideas increase.</div></div>
+          <div class="item"><h4>04 — Make Time the Interface</h4><div>Break‑out from Month→Week in Time Alley; reveal hot spots.</div></div>
+          <div class="item"><h4>05 — Record the Argument</h4><div>Hypothesis Log captures a decision and its falsifier.</div></div>
+          <div class="item"><h4>06 — Post‑Narrative</h4><div>We tell what the rules argued; update Ethics Index with a fresh example.</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="status mono">
+    <div><b>VIEW:</b> <span id="status">COMPANY</span></div>
+    <div><b>TERMS:</b> Seven‑Field Lexicon</div>
+  </footer>
+
+  <script>
+    const tabs=[...document.querySelectorAll('.tab')];
+    const views=[...document.querySelectorAll('.view')];
+    const crumb=document.getElementById('crumb');
+    const status=document.getElementById('status');
+    const names={company:'COMPANY', catalog:'CATALOG', ops:'OPS', fields:'FIELDS', defs:'DEFS', flow:'FLOW'};
+    function show(id){
+      tabs.forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+      views.forEach(v=>v.classList.toggle('active',v.id===id));
+      crumb.textContent=`root/${id}`; status.textContent=names[id]||id.toUpperCase();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+    document.addEventListener('keydown',e=>{
+      const i=tabs.findIndex(b=>b.classList.contains('active'));
+      if(['ArrowRight','l'].includes(e.key)) show(tabs[(i+1)%tabs.length].dataset.view);
+      if(['ArrowLeft','h'].includes(e.key)) show(tabs[(i-1+tabs.length)%tabs.length].dataset.view);
+    });
+  </script>
+</body>
+</html>

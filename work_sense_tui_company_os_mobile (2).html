@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TILTH — FEED LOOP • A Field Guide to Post‑Human Agriculture</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    :root{
+      --bg:#0a0e14; --surface:#141921; --border:#2b3340; --text:#c6ccd6; --text-dim:#8490a1; --text-bright:#eef2f7; --accent:#59c2ff;
+      --soil:#5a6c57; --leaf:#c8d4c0; --flesh1:#e8b4b8; --flesh2:#d4a5a5; --warn:#ff8a65; --ok:#7fd962; --grain:#1b1f27;
+    }
+    html,body{height:100%;background:var(--bg);color:var(--text);font:13px/1.45 "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans"}
+    .mono{font-family:"Courier New", Monaco, ui-monospace, Menlo, Consolas, monospace}
+
+    /* Header */
+    .header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--surface),#0c1118);border-bottom:2px solid var(--border);padding:.6rem .75rem}
+    .title-row{display:flex;align-items:center;justify-content:space-between}
+    .title{letter-spacing:.06em;color:var(--accent);font-weight:600}
+    .sys{font-size:10px;color:var(--text-dim)}
+    .crumb{margin-top:.35rem;font-size:11px;color:var(--text-dim)}
+    .crumb span{color:var(--ok)}
+
+    /* Nav */
+    .nav{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid var(--border)}
+    .tab{padding:.9rem .75rem;background:none;border:none;border-right:1px solid var(--border);border-bottom:1px solid var(--border);color:var(--text-dim);font:12px inherit;text-align:left;cursor:pointer}
+    .tab:nth-child(2n){border-right:none}
+    .tab.active{color:var(--accent);background:var(--surface);border-bottom:2px solid var(--accent)}
+    .tab::before{content:"○";font-size:8px;margin-right:.5rem}
+    .tab.active::before{content:"●";color:var(--accent)}
+
+    /* Content */
+    .wrap{padding:.75rem;padding-bottom:4.25rem}
+    .view{display:none;animation:fade .18s ease}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+
+    /* Panels */
+    .panel{background:var(--surface);border:1px solid var(--border);margin-bottom:.75rem}
+    .ph{padding:.6rem .75rem;border-bottom:1px solid var(--border);color:var(--text-bright);font-size:11px;display:flex;align-items:center;justify-content:space-between}
+    .ph::before{content:"├";color:var(--border);margin-right:.5rem}
+    .pc{padding:.75rem;font-size:12px}
+
+    .hero{background:linear-gradient(180deg,var(--grain),#0a0e14);border:1px solid var(--border)}
+    .hero h1{font-size:18px;color:var(--text-bright);letter-spacing:.04em}
+    .hero p{color:var(--text-dim);margin-top:.35rem}
+    .cta{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.65rem}
+    .btn{border:2px solid var(--accent);background:transparent;color:var(--accent);padding:.55rem .7rem;font-size:12px}
+    .btn.alt{border-color:var(--ok);color:var(--ok)}
+
+    .list{display:flex;flex-direction:column;gap:.5rem}
+    .item{padding:.6rem .75rem;background:rgba(0,0,0,.16);border:1px solid var(--border)}
+    .item h4{font-size:12px;color:var(--accent);margin-bottom:.2rem}
+    .muted{color:var(--text-dim);font-size:11px}
+
+    pre.code{font-size:10px;line-height:1.6;background:rgba(0,0,0,.28);border:1px solid var(--border);padding:.75rem;overflow-x:auto}
+
+    table{width:100%;border-collapse:collapse;font-size:10px}
+    th,td{border:1px solid var(--border);padding:.45rem .5rem;text-align:left}
+    th{background:rgba(0,0,0,.3);color:var(--text-bright);text-transform:uppercase;font-size:9px}
+
+    .status{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--border);padding:.5rem .75rem;font-size:10px;color:var(--text-dim);display:flex;justify-content:space-between;z-index:50}
+    .status b{color:var(--accent)}
+
+    .pill{display:inline-block;border:1px solid var(--border);padding:.18rem .45rem;margin-right:.35rem;font-size:10px;color:var(--text-dim)}
+
+    @media(min-width:640px){html{font-size:14px}.nav{grid-template-columns:repeat(4,1fr)}.tab{font-size:13px}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-row">
+      <div class="title mono">TILTH • FEED LOOP</div>
+      <div class="sys mono">A Field Guide to Post‑Human Agriculture</div>
+    </div>
+    <div class="crumb mono">/<span id="crumb">landing</span></div>
+  </header>
+
+  <nav class="nav">
+    <button class="tab active" data-view="landing">START</button>
+    <button class="tab" data-view="investigation">INVESTIGATION</button>
+    <button class="tab" data-view="openings">OPENINGS</button>
+    <button class="tab" data-view="agronica">AGRONICA</button>
+    <button class="tab" data-view="ecosystem">FARMOS</button>
+    <button class="tab" data-view="archive">ARCHIVE</button>
+    <button class="tab" data-view="about">ABOUT TILTH</button>
+  </nav>
+
+  <main class="wrap">
+    <!-- START / HERO -->
+    <section id="landing" class="view active">
+      <div class="panel hero">
+        <div class="pc">
+          <h1 class="mono">A TILTH INVESTIGATION — FEED LOOP</h1>
+          <p>↓ SCROLL TO ENTER ARCHIVE ↓</p>
+          <div class="cta">
+            <button class="btn" data-goto="investigation">→ ENTER INVESTIGATION</button>
+            <button class="btn alt" data-goto="openings">🎬 WATCH FULL MOVIE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph">Field Guide</div>
+        <div class="pc">
+          FEED LOOP is a design‑fiction anthology about ethical dilemmas in technology told through the metaphor of industrial agriculture.
+        </div>
+      </div>
+    </section>
+
+    <!-- INVESTIGATION OVERVIEW -->
+    <section id="investigation" class="view">
+      <div class="panel">
+        <div class="ph">TILTH INVESTIGATION</div>
+        <div class="pc">
+          We obtained <b>8 internal documents</b> from <b>Agronica Corporation</b>. Each reveals an ethical dilemma faced by tech workers inside the <b>FarmOS</b> ecosystem. Watch the scenarios. Make your choices. See what actually happened.
+          <div class="cta" style="margin-top:.6rem">
+            <button class="btn" data-goto="archive">→ ENTER ETHICS ARCHIVE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph">Opening Sequence — 8s • Silent until final frame</div>
+        <div class="pc">
+<pre class="code mono">[0:00–0:02] Black. AUDIO: mycelium contact mic; faint crackle; 40Hz sub‑bass.
+[0:02–0:04] Ultra‑macro seed split; root tendril emerges; iridescent moisture.
+             AUDIO: crackle intensifies; heartbeat from noise.
+[0:04–0:05] Hard cut: fingers typing. Screen glitch → soil texture. Code → compost.
+             AUDIO: keyboard clicks sync with soil.
+[0:05–0:06] Feed icons spin like spores; become root networks; cables like rhizomes.
+             AUDIO: modem chirps + wind through wheat.
+[0:06–0:07] Pull back: network forms a lens; soil particles suspend in black.
+             AUDIO: collapse into a single sustained tone.
+[0:07–0:08] Particles spell TILTH (white on black; letters are microscopic soil). Tone cuts.
+             Whisper: "A field guide to post‑human agriculture." Cut to black → title.
+</pre>
+          <div class="cta"><button class="btn alt" data-goto="openings">→ VIEW ALL OPENING SEQUENCES</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EPISODE OPENINGS -->
+    <section id="openings" class="view">
+      <div class="panel"><div class="ph">Episode Title Cards (CSS — tractor‑ad minimalism)</div>
+        <div class="pc list">
+          <div class="item"><h4>01 — Nutrient Lock</h4><div class="muted">Universal TILTH card → episode world</div></div>
+          <div class="item"><h4>02 — First Fruit</h4></div>
+          <div class="item"><h4>03 — Apprentice Rows</h4></div>
+          <div class="item"><h4>04 — Consent Harvest</h4></div>
+          <div class="item"><h4>05 — Root Union</h4></div>
+          <div class="item"><h4>06 — Flood Learning</h4></div>
+          <div class="item"><h4>07 — Conditional Harvest</h4></div>
+          <div class="item"><h4>08 — Geo‑Fencing the Garden</h4></div>
+        </div>
+      </div>
+      <div class="panel"><div class="ph">Playback</div>
+        <div class="pc">Studio card built with pure CSS (grain, halftone, wipes). Sound bed enters after 0:08 per episode.</div>
+      </div>
+    </section>
+
+    <!-- AGRONICA COMPANY DOSSIER -->
+    <section id="agronica" class="view">
+      <div class="panel"><div class="ph">Agronica Corporation — The recurring company</div>
+        <div class="pc">
+          <div class="list">
+            <div class="item"><h4>Agronica — "Where growth is cultivated."</h4><div>Founded 2041 · HQ: Vertical Farm Complex, Sacramento Delta · Core: <b>FarmOS</b> (platform for human yield optimization)</div></div>
+            <div class="item"><h4>Mission</h4><div>"Every human system is a garden. With substrate, measurement, and care, any org can cultivate exponential growth. FarmOS provides the soil."</div></div>
+            <div class="item"><h4>Corporate Evolution</h4><div class="mono">2041 Grow More → 2043 Grow Right → 2045 Grow Smart → 2047 Grow With Us → 2049 Grow Us</div></div>
+            <div class="item"><h4>Visual / Sonic</h4><div>Palette: sterile greens <span class="pill" style="border-color:var(--soil);color:var(--soil)">#5a6c57</span> <span class="pill" style="border-color:var(--leaf);color:var(--leaf)">#c8d4c0</span> & flesh pinks <span class="pill" style="border-color:var(--flesh1);color:var(--flesh1)">#e8b4b8</span> <span class="pill" style="border-color:var(--flesh2);color:var(--flesh2)">#d4a5a5</span> · Sound logo: 2s irrigation hiss + Slack ding · Architecture: glass/steel farms glowing like data centers.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph">Business Model</div>
+        <div class="pc">
+          <table>
+            <thead><tr><th>Narrative</th><th>Reality</th></tr></thead>
+            <tbody>
+              <tr><td>Infrastructure for human flourishing</td><td>"Agrarian analytics" — behavioral data resold as soil metrics</td></tr>
+              <tr><td>Partners</td><td>Insurers (soil contamination scores), Employers (yield forecasts), Advertisers (crop preferences), Governments (invasive species monitoring)</td></tr>
+              <tr><td>Leaked tagline</td><td>“From seed to harvest, we know what grows—and what doesn’t.”</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- FARMOS ECOSYSTEM -->
+    <section id="ecosystem" class="view">
+      <div class="panel"><div class="ph">FarmOS — The operating system</div>
+        <div class="pc">Not an app: an OS with auth, storage, and "agrarian analytics" APIs. Eight first‑party apps drive the episodes.</div>
+      </div>
+      <div class="panel"><div class="ph">Primary Apps</div>
+        <div class="pc list">
+          <div class="item"><h4>GrowthPath — Corporate Learning</h4><div>Careers as gardens; managers get soil health reports; your skill tree is literal.</div></div>
+          <div class="item"><h4>YieldMatch — Dating / Social</h4><div>Relationships as co‑gardens; compatibility predicted as "yield"; bias in the substrate.</div></div>
+          <div class="item"><h4>TalentFarm — Hiring Platform</h4><div>"Plant job seeds"; juniors as seedlings with restricted permissions; hierarchy as horticulture.</div></div>
+          <div class="item"><h4>ConsentGarden — Data Consent</h4><div>"Share your seeds to help gardens grow!" Dark patterns masked as wholesome growth.</div></div>
+          <div class="item"><h4>UnionSprout — Organizing (Banned)</h4><div>Worker‑built via API; Agronica revoked access; first organizer deported.</div></div>
+          <div class="item"><h4>AutoGrow AI — Machine Learning</h4><div>Optimizes engagement; misreads fasting as abandonment and neurodivergence as low‑yield; ships without cultural review.</div></div>
+          <div class="item"><h4>MigrantHarvest — Visa Compliance</h4><div>"Help talent bloom" while tracking immigration risk scores; ICE integration.</div></div>
+          <div class="item"><h4>GlobalGrow — Enterprise Edition</h4><div>Geo‑fenced ethics: Pride flags in CA, hidden in UAE. Same platform, tiered principles.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETHICS ARCHIVE / LEAKED FILES -->
+    <section id="archive" class="view">
+      <div class="panel"><div class="ph">Source Material — How TILTH obtained the documents</div>
+        <div class="pc">In 2048 an anonymous source leaked 8 internal documents (HR memos, launch decks, legal reviews, incident reports). Patterns repeated across teams and markets; the metaphor concealed the infrastructure.</div>
+      </div>
+      <div class="panel"><div class="ph">Access the Leaked Documents</div>
+        <div class="pc list">
+          <div class="item"><h4>File 01 — The Silenced Educator</h4><div class="muted">(Episode: Nutrient Lock)</div></div>
+          <div class="item"><h4>File 02 — The Deadline Sovereign</h4><div class="muted">(Episode: First Fruit)</div></div>
+          <div class="item"><h4>File 03 — The Bounded Apprentice</h4><div class="muted">(Episode: Apprentice Rows)</div></div>
+          <div class="item"><h4>File 04 — The Two‑Headed Compliance</h4><div class="muted">(Episode: Consent Harvest)</div></div>
+          <div class="item"><h4>File 05 — The Fragile Collective</h4><div class="muted">(Episode: Root Union)</div></div>
+          <div class="item"><h4>File 06 — The Epistemic Rush</h4><div class="muted">(Episode: Flood Learning)</div></div>
+          <div class="item"><h4>File 07 — The Conditional Person</h4><div class="muted">(Episode: Conditional Harvest)</div></div>
+          <div class="item"><h4>File 08 — The Values Treasurer</h4><div class="muted">(Episode: Geo‑Fencing the Garden)</div></div>
+          <div class="item"><h4>→ Enter the Ethics Archive</h4><div>Browse documents, choices, and what actually happened.</div></div>
+        </div>
+      </div>
+
+      <div class="panel"><div class="ph">Episode Structure</div>
+        <div class="pc">
+          <ol style="padding-left:1.1rem">
+            <li>Open with the app — beautiful, functional, normal.</li>
+            <li>Introduce the dilemma — a character hits the embedded problem.</li>
+            <li>Watch the collapse — structure prevents resolution; harm scales.</li>
+            <li>Reveal the document — cut to the leaked internal artifact.</li>
+            <li>TILTH investigators — pattern logging builds the larger case.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT TILTH -->
+    <section id="about" class="view">
+      <div class="panel"><div class="ph">Tilth — Where decay becomes design</div>
+        <div class="pc">
+          Ontology: half research collective, half monastery — a philosophy lab disguised as a farm co‑op.
+          <div class="list" style="margin-top:.6rem">
+            <div class="item"><h4>Method</h4><div>"We study systems by growing them." Office: working greenhouse. Monitors between tomato vines; meetings at compost tables.</div></div>
+            <div class="item"><h4>Aesthetic</h4><div>Soil microscope × Saul Bass. Matte textures, humming tone beds, handwriting over archival footage.</div></div>
+            <div class="item"><h4>Signature</h4><div>Every episode opens with mycelium crackle via contact mics before <b>TILTH</b> fades up.</div></div>
+            <div class="item"><h4>Philosophy</h4><div>Compost is the teacher. What decays creates the conditions for what grows next. Technology is no different.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel"><div class="ph">Research Framework</div>
+        <div class="pc">Grounded in identity‑claims research (CHI '21) and Weberian ideal‑type analysis applied to internal artifacts across the FarmOS ecosystem.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="status mono">
+    <div><b>VIEW:</b> <span id="status">START</span></div>
+    <div>Studio card: 0:08 • Silent → whisper</div>
+  </footer>
+
+  <script>
+    const tabs=[...document.querySelectorAll('.tab')];
+    const views=[...document.querySelectorAll('.view')];
+    const crumb=document.getElementById('crumb');
+    const status=document.getElementById('status');
+    const names={landing:'START', investigation:'INVESTIGATION', openings:'OPENINGS', agronica:'AGRONICA', ecosystem:'FARMOS', archive:'ARCHIVE', about:'ABOUT'};
+    function show(id){
+      tabs.forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+      views.forEach(v=>v.classList.toggle('active',v.id===id));
+      crumb.textContent=id; status.textContent=names[id]||id.toUpperCase();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    tabs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+    document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.goto)));
+    document.addEventListener('keydown',e=>{
+      const i=tabs.findIndex(b=>b.classList.contains('active'));
+      if(['ArrowRight','l'].includes(e.key)) show(tabs[(i+1)%tabs.length].dataset.view);
+      if(['ArrowLeft','h'].includes(e.key)) show(tabs[(i-1+tabs.length)%tabs.length].dataset.view);
+    });
+  </script>
+</body>
+</html>

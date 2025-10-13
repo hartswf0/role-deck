@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>WORK-SENSE [TUI] — Mobile Canvas</title>
+  <style>
+    /* RESET */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%;background:#0a0e14;color:#b3b9c5;font-family:system-ui,-apple-system,Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', 'Helvetica Neue', Arial, 'Apple Color Emoji','Segoe UI Emoji';}
+    body{margin:0;line-height:1.45;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;-webkit-tap-highlight-color:transparent}
+    :root{
+      --affective:#FFA726;--interpersonal:#EF5350;--cultural:#26A69A;--signaling:#29B6F6;--structural:#5C6BC0;--cognitive:#AB47BC;--temporal:#90A4AE;
+      --bg:#0a0e14;--surface:#121722;--surface-2:#151b26;--border:#263041;--text:#b3b9c5;--text-dim:#6e7380;--text-bright:#e6e8eb;--accent:#59c2ff;--ok:#7fd962
+    }
+
+    /* LAYOUT */
+    .app{display:grid;grid-template-rows:auto auto 1fr auto;height:100dvh}
+
+    /* HEADER */
+    .hdr{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--border)}
+    .hdr-row{display:flex;align-items:center;gap:.5rem;padding:.6rem .75rem}
+    .ttl{font-weight:600;letter-spacing:.03em;color:var(--accent);font-size:13px}
+    .meta{margin-left:auto;font-size:11px;color:var(--text-dim)}
+    .crumb{border-top:1px solid var(--border);color:var(--text-dim);font-size:11px;padding:.45rem .75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .crumb b{color:var(--ok);font-weight:600}
+
+    /* QUICK BAR */
+    .qbar{display:flex;gap:.5rem;padding:.5rem .75rem;background:var(--bg);border-bottom:1px solid var(--border)}
+    .chip{border:1px solid var(--border);background:var(--surface-2);padding:.4rem .6rem;border-radius:.4rem;font-size:11px;color:var(--text-dim)}
+
+    /* NAV */
+    .nav{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+    .tab{appearance:none;background:none;color:var(--text-dim);border:0;border-right:1px solid var(--border);padding:.7rem .6rem;text-align:center;font-size:12px}
+    .tab:nth-child(4){border-right:0}
+    .tab[aria-selected="true"]{color:var(--accent);background:var(--surface)}
+
+    /* CONTENT */
+    .views{overflow:auto;-webkit-overflow-scrolling:touch}
+    .view{display:none;animation:fade .16s ease-out}
+    .view.active{display:block}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+
+    /* PANELS */
+    .p{background:var(--surface);border:1px solid var(--border);margin:.75rem;border-radius:.5rem;overflow:hidden}
+    .ph{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-bright)}
+    .ph .count{font-size:11px;color:var(--text-dim)}
+    .pb{padding:.75rem;font-size:12px}
+    .ph[data-c="affective"]{border-left:3px solid var(--affective)}
+    .ph[data-c="interpersonal"]{border-left:3px solid var(--interpersonal)}
+    .ph[data-c="cultural"]{border-left:3px solid var(--cultural)}
+    .ph[data-c="signaling"]{border-left:3px solid var(--signaling)}
+    .ph[data-c="structural"]{border-left:3px solid var(--structural)}
+    .ph[data-c="cognitive"]{border-left:3px solid var(--cognitive)}
+    .ph[data-c="temporal"]{border-left:3px solid var(--temporal)}
+
+    /* GRID */
+    .grid{display:grid;gap:.6rem;padding:.75rem}
+    .card{border:1px solid var(--border);background:var(--surface-2);border-radius:.5rem;overflow:hidden}
+    .card:active{transform:scale(.995)}
+    .ch{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border);font-size:12px}
+    .tag{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+    .cb{padding:.7rem .75rem;font-size:12px;color:var(--text)}
+
+    /* TERM LIST */
+    .tlist{display:flex;flex-direction:column;gap:.5rem}
+    .ti{border-left:2px solid var(--border);background:#101520;padding:.6rem .75rem;border-radius:.25rem}
+    .ti:active{border-left-color:var(--accent);background:#0f1520}
+    .tname{color:var(--accent);font-weight:600;margin-bottom:.25rem}
+    .tdef{font-size:12px;color:var(--text)}
+    .tex{margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border);font-size:11px;color:var(--text-dim);font-style:italic}
+
+    /* TABLE (compact) */
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid var(--border);padding:.45rem .5rem}
+    th{background:#0f1722;color:var(--text-bright);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+    td{font-size:12px}
+
+    /* STATUS */
+    .status{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--surface);border-top:1px solid var(--border);font-size:11px}
+    .s-left{display:flex;gap:.75rem;align-items:center}
+    .badge{padding:.2rem .45rem;border:1px solid var(--border);border-radius:.35rem;font-size:10px;color:var(--text-dim)}
+    .live{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block;margin-right:.35rem}
+
+    /* UTILS */
+    .srch{display:flex;gap:.4rem;padding:.5rem .75rem;background:var(--bg);border-top:1px solid var(--border)}
+    .srch input{flex:1;background:#0e1420;border:1px solid var(--border);border-radius:.4rem;padding:.55rem .6rem;color:var(--text);font-size:12px}
+    .srch button{background:var(--surface-2);border:1px solid var(--border);color:var(--text-dim);padding:.55rem .7rem;border-radius:.4rem;font-size:12px}
+
+    /* SCROLLBARS */
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-thumb{background:var(--border)}
+
+    @media (min-width:640px){
+      .nav{grid-template-columns:repeat(6,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- HEADER -->
+    <header class="hdr">
+      <div class="hdr-row">
+        <div class="ttl">WORK-SENSE.TUI</div>
+        <div class="meta" id="meta">v1.0 · mobile</div>
+      </div>
+      <div class="crumb">/<b id="path">index</b></div>
+    </header>
+
+    <!-- QUICK BAR -->
+    <div class="qbar" id="qbar">
+      <div class="chip">compact</div>
+      <div class="chip">offline</div>
+      <div class="chip">touch-first</div>
+    </div>
+
+    <!-- NAV -->
+    <nav class="nav" role="tablist" aria-label="Primary">
+      <button class="tab" role="tab" aria-selected="true" data-view="index">Index</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="fields">Fields</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="flow">Flow</button>
+      <button class="tab" role="tab" aria-selected="false" data-view="defs">Defs</button>
+    </nav>
+
+    <!-- SEARCH / FILTER -->
+    <div class="srch">
+      <input id="filter" type="search" placeholder="Filter terms, fields, examples…" inputmode="search" autocomplete="off"/>
+      <button id="clear">Clear</button>
+    </div>
+
+    <!-- VIEWS -->
+    <main class="views" id="views">
+      <!-- INDEX -->
+      <section class="view active" id="v-index" data-title="index">
+        <div class="p">
+          <div class="ph">SYSTEM<span class="count">7 fields</span></div>
+          <div class="pb">Minimal, crisp TUI mapping work experience as entities ↔ morphisms across seven fields.</div>
+        </div>
+
+        <div class="grid" id="fieldGrid">
+          <article class="card" data-field="affective">
+            <div class="ch">AFFECTIVE <span class="tag">weather</span></div>
+            <div class="cb">Immediate emotional climate; fast-shifting, influences all layers.</div>
+          </article>
+          <article class="card" data-field="interpersonal">
+            <div class="ch">INTERPERSONAL <span class="tag">terrain</span></div>
+            <div class="cb">Relational dynamics: presence, resonance, friction, chemistry.</div>
+          </article>
+          <article class="card" data-field="cultural">
+            <div class="ch">CULTURAL <span class="tag">soil</span></div>
+            <div class="cb">Durable substrate: norms, beliefs, practices shaping growth.</div>
+          </article>
+          <article class="card" data-field="signaling">
+            <div class="ch">SIGNALING <span class="tag">air</span></div>
+            <div class="cb">Medium for cues, stories, symbols; how meaning travels.</div>
+          </article>
+          <article class="card" data-field="structural">
+            <div class="ch">STRUCTURAL <span class="tag">frame</span></div>
+            <div class="cb">Skeleton of alignment, rhythm, flow—shape for effort.</div>
+          </article>
+          <article class="card" data-field="cognitive">
+            <div class="ch">COGNITIVE <span class="tag">view</span></div>
+            <div class="cb">Vantage for interpretation & judgment; how meaning forms.</div>
+          </article>
+          <article class="card" data-field="temporal">
+            <div class="ch">TEMPORAL <span class="tag">river</span></div>
+            <div class="cb">Pulse and pace: tempo, cycles, seasons across org.</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- FIELDS (detailed) -->
+      <section class="view" id="v-fields" data-title="fields">
+        <div class="p">
+          <div class="ph" data-c="affective">AFFECTIVE FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="vibe"><div class="tname">&lt;Vibe&gt;</div><div class="tdef">Immediate, co-created <i>[feel]</i> of a moment in a group.</div><div class="tex">Monday stand-up has nervous vibe today.</div></div>
+              <div class="ti" data-term="aura"><div class="tname">&lt;Aura&gt;</div><div class="tdef">Enduring <i>[impression]</i> a person or brand projects.</div><div class="tex">Her aura commands attention before she speaks.</div></div>
+              <div class="ti" data-term="mood"><div class="tname">&lt;Mood&gt;</div><div class="tdef">Collective emotional <i>[tone]</i> within a team.</div><div class="tex">Mood shifted after the announcement.</div></div>
+              <div class="ti" data-term="energy"><div class="tname">&lt;Energy&gt;</div><div class="tdef">Level of activation or engagement displayed.</div><div class="tex">Friday afternoon energy is lower.</div></div>
+              <div class="ti" data-term="flow"><div class="tname">&lt;Flow&gt;</div><div class="tdef">State of deep engagement where effort feels natural.</div><div class="tex">When we hit flow, hours pass unnoticed.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p">
+          <div class="ph" data-c="interpersonal">INTERPERSONAL FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="presence"><div class="tname">&lt;Presence&gt;</div><div class="tdef">Immediate felt impact of someone in shared space.</div><div class="tex">Her presence fills the room.</div></div>
+              <div class="ti" data-term="warmth"><div class="tname">&lt;Warmth&gt;</div><div class="tdef">Relational signal of safety and openness.</div><div class="tex">Her warmth balances his edge.</div></div>
+              <div class="ti" data-term="resonance"><div class="tname">&lt;Resonance&gt;</div><div class="tdef">Alignment of internal states across people.</div><div class="tex">Instant resonance on the vision.</div></div>
+              <div class="ti" data-term="chemistry"><div class="tname">&lt;Chemistry&gt;</div><div class="tdef">Emergent compatibility enhancing collaboration.</div><div class="tex">Their chemistry makes meetings productive.</div></div>
+              <div class="ti" data-term="empathy"><div class="tname">&lt;Empathy&gt;</div><div class="tdef">Capacity to perceive and feel with another.</div><div class="tex">His empathy navigates difficult conversations.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p">
+          <div class="ph" data-c="cultural">CULTURAL FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="culture"><div class="tname">&lt;Culture&gt;</div><div class="tdef">Durable set of norms, values, practices.</div><div class="tex">Culture rewards risk-taking and learning.</div></div>
+              <div class="ti" data-term="ethos"><div class="tname">&lt;Ethos&gt;</div><div class="tdef">Core guiding principle or moral tone.</div><div class="tex">Ethos here: ship fast, iterate faster.</div></div>
+              <div class="ti" data-term="safety"><div class="tname">&lt;Psychological Safety&gt;</div><div class="tdef">Shared belief that risk-taking is accepted.</div><div class="tex">Safety lets us voice concerns early.</div></div>
+              <div class="ti" data-term="trust"><div class="tname">&lt;Trust&gt;</div><div class="tdef">Expectation of reliability and good intent.</div><div class="tex">Trust takes months to build, seconds to break.</div></div>
+              <div class="ti" data-term="belonging"><div class="tname">&lt;Belonging&gt;</div><div class="tdef">Felt inclusion within group identity.</div><div class="tex">She felt belonging after six months.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p">
+          <div class="ph" data-c="signaling">SIGNALING FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="signal"><div class="tname">&lt;Signal&gt;</div><div class="tdef">Observable cue that conveys information.</div><div class="tex">Early arrival signals commitment.</div></div>
+              <div class="ti" data-term="story"><div class="tname">&lt;Story&gt;</div><div class="tdef">Sequenced narrative connecting events and meaning.</div><div class="tex">We tell the pivot as course correction.</div></div>
+              <div class="ti" data-term="tone"><div class="tname">&lt;Tone of Voice&gt;</div><div class="tdef">Linguistic style expressing identity.</div><div class="tex">Brand tone: calm but confident.</div></div>
+              <div class="ti" data-term="metaphor"><div class="tname">&lt;Metaphor&gt;</div><div class="tdef">Symbolic mapping from one domain to another.</div><div class="tex">Use seasons to talk about cycles.</div></div>
+              <div class="ti" data-term="frame"><div class="tname">&lt;Frame&gt;</div><div class="tdef">Conceptual boundary defining meaning context.</div><div class="tex">Framing as experiment changed everything.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p">
+          <div class="ph" data-c="structural">STRUCTURAL FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="alignment"><div class="tname">&lt;Alignment&gt;</div><div class="tdef">Coherence between direction and action.</div><div class="tex">Once aligned, execution became effortless.</div></div>
+              <div class="ti" data-term="rhythm"><div class="tname">&lt;Rhythm&gt;</div><div class="tdef">Repeating pattern organizing effort.</div><div class="tex">Sprint rhythm keeps us synchronized.</div></div>
+              <div class="ti" data-term="clarity"><div class="tname">&lt;Clarity&gt;</div><div class="tdef">Ease of understanding intent and structure.</div><div class="tex">New org chart brought clarity.</div></div>
+              <div class="ti" data-term="momentum"><div class="tname">&lt;Momentum&gt;</div><div class="tdef">Accumulated force sustaining progress.</div><div class="tex">Three wins built momentum.</div></div>
+              <div class="ti" data-term="resilience"><div class="tname">&lt;Resilience&gt;</div><div class="tdef">Capacity to recover from disruption.</div><div class="tex">Resilience was tested and proved strong.</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p">
+          <div class="ph" data-c="cognitive">COGNITIVE FIELD <span class="count">5 terms</span></div>
+          <div class="pb">
+            <div class="tlist">
+              <div class="ti" data-term="mindset"><div class="tname">&lt;Mindset&gt;</div><div class="tdef">Characteristic orientation toward challenge.</div><div class="tex">Growth mindset turns setbacks into learning.</div></div>
+              <div class="ti" data-term="awareness"><div class="tname">&lt;Awareness&gt;</div><div class="tdef">Conscious perception of self and surroundings.</div><div class="tex">Greater awareness spots patterns early.</div></div>
+              <div class="ti" data-term="insight"><div class="tname">&lt;Insight&gt;</div><div class="tdef">Sudden recognition of a new pattern.</div><div class="tex">Insight came during a hallway chat.</div></div>
+              <div class="ti" data-term="sensemaking"><div class="tname">&lt;Sensemaking&gt;</div><div class="tdef">Collective process of constructing shared meaning.</div><div class="tex">Sensemaking after the pivot took weeks.</div></div>
+              <div class="ti" data-term="intuition"><div class="tname">&lt;Intuition&gt;</div><div class="tdef">Rapid, pre-analytical knowing.</div><div class="tex">Her intuition about the candidate proved right.</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FLOW (narrative) -->
+      <section class="view" id="v-flow" data-title="flow">
+        <div class="p">
+          <div class="ph">FLOW STEPS<span class="count">3</span></div>
+          <div class="pb">
+            <table>
+              <thead><tr><th>#</th><th>Title</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>Sense</td><td>Scan signals across fields; note anomalies and alignments.</td></tr>
+                <tr><td>2</td><td>Frame</td><td>Pick a frame; set scope, constraints, and desired rhythm.</td></tr>
+                <tr><td>3</td><td>Act</td><td>Intervene minimally; measure effect; iterate.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEFS (tree/code) -->
+      <section class="view" id="v-defs" data-title="defs">
+        <div class="p">
+          <div class="ph">SYNTAX<span class="count">entities & morphisms</span></div>
+          <div class="pb">
+            <table>
+              <thead><tr><th>Token</th><th>Meaning</th><th>Example</th></tr></thead>
+              <tbody>
+                <tr><td>&lt;Entity&gt;</td><td>Named thing or field item</td><td>&lt;Vibe&gt;</td></tr>
+                <tr><td>[Morphism]</td><td>Relation / action</td><td>[feel] / [impression]</td></tr>
+                <tr><td>(Operator)</td><td>Composition rule</td><td>(align, frame)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- STATUS -->
+    <footer class="status" id="status">
+      <div class="s-left"><span class="live"></span><span id="stat">ready</span></div>
+      <div class="badge" id="count">0 matches</div>
+    </footer>
+  </div>
+
+  <script>
+    (function(){
+      const $ = (q,ctx=document)=>ctx.querySelector(q);
+      const $$ = (q,ctx=document)=>Array.from(ctx.querySelectorAll(q));
+
+      const views = {
+        index: $('#v-index'),
+        fields: $('#v-fields'),
+        flow: $('#v-flow'),
+        defs: $('#v-defs')
+      };
+
+      const path = $('#path');
+      const stat = $('#stat');
+      const badge = $('#count');
+      const filterInput = $('#filter');
+      const clearBtn = $('#clear');
+      const tabs = $$('.tab');
+      const viewScroller = $('#views');
+
+      // Persist scroll per view
+      const scrollPos = new Map(Object.keys(views).map(v=>[v,0]));
+
+      function setView(name){
+        Object.entries(views).forEach(([k,el])=>{
+          if(k===name){ el.classList.add('active'); viewScroller.scrollTop = scrollPos.get(k) || 0; }
+          else { scrollPos.set(k, el.classList.contains('active')? viewScroller.scrollTop : scrollPos.get(k)); el.classList.remove('active'); }
+        });
+        tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.view===name));
+        path.textContent = name;
+        stat.textContent = 'view → ' + name;
+      }
+
+      tabs.forEach(t=>t.addEventListener('click',()=>setView(t.dataset.view)));
+
+      // Swipe navigation (mobile)
+      let touchX=null,touchY=null;
+      viewScroller.addEventListener('touchstart',e=>{const t=e.changedTouches[0];touchX=t.clientX;touchY=t.clientY;},{passive:true});
+      viewScroller.addEventListener('touchend',e=>{
+        const t=e.changedTouches[0]; if(touchX===null) return; const dx=t.clientX-touchX; const dy=Math.abs(t.clientY-touchY);
+        if(Math.abs(dx)>60 && dy<40){
+          const order=['index','fields','flow','defs'];
+          const cur = order.findIndex(v=>views[v].classList.contains('active'));
+          const nxt = dx<0? Math.min(order.length-1, cur+1) : Math.max(0, cur-1);
+          setView(order[nxt]);
+        }
+        touchX=touchY=null;
+      },{passive:true});
+
+      // Filter across terms + cards
+      function applyFilter(q){
+        q=q.trim().toLowerCase();
+        let matches=0;
+        $$('.ti, .card').forEach(el=>{
+          const hay = el.textContent.toLowerCase();
+          const hit = !q || hay.includes(q);
+          el.style.display = hit ? '' : 'none';
+          if(hit && q) matches++;
+        });
+        badge.textContent = q? matches+ ' matches' : '0 matches';
+        stat.textContent = q? 'filter → '+q : 'ready';
+      }
+
+      filterInput.addEventListener('input', e=>applyFilter(e.target.value));
+      clearBtn.addEventListener('click',()=>{filterInput.value='';applyFilter('');filterInput.blur();});
+
+      // Tap field cards to jump into Fields view scrolled to section
+      $$('#fieldGrid .card').forEach(card=>{
+        card.addEventListener('click',()=>{
+          const id = card.getAttribute('data-field');
+          setView('fields');
+          // scroll to matching section header color band
+          const section = Array.from($$('.ph', views.fields)).find(h=>h.dataset.c===id);
+          if(section){
+            const top = section.getBoundingClientRect().top - viewScroller.getBoundingClientRect().top + viewScroller.scrollTop - 8;
+            viewScroller.scrollTo({top, behavior:'smooth'});
+          }
+        });
+      });
+
+      // Reduce motion preference
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        $$('.view').forEach(v=>v.style.animation='none');
+      }
+
+      // Initial ready
+      setView('index');
+    })();
+  </script>
+</body>
+</html>

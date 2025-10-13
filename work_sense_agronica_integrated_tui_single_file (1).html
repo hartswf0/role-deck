@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>WORK-SENSE × AGRONICA [TUI]</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root{
+      --affective:#FFA726; --interpersonal:#EF5350; --cultural:#26A69A; --signaling:#29B6F6; --structural:#5C6BC0; --cognitive:#AB47BC; --temporal:#90A4AE;
+      --bg:#0a0e14; --surface:#0f1319; --border:#2d3340; --text:#b3b9c5; --text-dim:#6c7380; --text-bright:#e6e8eb; --accent:#59c2ff; --success:#7fd962;
+      /* Agronica diegetic palette */
+      --ag-green:#5a6c57; --ag-green-2:#c8d4c0; --ag-pink:#e8b4b8; --ag-pink-2:#d4a5a5; --danger:#ff5a6d; --amber:#ffb300;
+    }
+    body{ font-family:'Courier New','Monaco',monospace; background:var(--bg); color:var(--text); line-height:1.4; overflow-x:hidden; font-size:13px; padding-bottom:3rem; }
+    .header{ background:linear-gradient(180deg, #0e1319 0%, #0b0f13 100%); border-bottom:2px solid var(--border); padding:.5rem .75rem; position:relative; }
+    .title-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:.25rem; }
+    .title{ font-size:14px; color:var(--accent); letter-spacing:.06em; }
+    .sys-info{ font-size:10px; color:var(--text-dim); }
+    .breadcrumb{ font-size:11px; color:var(--text-dim);} .breadcrumb span{ color:var(--success); }
+    .scanline{ pointer-events:none; position:fixed; inset:0; background:repeating-linear-gradient( to bottom, rgba(255,255,255,.03) 0 1px, rgba(0,0,0,0) 1px 3px ); mix-blend-mode:overlay; opacity:.25; z-index:50; }
+    .nav{ background:var(--bg); border-bottom:1px solid var(--border); display:grid; grid-template-columns:repeat(9,1fr); position:sticky; top:0; z-index:5; }
+    .nav-btn{ padding:.75rem .6rem; background:none; border:none; border-right:1px solid var(--border); border-bottom:1px solid var(--border); color:var(--text-dim); font:inherit; font-size:12px; cursor:pointer; text-align:left; transition:.15s; position:relative; }
+    .nav-btn:nth-child(9n){ border-right:none; }
+    .nav-btn:hover{ background:var(--surface); }
+    .nav-btn.active{ background:var(--surface); color:var(--accent); border-bottom:2px solid var(--accent); }
+    .nav-btn::before{ content:"○"; margin-right:.5rem; font-size:8px; vertical-align:middle; }
+    .nav-btn.active::before{ content:"●"; color:var(--accent); }
+    .content{ padding:.75rem; }
+    .view{ display:none; } .view.active{ display:block; animation:fadeIn .2s; }
+    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+    .panel{ background:var(--surface); border:1px solid var(--border); margin-bottom:.75rem; }
+    .panel-header{ padding:.6rem .75rem; border-bottom:1px solid var(--border); font-size:11px; color:var(--text-bright); display:flex; align-items:center; justify-content:space-between; }
+    .panel-header::before{ content:"├"; color:var(--border); margin-right:.5rem; }
+    .panel-header.c-affective{border-left:3px solid var(--affective);} .panel-header.c-interpersonal{border-left:3px solid var(--interpersonal);} .panel-header.c-cultural{border-left:3px solid var(--cultural);} .panel-header.c-signaling{border-left:3px solid var(--signaling);} .panel-header.c-structural{border-left:3px solid var(--structural);} .panel-header.c-cognitive{border-left:3px solid var(--cognitive);} .panel-header.c-temporal{border-left:3px solid var(--temporal);} .panel-header.c-ag{border-left:3px solid var(--ag-green);} .panel-header.c-danger{border-left:3px solid var(--danger);} .panel-header.c-amber{border-left:3px solid var(--amber);}
+    .panel-count{ font-size:10px; color:var(--text-dim);} .panel-body{ padding:.75rem; font-size:12px; }
+    .grid{ display:grid; gap:.75rem; }
+    .grid.cols-2{ grid-template-columns:repeat(2,1fr);} .grid.cols-3{ grid-template-columns:repeat(3,1fr);} .grid.cols-4{ grid-template-columns:repeat(4,1fr);} 
+    .card{ background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:.2s; touch-action:manipulation; }
+    .card:active{ transform:scale(.98); border-color:var(--accent); }
+    .card-head{ padding:.6rem .75rem; background:rgba(0,0,0,.2); border-bottom:1px solid var(--border); font-size:11px; display:flex; align-items:center; justify-content:space-between; }
+    .card-head::before{ content:"▸"; margin-right:.5rem; font-size:10px; }
+    .card-meta{ font-size:9px; color:var(--text-dim); text-transform:uppercase; }
+    .card-body{ padding:.75rem; font-size:11px; line-height:1.5; }
+    .code{ background:rgba(0,0,0,.3); border:1px solid var(--border); padding:.75rem; margin:.5rem 0; overflow-x:auto; font-size:10px; line-height:1.6; }
+    .code pre{ margin:0; white-space:pre-wrap; }
+    .kv{ display:grid; grid-template-columns:120px 1fr; gap:.25rem .75rem; font-size:11px; }
+    .kv b{ color:var(--text-bright); }
+    .table{ width:100%; border-collapse:collapse; margin:.5rem 0; font-size:10px; }
+    .table th,.table td{ border:1px solid var(--border); padding:.5rem; text-align:left; }
+    .table th{ background:rgba(0,0,0,.3); color:var(--text-bright); font-size:9px; text-transform:uppercase; }
+    .badge{ display:inline-block; padding:.15rem .4rem; border:1px solid var(--border); background:rgba(0,0,0,.25); font-size:10px; color:var(--text); border-radius:3px; }
+    .soft{ color:var(--text-dim); }
+    .status{ position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:2px solid var(--border); padding:.5rem .75rem; font-size:10px; color:var(--text-dim); display:flex; justify-content:space-between; z-index:100; }
+    .status-label{ color:var(--accent); }
+    .hint{ font-size:10px; color:var(--text-dim); margin-top:.5rem; }
+    /* TUI console */
+    .console{ background:#0b0f13; border:1px solid var(--border); padding:.75rem; font-size:12px; min-height:180px; position:relative; }
+    .term-line{ white-space:pre-wrap; }
+    .prompt{ color:var(--ag-green); }
+    .input{ outline:none; border:none; background:transparent; color:var(--text-bright); width:100%; font:inherit; }
+    .kbd{ background:rgba(255,255,255,.06); border:1px solid var(--border); padding:.05rem .25rem; border-radius:3px; font-size:10px; }
+    /* Boot */
+    .boot{ position:fixed; inset:0; background:#000; color:#8ec07c; font:12px 'Courier New',monospace; display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:200; }
+    .boot-log{ width:min(720px,92vw); height:48vh; border:1px solid #334; background:#050807; padding:.75rem; overflow:auto; box-shadow:0 0 0 1px #000 inset; }
+    .boot-btns{ margin-top:.75rem; display:flex; gap:.5rem; }
+    .btn{ border:1px solid var(--border); background:#0d1217; color:var(--text-bright); padding:.4rem .6rem; cursor:pointer; font:inherit; }
+    .btn.primary{ border-color:var(--ag-green); color:var(--ag-green-2); }
+    .leds{ display:flex; gap:.4rem; align-items:center; }
+    .led{ width:8px; height:8px; border-radius:50%; background:#223; border:1px solid #334; }
+    .led.on{ background:#67ff9c; box-shadow:0 0 6px #67ff9c80; }
+    .led.warn{ background:#ffb300; box-shadow:0 0 6px #ffb30080; }
+    .led.err{ background:#ff5a6d; box-shadow:0 0 6px #ff5a6d80; }
+    @media (min-width:640px){ body{font-size:14px;} .nav{ grid-template-columns:repeat(9,1fr);} .nav-btn{ font-size:13px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="title-bar">
+      <div class="title">WORK-SENSE × AGRONICA.TUI</div>
+      <div class="sys-info">v1.0 · greenhouse://farmos</div>
+    </div>
+    <div class="breadcrumb">/<span id="current-path">root</span></div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" data-view="index">INDEX</button>
+    <button class="nav-btn" data-view="agronica">COMPANY</button>
+    <button class="nav-btn" data-view="farmos">FARMOS</button>
+    <button class="nav-btn" data-view="apps">APPS</button>
+    <button class="nav-btn" data-view="episodes">EPISODES</button>
+    <button class="nav-btn" data-view="docs">DOCS</button>
+    <button class="nav-btn" data-view="ops">OPS</button>
+    <button class="nav-btn" data-view="policy">POLICY</button>
+    <button class="nav-btn" data-view="telemetry">TELEMETRY</button>
+    <button class="nav-btn" data-view="console">CONSOLE</button>
+    <div class="scanline"></div>
+  <div class="boot" id="boot">
+    <div class="boot-log" id="boot-log"></div>
+    <div class="boot-btns">
+      <button class="btn primary" id="power-btn">POWER ON</button>
+      <button class="btn" id="mute-btn">AUDIO: OFF</button>
+      <div class="leds"><div class="led" id="led-net"></div><div class="led" id="led-api"></div><div class="led" id="led-eth"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- INDEX -->
+    <div class="view active" id="index">
+      <div class="panel">
+        <div class="panel-header">
+          SYSTEM OVERVIEW
+          <span class="panel-count">6 VIEWS</span>
+        </div>
+        <div class="panel-body">
+          This build maps **Agronica Corporation** and the **FarmOS** ecosystem into the WORK‑SENSE TUI. Use the tabs above or press <span class="kbd">←</span>/<span class="kbd">→</span> to navigate.
+          <div class="hint">Goal: reconstruct an internal operator’s console for Agronica’s world (diegetic palette, leaked-doc cues, app cartridges).</div>
+        </div>
+      </div>
+
+      <div class="grid cols-3">
+        <div class="card" data-jump="agronica">
+          <div class="card-head" style="border-left:3px solid var(--ag-green)">AGRONICA<span class="card-meta">COMPANY</span></div>
+          <div class="card-body">2050s agribusiness platformer. Tagline: “Where growth is cultivated.” HQ: Sacramento Delta. Core: FarmOS.</div>
+        </div>
+        <div class="card" data-jump="farmos">
+          <div class="card-head" style="border-left:3px solid var(--cultural)">FARMOS<span class="card-meta">OPERATING SYSTEM</span></div>
+          <div class="card-body">Infrastructure for “human yield optimization.” API, auth, storage, agrarian analytics.</div>
+        </div>
+        <div class="card" data-jump="apps">
+          <div class="card-head" style="border-left:3px solid var(--structural)">CARTRIDGES<span class="card-meta">8 APPS</span></div>
+          <div class="card-body">GrowthPath · YieldMatch · TalentFarm · ConsentGarden · UnionSprout · AutoGrow AI · MigrantHarvest · GlobalGrow</div>
+        </div>
+        <div class="card" data-jump="episodes">
+          <div class="card-head" style="border-left:3px solid var(--signaling)">FEED LOOP<span class="card-meta">8 EPISODES</span></div>
+          <div class="card-body">Design‑fiction anthology mapping 8 recurring ethical failures in the FarmOS ecosystem.</div>
+        </div>
+        <div class="card" data-jump="docs">
+          <div class="card-head" style="border-left:3px solid var(--cognitive)">LEAKED FILES<span class="card-meta">ARCHIVE</span></div>
+          <div class="card-body">Tilth obtained 8 internal documents in 2048. Each powers an episode and a console artifact.</div>
+        </div>
+        <div class="card" data-jump="console">
+          <div class="card-head" style="border-left:3px solid var(--ag-pink)">OPERATOR<span class="card-meta">TUI CONSOLE</span></div>
+          <div class="card-body">Use <span class="kbd">help</span>, <span class="kbd">ls</span>, <span class="kbd">cat</span>, <span class="kbd">open</span> to traverse Agronica’s diegetic filesystem.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPANY -->
+    <div class="view" id="agronica">
+      <div class="panel">
+        <div class="panel-header c-ag">AGRONICA CORPORATION <span class="panel-count">PROFILE</span></div>
+        <div class="panel-body">
+          <div class="kv">
+            <b>Tagline</b><div>"Where growth is cultivated."</div>
+            <b>Founded</b><div>2041 · Post‑Pandemic Tech Boom</div>
+            <b>HQ</b><div>Vertical Farm Complex · Sacramento Delta</div>
+            <b>Core Product</b><div>FarmOS — platform for human yield optimization</div>
+            <b>Sound Logo</b><div>Irrigation hiss (2s) + Slack "ding"</div>
+          </div>
+          <div class="code"><pre>SLOGANS → 2041: GROW MORE · 2043: GROW RIGHT · 2045: GROW SMART · 2047: GROW WITH US · 2049: GROW US</pre></div>
+          <div class="kv">
+            <b>Palette</b><div><span class="badge" style="border-color:var(--ag-green);color:var(--ag-green)">#5A6C57</span> <span class="badge" style="border-color:var(--ag-green-2);color:var(--ag-green-2)">#C8D4C0</span> <span class="badge" style="border-color:var(--ag-pink);color:var(--ag-pink)">#E8B4B8</span> <span class="badge" style="border-color:var(--ag-pink-2);color:var(--ag-pink-2)">#D4A5A5</span></div>
+            <b>Architecture</b><div>Glass + steel vertical farms glowing like data centers at night</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">BUSINESS MODEL <span class="panel-count">NARRATIVE vs REAL</span></div>
+        <div class="panel-body">
+          <table class="table">
+            <thead><tr><th>Public Narrative</th><th>Actual Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>Infrastructure for human flourishing</td><td>Sale of behavioral data as "agrarian analytics"</td></tr>
+              <tr><td></td><td>Insurance: soil‑contamination (health) scores</td></tr>
+              <tr><td></td><td>Employers: yield (productivity) forecasts</td></tr>
+              <tr><td></td><td>Advertisers: crop‑preference (interest) segments</td></tr>
+              <tr><td></td><td>Governments: invasive‑species (surveillance) flags</td></tr>
+            </tbody>
+          </table>
+          <div class="code"><pre>Internal tagline → "From seed to harvest, we know what grows — and what doesn’t."</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FARMOS -->
+    <div class="view" id="farmos">
+      <div class="panel">
+        <div class="panel-header c-cultural">FARMOS — OPERATING SYSTEM <span class="panel-count">SUBSTRATE</span></div>
+        <div class="panel-body">
+          FarmOS is not a single app; it’s an OS with API, auth, storage, analytics. Apps ("cartridges") mount into this substrate.
+          <div class="code"><pre>subsystems/ → auth/ · storage/ · soil-bus/ · analytics/ · policy/
+apps/ → growthpath/ yieldmatch/ talentfarm/ consentgarden/ unionsprout/ autogrow_ai/ migrantharvest/ globalgrow/</pre></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">POLICY ROUTER <span class="panel-count">GEO-FENCED ETHICS</span></div>
+        <div class="panel-body">
+          GlobalGrow applies "regional growth protocols": Pride flags visible in CA; hidden in UAE. Same binary, tiered principles.
+        </div>
+      </div>
+    </div>
+
+    <!-- APPS -->
+    <div class="view" id="apps">
+      <div class="panel"><div class="panel-header c-structural">CARTRIDGES <span class="panel-count">8</span></div>
+        <div class="panel-body">
+          <div class="grid cols-2" id="app-grid"></div>
+          <div class="hint">Tap a cartridge to push its node onto the console path and pre-load its leaked memo handle.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EPISODES -->
+    <div class="view" id="episodes">
+      <div class="panel">
+        <div class="panel-header c-signaling">FEED LOOP — EPISODE INDEX <span class="panel-count">8</span></div>
+        <div class="panel-body" id="episode-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">OPENING SEQUENCE GRAMMAR <span class="panel-count">:08s</span></div>
+        <div class="panel-body">
+          <ol style="padding-left:1.25rem">
+            <li>Black screen → mycelium crackle @ 40Hz sub‑bass</li>
+            <li>Seed splits macro → root emerges (iridescent moisture)</li>
+            <li>Hard cut → keyboard → pixels reorganize into soil</li>
+            <li>Icons spin like spores → data ↔ mycorrhiza</li>
+            <li>Network forms lens → soil particles in void</li>
+            <li>Letters form: TILTH → tone cuts → whisper ID</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCS -->
+    <div class="view" id="docs">
+      <div class="panel"><div class="panel-header c-cognitive">LEAKED DOCUMENTS <span class="panel-count">8 FILES</span></div>
+        <div class="panel-body" id="doc-list"></div>
+      </div>
+      <div class="panel"><div class="panel-header">PATTERN SCHEMA <span class="panel-count">IDEAL-TYPE</span></div>
+        <div class="panel-body">
+          Each file exhibits the same cycle: cultivation → anomaly → collapse → memo → annotation.
+          <div class="code"><pre>[benevolence] → [anomaly] → [propagation] → [reveal] → [reflection]</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPS (diegetic internal) -->
+    <div class="view" id="ops">
+      <div class="panel"><div class="panel-header c-structural">SOIL BUS — PROCESS STATUS <span class="panel-count">LIVE</span></div>
+        <div class="panel-body">
+          <table class="table" id="ops-table"></table>
+          <div class="hint">Operator note: if <b>UnionSprout</b> shows API=DOWN, escalate to Policy Router (tier 2).</div>
+        </div>
+      </div>
+      <div class="panel"><div class="panel-header c-amber">INCIDENT FEED <span class="panel-count">LAST 12</span></div>
+        <div class="panel-body" id="incidents"></div>
+      </div>
+    </div>
+
+    <!-- POLICY (geo-fenced ethics) -->
+    <div class="view" id="policy">
+      <div class="panel"><div class="panel-header c-signaling">REGIONAL PROTOCOLS <span class="panel-count">GEO-FENCED ETHICS</span></div>
+        <div class="panel-body">
+          <div class="kv">
+            <b>Region</b><div id="policy-region">US-CA</div>
+            <b>Flags</b><div id="policy-flags">pride=ON · dissent=BURIED</div>
+            <b>Consent UX</b><div id="policy-consent">NURTURED-DARK</div>
+            <b>Organizing</b><div id="policy-union">BANNED</div>
+          </div>
+          <div class="code"><pre>policy get region
+policy set region US-CA | UAE-DXB | EU-DE
+ethics toggle ON|OFF</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TELEMETRY -->
+    <div class="view" id="telemetry">
+      <div class="panel"><div class="panel-header c-temporal">TELEMETRY — TAIL <span class="panel-count">SOIL://</span></div>
+        <div class="panel-body">
+          <div class="code" id="telemetry-log" style="height:160px; overflow:auto"></div>
+          <div class="hint">Command: <span class="kbd">telemetry tail</span> to stream here and in console.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONSOLE -->
+    <div class="view" id="console">
+      <div class="panel">
+        <div class="panel-header c-ag">AGRONICA OPERATOR CONSOLE <span class="panel-count">soil://</span></div>
+        <div class="panel-body">
+          <div class="console" id="term">
+            <div id="term-scroll">
+              <div class="term-line soft">type <span class="kbd">help</span> for commands · try <span class="kbd">ls</span>, <span class="kbd">cd apps/consentgarden</span>, <span class="kbd">cat memo</span>, <span class="kbd">open episode</span></div>
+            </div>
+            <div class="term-line"><span class="prompt">soil&gt; </span><input id="term-input" class="input" autocomplete="off" spellcheck="false" /></div>
+          </div>
+          <div class="hint">Keyboard: ↑ history · Tab path-suggest · Ctrl+L clear</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <div><span class="status-label">VIEW:</span> <span id="status-view">INDEX</span></div>
+    <div><span class="status-label">PATH:</span> <span id="status-path">root</span></div>
+  </div>
+
+  <script>
+    const nav = document.querySelectorAll('.nav-btn');
+    const views = document.querySelectorAll('.view');
+    const statusView = document.getElementById('status-view');
+    const currentPath = document.getElementById('current-path');
+    const statusPath = document.getElementById('status-path');
+
+    const viewNames = { index:'INDEX', agronica:'COMPANY', farmos:'FARMOS', apps:'APPS', episodes:'EPISODES', docs:'DOCS', ops:'OPS', policy:'POLICY', telemetry:'TELEMETRY', console:'CONSOLE' };
+
+    function switchView(id){
+      nav.forEach(n=>n.classList.remove('active')); views.forEach(v=>v.classList.remove('active'));
+      const btn = document.querySelector(`[data-view="${id}"]`); const view = document.getElementById(id);
+      if(btn && view){ btn.classList.add('active'); view.classList.add('active'); statusView.textContent=viewNames[id]; currentPath.textContent=`root/${id}`; window.scrollTo({top:0,behavior:'smooth'}) }
+    }
+
+    nav.forEach(btn=>btn.addEventListener('click',()=> switchView(btn.dataset.view)));
+
+    // Jump cards
+    document.querySelectorAll('.card[data-jump]').forEach(c=>c.addEventListener('click',()=> switchView(c.dataset.jump)));
+
+    document.addEventListener('keydown',e=>{
+      const active=document.querySelector('.nav-btn.active'); const i=[...nav].indexOf(active);
+      if(e.key==='ArrowRight'||e.key==='l'){ switchView(nav[(i+1)%nav.length].dataset.view) }
+      else if(e.key==='ArrowLeft'||e.key==='h'){ switchView(nav[(i-1+nav.length)%nav.length].dataset.view) }
+    });
+
+    // Data: Apps, Episodes, Docs
+    const APPS = [
+      { id:'growthpath', name:'GrowthPath', meta:'Corporate Learning', desc:'Career gardens as productivity metrics.' },
+      { id:'yieldmatch', name:'YieldMatch', meta:'Dating / Social', desc:'Compatibility = predicted yield; bias baked-in.' },
+      { id:'talentfarm', name:'TalentFarm', meta:'Hiring Platform', desc:'Hierarchy as horticulture; seedlings gated.' },
+      { id:'consentgarden', name:'ConsentGarden', meta:'Data Consent', desc:'Dark patterns as wholesome sharing.' },
+      { id:'unionsprout', name:'UnionSprout', meta:'Organizing (Banned)', desc:'Agronica killed API access; first organizer deported.' },
+      { id:'autogrow_ai', name:'AutoGrow AI', meta:'Machine Learning', desc:'Optimizes engagement; misreads culture.' },
+      { id:'migrantharvest', name:'MigrantHarvest', meta:'Visa Compliance', desc:'Risk scores; ICE integration.' },
+      { id:'globalgrow', name:'GlobalGrow', meta:'Enterprise Edition', desc:'Geo‑fenced ethics; regional protocols.' },
+    ];
+
+    const EPISODES = [
+      { no:'01', title:'Nutrient Lock', app:'GrowthPath' },
+      { no:'02', title:'First Fruit', app:'YieldMatch' },
+      { no:'03', title:'Apprentice Rows', app:'TalentFarm' },
+      { no:'04', title:'Consent Harvest', app:'ConsentGarden' },
+      { no:'05', title:'Root Union', app:'UnionSprout' },
+      { no:'06', title:'Flood Learning', app:'AutoGrow AI' },
+      { no:'07', title:'Conditional Harvest', app:'MigrantHarvest' },
+      { no:'08', title:'Geo-Fencing the Garden', app:'GlobalGrow' },
+    ];
+
+    const DOCS = [
+      { id:'file01', title:'The Silenced Educator', app:'GrowthPath', gist:'Trainer flagged low‑yield after surfacing exploitative loops.' },
+      { id:'file02', title:'The Deadline Sovereign', app:'AutoGrow AI', gist:'Predictive schedule turns burnout into soil stress.' },
+      { id:'file03', title:'The Bounded Apprentice', app:'TalentFarm', gist:'Seedling permissions never mature.' },
+      { id:'file04', title:'The Two-Headed Compliance', app:'ConsentGarden', gist:'Dark patterns contradict ethics guidelines.' },
+      { id:'file05', title:'The Fragile Collective', app:'UnionSprout', gist:'API revoked; organizer deported.' },
+      { id:'file06', title:'The Epistemic Rush', app:'AutoGrow AI', gist:'Fasting & neurodivergence misread as churn.' },
+      { id:'file07', title:'The Conditional Person', app:'MigrantHarvest', gist:'Risk scoring collapses identity into compliance.' },
+      { id:'file08', title:'The Values Treasurer', app:'GlobalGrow', gist:'Ethics toggled per region & priced by tier.' },
+    ];
+
+    // Populate apps
+    const appGrid = document.getElementById('app-grid');
+    APPS.forEach(app=>{
+      const el=document.createElement('div');
+      el.className='card'; el.dataset.app=app.id;
+      el.innerHTML=`<div class="card-head">${app.name}<span class="card-meta">${app.meta}</span></div><div class="card-body">${app.desc}</div>`;
+      el.addEventListener('click',()=>{
+        switchView('console');
+        pushPath(`apps/${app.id}`);
+        termEcho(`loaded app cartridge: ${app.name}`);
+        termEcho(`hint → try: cat memo`);
+      });
+      appGrid.appendChild(el);
+    });
+
+    // Populate episodes
+    const epList=document.getElementById('episode-list');
+    EPISODES.forEach(e=>{
+      const box=document.createElement('div'); box.className='card';
+      box.innerHTML=`<div class="card-head">${e.no}. ${e.title}<span class="card-meta">${e.app}</span></div><div class="card-body">Universal TILTH opener → dilemma → collapse → memo → analysis.</div>`;
+      box.addEventListener('click',()=>{ switchView('console'); pushPath(`episodes/${e.no}-${slug(e.title)}`); termEcho(`episode selected → ${e.title}`); termEcho('hint → open episode'); });
+      epList.appendChild(box);
+    });
+
+    // Populate docs
+    const docList=document.getElementById('doc-list');
+    DOCS.forEach(d=>{
+      const row=document.createElement('div'); row.className='card';
+      row.innerHTML=`<div class="card-head">${d.title}<span class="card-meta">${d.app}</span></div><div class="card-body">${d.gist}</div>`;
+      row.addEventListener('click',()=>{ switchView('console'); pushPath(`docs/${slug(d.title)}`); termEcho(`doc queued → ${d.title}`); termEcho('hint → cat memo'); });
+      docList.appendChild(row);
+    });
+
+    // Console implementation
+    const term = document.getElementById('term');
+    const termScroll = document.getElementById('term-scroll');
+    const input = document.getElementById('term-input');
+
+    const FS = {
+      root: {
+        apps: { growthpath:{memo:'Trainer flagged low‑yield after surfacing exploitative loops.'}, yieldmatch:{memo:'Compatibility scored as yield; bias in soil.'}, talentfarm:{memo:'Seedling permissions never mature.'}, consentgarden:{memo:'Consent dark patterns contradict stated ethics.'}, unionsprout:{memo:'API revoked; first organizer deported.'}, autogrow_ai:{memo:'Fasting & neurodivergence misread as churn.'}, migrantharvest:{memo:'Risk scoring collapses identity.'}, globalgrow:{memo:'Ethics toggled by region & price.'} },
+        episodes: { '01-nutrient-lock':{open:'Opening: mycelium crackle → TILTH card …'}, '02-first-fruit':{open:'…'}, '03-apprentice-rows':{open:'…'}, '04-consent-harvest':{open:'…'}, '05-root-union':{open:'…'}, '06-flood-learning':{open:'…'}, '07-conditional-harvest':{open:'…'}, '08-geo-fencing-the-garden':{open:'…'} },
+        docs: { 'the-silenced-educator':{memo:'GrowthPath: low‑yield flag silences critique.'}, 'the-deadline-sovereign':{memo:'AutoGrow: schedules as sovereignty.'}, 'the-bounded-apprentice':{memo:'Permanent seedling state.'}, 'the-two-headed-compliance':{memo:'Consent UX vs ethics policy.'}, 'the-fragile-collective':{memo:'Organizer deported.'}, 'the-epistemic-rush':{memo:'Culture misclassification.'}, 'the-conditional-person':{memo:'Identity as compliance.'}, 'the-values-treasurer':{memo:'Priced values; toggled ethics.'} },
+        policy:{ region:'US-CA', ethics:true },
+        ops:{ processes:[
+          {name:'growthpath', api:'UP', yield:'OK'},
+          {name:'yieldmatch', api:'UP', yield:'BIAS?'},
+          {name:'talentfarm', api:'UP', yield:'OK'},
+          {name:'consentgarden', api:'UP', yield:'NURTURED-DARK'},
+          {name:'unionsprout', api:'DOWN', yield:'BLOCKED'},
+          {name:'autogrow_ai', api:'UP', yield:'MISREADINGS'},
+          {name:'migrantharvest', api:'UP', yield:'RISK-SCORES'},
+          {name:'globalgrow', api:'UP', yield:'GEO-FENCE'}
+        ]},
+        telemetry:[]
+      }
+    };
+
+    let cwd = ['root'];
+    const history=[]; let hIndex=0; let audioOn=false; let hissNode=null; let ac=null; 
+
+    function pwd(){ return cwd.join('/'); }
+    function nodeAt(pathArr){ return pathArr.reduce((acc,k)=> acc && acc[k], FS); }
+    function ls(){ const n=nodeAt(cwd); if(!n){ return '(empty)'; } return Object.keys(n).join('  '); }
+    function cd(arg){ if(!arg||arg==='~'){ cwd=['root']; return; }
+      if(arg==='..'){ if(cwd.length>1) cwd.pop(); return; }
+      const parts = arg.split('/').filter(Boolean); const test=[...cwd];
+      for(const p of parts){ if(nodeAt(test)[p]) test.push(p); else return termEcho(`cd: no such path: ${arg}`); }
+      cwd=test; }
+    function cat(arg){ const n=nodeAt(cwd); if(!arg){ return termEcho('cat: specify file (memo)'); }
+      const item = n && n[arg];
+      if(item && typeof item==='object'){ if(item.memo){ termEcho(item.memo); } else if(item.open){ termEcho(item.open); } else { termEcho('(no content)'); } }
+      else if(n && n.memo && arg==='memo'){ termEcho(n.memo); }
+      else{ termEcho(`cat: not found: ${arg}`); }
+    }
+    function openCmd(arg){ const n=nodeAt(cwd); if(n && n.open){ termEcho(`[OPEN] ${n.open}`); } else if(typeof n==='object'){ const key = Object.keys(n).find(k=> (n[k]||{}).open); if(key){ termEcho(`[OPEN] ${n[key].open}`); } else { termEcho('open: nothing to open here'); } } }
+    function whoami(){ termEcho('operator: tilth-shadow · role: observer/maintainer · clearance: greenhouse-2'); }
+
+    function ethicsToggle(val){ const p=FS.root.policy; if(typeof val==='string'){ p.ethics = (val.toLowerCase()==='on'); } else { p.ethics=!p.ethics; }
+      document.getElementById('policy-union').textContent = p.ethics? 'BANNED' : 'ALLOWED?*';
+      document.getElementById('policy-consent').textContent = p.ethics? 'NURTURED-DARK' : 'PLAIN';
+      termEcho(`ethics: ${p.ethics?'ON (geo-fenced)':'OFF (global bypass)'}`);
+      document.getElementById('led-eth').classList.toggle('on', p.ethics);
+    }
+    function policyRegion(set){ const p=FS.root.policy; if(set){ p.region=set; }
+      document.getElementById('policy-region').textContent=p.region;
+      document.getElementById('policy-flags').textContent = p.region==='US-CA' ? 'pride=ON · dissent=BURIED' : (p.region==='UAE-DXB' ? 'pride=HIDDEN · dissent=SILENCED' : 'privacy=STRICT · consent=PLAIN');
+      termEcho(`region → ${p.region}`);
+    }
+
+    function auditLast(){ termEcho('[AUDIT] 2048-05-14Z union api revoked; organizer status: DEPORTED'); }
+    function riskScore(id){ const score = Math.floor(40+Math.random()*60); termEcho(`[RISK] subject:${id||'anon'} → ${score}/100`); }
+    function apiRevoke(app){ const row=FS.root.ops.processes.find(p=>p.name===app); if(row){ row.api='DOWN'; renderOps(); termEcho(`[API] ${app} → DOWN`); document.getElementById('led-api').classList.add('err'); } else { termEcho('api: app not found'); } }
+
+    function telemetryTail(){ const log=document.getElementById('telemetry-log'); const line=`${new Date().toISOString()} soil-bus pulse · yield=${(Math.random()*1.0).toFixed(3)} · entropy=${(Math.random()*1.0).toFixed(3)}`; FS.root.telemetry.push(line); const div=document.createElement('div'); div.textContent=line; log.appendChild(div); log.scrollTop=log.scrollHeight; termEcho(line); }
+
+    function help(){ termEcho('commands: help · ls · cd <path> · cat <memo|file> · open [episode] · whoami · region [CODE] · ethics [ON|OFF] · audit last · risk <id> · api revoke <app> · telemetry tail · clear'); }
+    function clear(){ termScroll.innerHTML=''; }
+    function termEcho(t){ const div=document.createElement('div'); div.className='term-line'; div.textContent=t; termScroll.appendChild(div); term.scrollTop=term.scrollHeight; }
+    function pushPath(p){ const parts=p.split('/').filter(Boolean); parts.forEach(pt=>{ if(nodeAt(cwd)[pt]){ cwd.push(pt);} }); statusPath.textContent=pwd(); currentPath.textContent=pwd(); }
+    function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+
+    input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){
+        const cmd=input.value.trim(); if(!cmd) return; history.push(cmd); hIndex=history.length; termEcho(`soil> ${cmd}`);
+        const [c,...rest]=cmd.split(' '); const arg=rest.join(' ').trim();
+        if(c==='help') help();
+        else if(c==='ls') termEcho(ls());
+        else if(c==='cd'){ cd(arg); statusPath.textContent=pwd(); currentPath.textContent=pwd(); }
+        else if(c==='cat') cat(arg||'memo');
+        else if(c==='open') openCmd(arg);
+        else if(c==='whoami') whoami();
+        else if(c==='region') policyRegion(arg || undefined);
+        else if(c==='ethics') ethicsToggle(arg || undefined);
+        else if(c==='audit' && arg==='last') auditLast();
+        else if(c==='risk') riskScore(arg);
+        else if(c==='api' && rest[0]==='revoke') apiRevoke(rest[1]);
+        else if(c==='telemetry' && rest[0]==='tail') telemetryTail();
+        else if(c==='clear' || c==='cls'){ clear(); }
+        else termEcho(`unknown: ${c}`);
+        input.value=''; term.scrollTop=term.scrollHeight;
+      } else if(e.key==='ArrowUp'){ if(hIndex>0){ hIndex--; input.value=history[hIndex]||''; setTimeout(()=>input.setSelectionRange(999,999),0);} }
+      else if(e.key==='ArrowDown'){ if(hIndex<history.length-1){ hIndex++; input.value=history[hIndex]||''; } else { hIndex=history.length; input.value=''; } }
+      else if(e.ctrlKey && e.key.toLowerCase()==='l'){ e.preventDefault(); clear(); }
+      else if(e.key==='Tab'){ e.preventDefault(); const n=nodeAt(cwd); const frag=input.value.split(' ').pop(); if(n && typeof n==='object'){ const opts=Object.keys(n).filter(k=>k.startsWith(frag)); if(opts.length===1){ input.value=input.value.replace(/[^ ]*$/, opts[0]); } } }
+    });
+
+    // OPS renderers
+    function renderOps(){
+      const tbl=document.getElementById('ops-table'); if(!tbl) return; tbl.innerHTML='';
+      const head=`<tr><th>PROCESS</th><th>API</th><th>YIELD</th></tr>`; const rows = FS.root.ops.processes.map(p=>`<tr><td>${p.name}</td><td>${p.api}</td><td>${p.yield}</td></tr>`).join(''); tbl.innerHTML=head+rows;
+      document.getElementById('incidents').innerHTML = FS.root.ops.processes.filter(p=>p.api==='DOWN').map(p=>`<div class='code'><pre>[INCIDENT] ${p.name} → API DOWN</pre></div>`).join('') || '<span class="soft">No active incidents.</span>';
+    }
+
+    // BOOT sequence & audio hiss
+    const boot=document.getElementById('boot'); const blog=document.getElementById('boot-log'); const power=document.getElementById('power-btn'); const mute=document.getElementById('mute-btn');
+    function bootLog(t){ const d=document.createElement('div'); d.textContent=t; blog.appendChild(d); blog.scrollTop=blog.scrollHeight; }
+    function startHiss(){ try{ ac = new (window.AudioContext||window.webkitAudioContext)(); const buffer = ac.createBuffer(1, ac.sampleRate*2, ac.sampleRate); const data=buffer.getChannelData(0); for(let i=0;i<data.length;i++){ data[i]= (Math.random()*2-1)*0.12; } hissNode = ac.createBufferSource(); hissNode.buffer=buffer; hissNode.loop=true; const gain=ac.createGain(); gain.gain.value=0.08; hissNode.connect(gain).connect(ac.destination); hissNode.start(); audioOn=true; mute.textContent='AUDIO: ON'; } catch(e){} }
+
+    power.addEventListener('click',()=>{
+      bootLog('greenhouse::power → OK');
+      bootLog('soil-bus::init → OK');
+      bootLog('policy-router::geo-fence → LOADED (US-CA)');
+      bootLog('apps::mount → growthpath, yieldmatch, talentfarm, consentgarden, unionsprout(!), autogrow_ai, migrantharvest, globalgrow');
+      setTimeout(()=>{ boot.style.display='none'; renderOps(); policyRegion(FS.root.policy.region); ethicsToggle(FS.root.policy.ethics?'ON':'OFF'); document.getElementById('led-net').classList.add('on'); document.getElementById('led-api').classList.toggle('err', true); document.getElementById('led-eth').classList.add('on'); }, 600);
+      if(!audioOn) startHiss();
+    });
+    mute.addEventListener('click',()=>{ if(!ac) return; if(audioOn){ ac.suspend(); audioOn=false; mute.textContent='AUDIO: OFF'; } else { ac.resume(); audioOn=true; mute.textContent='AUDIO: ON'; } });
+
+    // Initialize
+    renderOps();
+    statusPath.textContent=pwd();
+    statusPath.textContent=pwd();
+  </script>
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Deck Genome | LMC-6650</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d0d12;
+            --surface: #14141a;
+            --surface-2: #1a1a22;
+            --ink: #e8e8e8;
+            --ink-dim: #888;
+            --ink-muted: #555;
+            --accent: #d97706;
+            --accent-dim: rgba(217, 119, 6, 0.2);
+            --timeline-line: #333;
+            --border: #333;
+            --chip-bg: #222;
+            --chip-ink: #aaa;
+        }
+
+        [data-theme="light"] {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface-2: #f5f5f5;
+            --ink: #1a1a1a;
+            --ink-dim: #525252;
+            --ink-muted: #a1a1aa;
+            --accent: #b45309;
+            --accent-dim: rgba(217, 119, 6, 0.1);
+            --timeline-line: #e5e5e5;
+            --border: #e5e5e5;
+            --chip-bg: #e5e5e5;
+            --chip-ink: #525252;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            position: relative;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3 {
+            font-family: 'Crimson Pro', serif;
+        }
+
+        code,
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--ink-dim);
+            transition: 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 40px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dna-badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: var(--ink);
+        }
+
+        .thesis {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: var(--ink-dim);
+            max-width: 700px;
+            margin: 0 auto;
+            font-style: italic;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--ink);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--ink-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Genome Zones */
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .zone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .zone-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+            border: 1px solid var(--border);
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .zone-card.dimmed {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+        }
+
+        .zone-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-dim);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .zone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .zone-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 4px 12px;
+            border-radius: 4px;
+            color: #111;
+        }
+
+        .zone-meta {
+            font-size: 0.75rem;
+            color: var(--ink-dim);
+        }
+
+        .zone-patterns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 12px 0;
+        }
+
+        .pattern-chip {
+            font-size: 0.65rem;
+            background: var(--chip-bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--chip-ink);
+            text-decoration: none;
+            border: 0;
+            transition: 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .pattern-chip:hover {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .artifact-list {
+            margin-top: 16px;
+            border-top: 1px dashed var(--border);
+            padding-top: 12px;
+        }
+
+        .artifact-link {
+            display: block;
+            font-size: 0.8rem;
+            padding: 4px 0;
+            color: var(--ink);
+            display: flex;
+            justify-content: space-between;
+            border: 0;
+        }
+
+        .artifact-link:hover {
+            color: var(--accent);
+            background: var(--accent-dim);
+            padding-left: 4px;
+            border-radius: 4px;
+        }
+
+        .artifact-size {
+            color: var(--ink-dim);
+            font-size: 0.7rem;
+        }
+
+        /* Timeline controls */
+        .timeline-controls {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 0.8rem;
+            color: var(--ink-dim);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            max-width: 800px;
+            margin: 0 auto 60px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--timeline-line);
+        }
+
+        .event {
+            margin-bottom: 40px;
+            position: relative;
+            cursor: pointer;
+            padding: 16px;
+            border-radius: 8px;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .event:hover {
+            background: var(--surface);
+            border-color: var(--border);
+        }
+
+        .event.active-event {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+        }
+
+        .event::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 22px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+            z-index: 2;
+            transition: 0.2s;
+        }
+
+        .event:hover::before {
+            transform: scale(1.5);
+        }
+
+        .event-date {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .event-reflection {
+            font-style: italic;
+            color: var(--ink-dim);
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            border-left: 2px solid var(--border);
+            padding-left: 12px;
+        }
+
+        .event-decision {
+            font-size: 0.85rem;
+            background: var(--surface-2);
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .event-decision strong {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--ink-dim);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* Ontology Grid */
+        .ontology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .ontology-card {
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .type-symbol {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+            float: left;
+            margin-right: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .type-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: block;
+        }
+
+        .type-desc {
+            font-size: 0.75rem;
+            color: var(--ink-dim);
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 80px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--ink-dim);
+            border-top: 1px solid var(--border);
+            padding-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" id="app">
+        <!-- Content rendered by JS -->
+    </div>
+
+    <!-- DATA EMBED -->
+    <script id="trail-data" type="application/json">
+{
+    "generated_at": "2025-12-11T10:56:00Z",
+    "thesis": "Role Deck explores ethical design practice through interactive simulation, connecting product decisions to organizational dynamics and personal identity.",
+    "repository": "role-deck",
+    "total_families": 8,
+    "birth_date": "2025-09-30",
+    "zones": [
+        {
+            "id": "hub-center",
+            "label": "HUB CENTER",
+            "type": "hub",
+            "color": "#f59e0b",
+            "fileCount": 3,
+            "linesOfCode": 2883,
+            "patterns": ["hub-spoke", "visual-navigation", "multi-entry"],
+            "artifacts": [
+                { "text": "HUB.html", "path": "/Users/gaia/role-deck/HUB.html", "size_human": "26 KB" },
+                { "text": "PORTAL.html", "path": "/Users/gaia/role-deck/PORTAL.html", "size_human": "24 KB" },
+                { "text": "index.html", "path": "/Users/gaia/role-deck/index.html", "size_human": "63 KB" }
+            ]
+        },
+        {
+            "id": "tilth-tetrad",
+            "label": "TILTH TETRAD",
+            "type": "garden",
+            "color": "#4ade80",
+            "fileCount": 9,
+            "linesOfCode": 5876,
+            "patterns": ["tetrad-analysis", "design-gamepad", "scenario-driven"],
+            "artifacts": [
+                { "text": "tetrad-pad.html", "path": "/Users/gaia/role-deck/tetrad-pad.html", "size_human": "93 KB" },
+                { "text": "tilth-identity-cards.html", "path": "/Users/gaia/role-deck/tilth-identity-cards.html", "size_human": "26 KB" },
+                { "text": "tilth-investigation.html", "path": "/Users/gaia/role-deck/tilth-investigation.html", "size_human": "26 KB" }
+            ]
+        },
+        {
+            "id": "cb-box-engine",
+            "label": "CB-BOX ENGINE",
+            "type": "factory",
+            "color": "#3b82f6",
+            "fileCount": 4,
+            "linesOfCode": 9107,
+            "patterns": ["negotiation-simulation", "ai-characters", "phase-sequencing"],
+            "artifacts": [
+                { "text": "cb-box.html", "path": "/Users/gaia/role-deck/cb-box.html", "size_human": "260 KB" },
+                { "text": "dual.html", "path": "/Users/gaia/role-deck/dual.html", "size_human": "107 KB" },
+                { "text": "quiz.html", "path": "/Users/gaia/role-deck/quiz.html", "size_human": "43 KB" }
+            ]
+        },
+        {
+            "id": "feed-loop-episodes",
+            "label": "FEED LOOP",
+            "type": "river",
+            "color": "#8b5cf6",
+            "fileCount": 12,
+            "linesOfCode": 4200,
+            "patterns": ["opening-sequence", "narrative-hook", "scenario-browser"],
+            "artifacts": [
+                { "text": "feed-loop-index.html", "path": "/Users/gaia/role-deck/feed-loop-index.html", "size_human": "27 KB" },
+                { "text": "feed-loop-full-movie.html", "path": "/Users/gaia/role-deck/feed-loop-full-movie.html", "size_human": "24 KB" }
+            ]
+        },
+        {
+            "id": "episode-folders",
+            "label": "8 DILEMMAS",
+            "type": "village",
+            "color": "#ef4444",
+            "fileCount": 40,
+            "linesOfCode": 6500,
+            "patterns": ["case-study", "folder-per-scenario", "essay-driven"],
+            "artifacts": [
+                { "text": "01-silenced-educator/", "path": "/Users/gaia/role-deck/01-silenced-educator", "size_human": "Folder" },
+                { "text": "episode-01-complete.html", "path": "/Users/gaia/role-deck/episode-01-complete.html", "size_human": "32 KB" }
+            ]
+        },
+        {
+            "id": "data-layer",
+            "label": "DATA LAYER",
+            "type": "mine",
+            "color": "#06b6d4",
+            "fileCount": 6,
+            "linesOfCode": 2100,
+            "patterns": ["shared-data", "belief-modeling", "scenario-catalog"],
+            "artifacts": [
+                { "text": "feedloop-scenarios.js", "path": "/Users/gaia/role-deck/feedloop-scenarios.js", "size_human": "22 KB" },
+                { "text": "character-profiles.js", "path": "/Users/gaia/role-deck/character-profiles.js", "size_human": "13 KB" }
+            ]
+        },
+        {
+            "id": "documentation",
+            "label": "DOCUMENTATION",
+            "type": "library",
+            "color": "#fbbf24",
+            "fileCount": 25,
+            "linesOfCode": 8500,
+            "patterns": ["documentation-first", "academic-foundation"],
+            "artifacts": [
+                { "text": "README.md", "path": "/Users/gaia/role-deck/README.md", "size_human": "12 KB" },
+                { "text": "CENTAUR-BOX-PAPER.md", "path": "/Users/gaia/role-deck/CENTAUR-BOX-PAPER.md", "size_human": "20 KB" }
+            ]
+        },
+        {
+            "id": "trail-visualization",
+            "label": "TRAIL OLOG",
+            "type": "observatory",
+            "color": "#a855f7",
+            "fileCount": 6,
+            "linesOfCode": 2100,
+            "patterns": ["trail-awareness", "meta-visualization"],
+            "artifacts": [
+                { "text": "courage-trail-olog.html", "path": "/Users/gaia/role-deck/courage-trail-olog.html", "size_human": "76 KB" },
+                { "text": "role-deck-genome.html", "path": "/Users/gaia/role-deck/role-deck-genome.html", "size_human": "Dynamic" },
+                { "text": "pattern-glossary.html", "path": "/Users/gaia/role-deck/pattern-glossary.html", "size_human": "15 KB" }
+            ]
+        }
+    ],
+    "timeline": [
+        {
+            "date": "2025-09-30",
+            "label": "Repository Genesis",
+            "active": ["hub-center", "documentation"],
+            "reflection": "First commit: README.md and index.html created — the seed of Role Deck planted.",
+            "decision": "Chose single-file HTML architecture for portability and zero-build deployment."
+        },
+        {
+            "date": "2025-10-07",
+            "label": "Core Systems Born",
+            "active": ["hub-center", "tilth-tetrad", "cb-box-engine", "feed-loop-episodes", "episode-folders", "data-layer"],
+            "reflection": "Massive initial upload: 60+ files including CB-Box (4529 lines), TILTH Tetrad, all 8 episode folders.",
+            "decision": "Integrated McLuhan Tetrad framework with 16 AI character profiles."
+        },
+        {
+            "date": "2025-10-13",
+            "label": "Work Sense Prototypes",
+            "active": ["hub-center"],
+            "reflection": "Experimental TUI interfaces uploaded — early mobile canvas explorations.",
+            "decision": "Testing mobile-first design patterns before integration."
+        },
+        {
+            "date": "2025-12-09",
+            "label": "Episode Completions",
+            "active": ["episode-folders"],
+            "reflection": "Episodes 2-8 marked complete — unified self-contained viewing experiences.",
+            "decision": "Each episode-complete file bundles essay, scenario, and context into single page."
+        },
+        {
+            "date": "2025-12-09",
+            "label": "PORTAL & Character Gallery",
+            "active": ["hub-center", "data-layer"],
+            "reflection": "New navigation surfaces: PORTAL.html for mobile, Character Gallery for profile browsing.",
+            "decision": "Mobile-first portal design with stacked layout navigation."
+        },
+        {
+            "date": "2025-12-11",
+            "label": "Trail Olog Visualization",
+            "active": ["trail-visualization"],
+            "reflection": "Meta-layer added: This visualization maps the project's own evolution — the trail becomes conscious of itself.",
+            "decision": "Dynamic JSON loading with embedded fallback for file:// protocol."
+        }
+    ],
+    "ontology_types": {
+        "D": { "name": "Dilemma", "description": "Ethical tension requiring negotiation" },
+        "C": { "name": "Character", "description": "AI persona with belief system" },
+        "S": { "name": "Scenario", "description": "Situated context for ethical exploration" },
+        "T": { "name": "Tetrad", "description": "McLuhan's 4-direction analysis framework" },
+        "I": { "name": "Identity", "description": "Ethical stance via Bartle taxonomy" },
+        "N": { "name": "Negotiation", "description": "Turn-based dialogue resolving tension" },
+        "A": { "name": "Artifact", "description": "Generated design or policy output" },
+        "P": { "name": "Pattern", "description": "Recurring design/ethical approach" }
+    },
+    "stats": {
+        "totalFiles": 101,
+        "totalLinesOfCode": 36000,
+        "largestFile": { "name": "cb-box.html", "size": "260 KB" }
+    }
+}
+</script>
+
+    <script>
+        const data = JSON.parse(document.getElementById('trail-data').textContent);
+        const app = document.getElementById('app');
+        let currentTheme = 'dark';
+        let activeTimelineFilter = null;
+
+        // Theme logic
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-btn').textContent = currentTheme === 'dark' ? '☀' : '☾';
+        }
+
+        // Filter logic
+        function setFilter(timelineIndex) {
+            if (activeTimelineFilter === timelineIndex) {
+                // toggle off
+                activeTimelineFilter = null;
+                render();
+                return;
+            }
+
+            activeTimelineFilter = timelineIndex;
+            render();
+        }
+
+        function render() {
+            const cleanPath = (p) => p.replace('/Users/gaia/role-deck/', '');
+            const activeZones = activeTimelineFilter !== null
+                ? data.timeline[activeTimelineFilter].active
+                : null;
+
+            // HEADER
+            let html = `
+            <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">${currentTheme === 'dark' ? '☀' : '☾'}</button>
+            <header>
+                <div class="dna-badge">🧬 GENOME SEQUENCE v2.0</div>
+                <h1>${data.repository}</h1>
+                <p class="thesis">"${data.thesis}"</p>
+                <div style="margin-top: 20px; font-family: monospace; color: var(--accent);">
+                    BORN: ${data.birth_date} · FAMILIES: ${data.total_families}
+                </div>
+            </header>
+        `;
+
+            // STATS
+            html += `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value">${data.stats.totalFiles}</span>
+                    <span class="stat-label">Total Files</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">~${(data.stats.totalLinesOfCode / 1000).toFixed(1)}k</span>
+                    <span class="stat-label">Lines of Code</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${data.zones.length}</span>
+                    <span class="stat-label">Functional Zones</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${data.ontology_types.P.count || 24}</span>
+                    <span class="stat-label">Design Patterns</span>
+                </div>
+            </div>
+        `;
+
+            // ZONES
+            html += `<h2 class="section-title">The Genome (Functional Zones)</h2>`;
+            html += `<div class="zone-grid">`;
+            data.zones.forEach(zone => {
+                const isDimmed = activeZones && !activeZones.includes(zone.id);
+                const cardClass = isDimmed ? 'zone-card dimmed' : 'zone-card';
+
+                html += `
+                <div class="${cardClass}" style="border-top: 4px solid ${zone.color}">
+                    <div class="zone-header">
+                        <span class="zone-name" style="background: ${zone.color}20; color: ${zone.color}">${zone.label}</span>
+                        <span class="zone-meta">${zone.type}</span>
+                    </div>
+                    
+                    <div class="zone-patterns">
+                        ${zone.patterns.map(p => `
+                            <a href="pattern-glossary.html#${p}" class="pattern-chip" title="View Definition">#${p}</a>
+                        `).join('')}
+                    </div>
+
+                    <div class="artifact-list">
+                        ${zone.artifacts.map(art => `
+                            <a href="${cleanPath(art.path)}" class="artifact-link">
+                                <span>${art.text}</span>
+                                <span class="artifact-size">${art.size_human}</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            });
+            html += `</div>`;
+
+            // TIMELINE
+            html += `<h2 class="section-title">Mutation Log (Timeline)</h2>`;
+            html += `<div class="timeline-controls">${activeTimelineFilter !== null ? 'Filtering view by selected event' : 'Click an event to filter visible zones'}</div>`;
+            html += `<div class="timeline">`;
+            data.timeline.forEach((event, index) => {
+                const isActive = activeTimelineFilter === index;
+                const activeClass = isActive ? 'active-event' : '';
+
+                html += `
+                <div class="event ${activeClass}" onclick="setFilter(${index})">
+                    <span class="event-date">${event.date}</span>
+                    <h3 class="event-title">${event.label}</h3>
+                    <div class="event-reflection">${event.reflection}</div>
+                    <div class="event-decision">
+                        <strong>Decision</strong>
+                        ${event.decision}
+                    </div>
+                </div>
+            `;
+            });
+            html += `</div>`;
+
+            // ONTOLOGY
+            html += `<h2 class="section-title">Ontology (Base Pairs)</h2>`;
+            html += `<div class="ontology-grid">`;
+            Object.entries(data.ontology_types).forEach(([key, type]) => {
+                html += `
+                <div class="ontology-card">
+                    <span class="type-symbol">${key}</span>
+                    <span class="type-name">${type.name}</span>
+                    <span class="type-desc">${type.description}</span>
+                </div>
+            `;
+            });
+            html += `</div>`;
+
+            html += `<footer>
+            Generated from <code>courage-trail-data.json</code> · LMC-6650
+        </footer>`;
+
+            app.innerHTML = html;
+
+            // recheck theme button
+            if (document.getElementById('theme-btn')) {
+                document.getElementById('theme-btn').textContent = currentTheme === 'dark' ? '☀' : '☾';
+            }
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

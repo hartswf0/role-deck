@@ -1,0 +1,278 @@
+{
+    "meta": {
+        "framework": "Ehrlichman/Meadows Leverage Points + Wong Infrastructure Mapping",
+        "system": "Role-Deck Ethical Design Training Ecosystem",
+        "version": "2.0",
+        "generated": "2025-12-09"
+    },
+    "system_overview": "Role-Deck is an ethical design training ecosystem built around 8 workplace dilemmas at the fictional Agronica agricultural tech company. It uses McLuhan's Tetrad (TILTH), AI-powered negotiation simulation (CB-Box), and narrative episodes to create an experiential learning environment. Currently 60% infrastructure exists but critical leverage-point elements are missing.",
+    "leverage_point_analysis": {
+        "mindsets_paradigms": {
+            "description": "Highest leverage: beliefs, worldviews, paradigms that shape the system",
+            "meadows_levels": [
+                "transcending_paradigms",
+                "paradigms",
+                "goals"
+            ],
+            "ehrlichman_category": "Mindsets & Paradigms",
+            "current_state": {
+                "exists": [
+                    "McLuhan Tetrad as paradigm-shifting framework",
+                    "Chivukula et al. identity claims research grounding",
+                    "Design fiction as methodology (Agronica worldbuilding)"
+                ],
+                "partially_implemented": [
+                    "Essays exist for Episode 01-03 (satirical founder blogs)",
+                    "Quiz outcomes hint at paradigm but don't fully articulate it"
+                ],
+                "missing": [
+                    "Essays for Episodes 04-08 that expose structural logic",
+                    "Paradigm synthesis document (what worldview shift are we teaching?)",
+                    "Counter-paradigm articulation (the belief system that enables harm)"
+                ]
+            },
+            "interventions_needed": [
+                {
+                    "intervention": "Audit and complete satirical 'Founder Blog' essays for Episodes 04-08",
+                    "pattern": "Episode 01's essay.html format: B1-B10 satirical beats exposing coercion-as-care",
+                    "leverage": "transformative"
+                },
+                {
+                    "intervention": "Create paradigm synthesis document",
+                    "description": "Explicit statement of the worldview shift: from 'ethics as individual choice' to 'ethics as systemic infrastructure'",
+                    "leverage": "transformative"
+                }
+            ]
+        },
+        "organizing_principles": {
+            "description": "Rules, goals, self-organization patterns",
+            "meadows_levels": [
+                "rules",
+                "self_organization",
+                "structure_of_information_flows"
+            ],
+            "current_state": {
+                "exists": [
+                    "Quiz response options with identity labels",
+                    "Career risk percentages",
+                    "Systemic analysis per outcome"
+                ],
+                "missing": [
+                    "Assessment rubrics for educational use",
+                    "Facilitator guides for workshop deployment",
+                    "Learning objective documentation",
+                    "Competency framework mapping"
+                ]
+            },
+            "interventions_needed": [
+                {
+                    "intervention": "Create facilitator deployment kit",
+                    "description": "Workshop guides, learning objectives, assessment rubrics",
+                    "leverage": "high"
+                }
+            ]
+        },
+        "information_flows": {
+            "description": "Feedback loops, delays, information availability",
+            "meadows_levels": [
+                "information_flows",
+                "reinforcing_loops",
+                "balancing_loops"
+            ],
+            "current_state": {
+                "exists": [
+                    "CB-Box provides real-time negotiation feedback",
+                    "Quiz results show immediate outcomes",
+                    "TILTH provides directional feedback on design choices"
+                ],
+                "missing": [
+                    "Trail-aware infrastructure (Creator Trail Olog integration)",
+                    "Cross-episode pattern tracking",
+                    "Ethical identity profile accumulation"
+                ]
+            },
+            "interventions_needed": [
+                {
+                    "intervention": "Implement trail-aware state layer",
+                    "description": "IndexedDB storage that tracks decisions, directions, patterns across sessions",
+                    "leverage": "high"
+                }
+            ]
+        },
+        "system_infrastructure": {
+            "description": "Parameters, buffers, physical structures (lowest leverage but necessary foundation)",
+            "meadows_levels": [
+                "parameters",
+                "buffers",
+                "stocks_and_flows"
+            ],
+            "current_state": {
+                "exists": [
+                    "8 opening sequences (HTML animations)",
+                    "8 episode-complete files",
+                    "8 scenario data files",
+                    "CB-Box simulator (265KB)",
+                    "TILTH Tetrad Pad (95KB)"
+                ],
+                "missing": [
+                    "Video content for all episodes",
+                    "Interactive evidence files for Episodes 04-08",
+                    "Unified entry point",
+                    "Character relationship visualization"
+                ]
+            }
+        }
+    },
+    "infrastructure_mapping": {
+        "dynamic_processes": {
+            "wong_category": "Dynamic Processes",
+            "current_flows": {
+                "episode": "Opening → Video → Brief → Quiz → Outcome",
+                "tilth": "Select Scenario → Choose Direction → AI Iterate → Build",
+                "cbbox": "Select Scenario → Plan → Negotiate → Feedback"
+            },
+            "embedded_values": [
+                "Systemic thinking over individual blame",
+                "Practice over lecture",
+                "Structural analysis over moral judgment"
+            ],
+            "gaps": [
+                "Linear progression assumes single path",
+                "No reflection loops between episodes",
+                "Tools are siloed"
+            ]
+        },
+        "social_positionalities": {
+            "wong_category": "Social Positionalities",
+            "power_dynamics_portrayed": [
+                "Junior vs Senior (Priya, Dev)",
+                "Contractor vs Employee (Priya)",
+                "Visa-holder vs Citizen (Maria, Amit)",
+                "Founder vs Board (Sam)"
+            ]
+        },
+        "invisible_work": {
+            "wong_category": "Invisible Work",
+            "documented_labor": [
+                "Emotional labor of navigating ethical dissonance",
+                "Articulation work translating ethics to compliance",
+                "Relationship maintenance while dissenting"
+            ],
+            "needed": "Facilitator guides reduce invisible labor of deployment"
+        },
+        "embedded_systems": {
+            "wong_category": "Embedded Systems",
+            "standards_in_scenarios": [
+                "GDPR",
+                "NLRA Section 7",
+                "NDA enforcement"
+            ],
+            "policies_in_scenarios": [
+                "Performance reviews",
+                "Visa conditions",
+                "Fiduciary duty"
+            ],
+            "economic_logics": [
+                "Investor timelines",
+                "Launch deadlines",
+                "Growth metrics"
+            ]
+        }
+    },
+    "episode_infrastructure_audit": {
+        "01_silenced_educator": {
+            "essay": "essay.html",
+            "evidence": "silence-policy.html",
+            "scenario": "silenced-educator.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "02_deadline_sovereign": {
+            "essay": "essay.html",
+            "evidence": "v2-will-fix.html",
+            "scenario": "deadline-sovereign.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "03_bounded_apprentice": {
+            "essay": "essay.html",
+            "evidence": "guild-gate.html",
+            "scenario": "bounded-apprentice.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "04_two_headed_compliance": {
+            "essay": "essay.html",
+            "evidence": "dark-pattern-choir.html",
+            "scenario": "two-headed-compliance.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "05_fragile_collective": {
+            "essay": "essay.html",
+            "evidence": "organizers-microphone.html",
+            "scenario": "fragile-collective.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "06_epistemic_rush": {
+            "essay": "essay.html",
+            "evidence": "epistemic-noise-gate.html",
+            "scenario": "epistemic-rush.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "07_conditional_person": {
+            "essay": "essay.html",
+            "evidence": "maslow-lock.html",
+            "scenario": "conditional-person.html",
+            "index": "index.html",
+            "complete": true
+        },
+        "08_values_treasurer": {
+            "essay": "essay.html",
+            "evidence": "tiered-principles.html",
+            "scenario": "values-treasurer.html",
+            "index": "index.html",
+            "complete": true
+        }
+    },
+    "integrated_intervention_strategies": [
+        {
+            "intervention": "Audit episode folders 04-08 and complete missing essays/evidence",
+            "targeted_leverage": "Mindsets & Paradigms (highest)",
+            "infrastructure_work": "Build on existing Episode 01-03 format",
+            "viability": "High",
+            "priority": 1
+        },
+        {
+            "intervention": "Create PARADIGM-SHIFT.md synthesis",
+            "targeted_leverage": "Mindsets & Paradigms",
+            "infrastructure_work": "Synthesize 8 scenarios into worldview articulation",
+            "viability": "High",
+            "priority": 2
+        },
+        {
+            "intervention": "Build trail-aware state layer",
+            "targeted_leverage": "Information Flows",
+            "infrastructure_work": "IndexedDB + pattern inference",
+            "viability": "Medium",
+            "priority": 3
+        },
+        {
+            "intervention": "Create facilitator deployment kit",
+            "targeted_leverage": "Organizing Principles",
+            "infrastructure_work": "Workshop guides, rubrics",
+            "viability": "High",
+            "priority": 4
+        },
+        {
+            "intervention": "Unify entry points",
+            "targeted_leverage": "System Infrastructure",
+            "infrastructure_work": "Single PORTAL.html",
+            "viability": "High",
+            "priority": 5
+        }
+    ],
+    "meta_rule": "Analyze ANY ethical design training system by asking: (1) What PARADIGM is being taught vs. exposed? (2) What RULES enable practitioners to apply the learning? (3) What FEEDBACK LOOPS show learners their patterns? (4) What INFRASTRUCTURE makes all of the above possible? Then: build from mindset shifts DOWN, but ensure infrastructure exists to sustain the paradigm."
+}

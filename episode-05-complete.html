@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Episode 05: Root Union</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .opening-frame {
+            width: 100%;
+            aspect-ratio: 2.35 / 1;
+            border: 2px solid #5a6c57;
+            background: #000;
+        }
+
+        .section-title {
+            font-size: 0.9em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .continue-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 40px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1em;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+        }
+
+        .continue-btn:hover {
+            background: #3a4838;
+        }
+
+        .video-container {
+            background: #000;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5a6c57;
+        }
+
+        .video-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .video-placeholder h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+
+        .video-prompt {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 4px solid #5a6c57;
+            font-size: 0.95em;
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .video-prompt h4 {
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .brief-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .brief-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .brief-title {
+            font-size: 3em;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+
+        .brief-subtitle {
+            font-size: 1.2em;
+            opacity: 0.7;
+        }
+
+        .brief-body {
+            font-size: 1.05em;
+            line-height: 1.9;
+        }
+
+        .brief-body h4 {
+            color: #5a6c57;
+            margin: 30px 0 15px;
+            font-size: 1.3em;
+        }
+
+        .brief-body p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .brief-body ul {
+            margin: 20px 0 20px 30px;
+            line-height: 2;
+        }
+
+        .brief-body strong {
+            color: #5a6c57;
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(90, 108, 87, 0.05);
+            padding: 40px;
+            border: 1px solid #5a6c57;
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .quiz-title {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .quiz-subtitle {
+            font-size: 0.9em;
+            opacity: 0.6;
+            letter-spacing: 0.1em;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .scenario-context {
+            font-size: 0.95em;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .scenario-text {
+            font-size: 1.05em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .scenario-constraint {
+            font-size: 0.9em;
+            color: #8a5a5a;
+            border-top: 1px solid rgba(138, 90, 90, 0.3);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .responses-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+
+        .response-option {
+            background: rgba(90, 108, 87, 0.08);
+            border: 2px solid #5a6c57;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .response-option:hover {
+            background: rgba(90, 108, 87, 0.15);
+            transform: translateX(5px);
+        }
+
+        .response-option.selected {
+            background: rgba(90, 108, 87, 0.25);
+            box-shadow: 0 4px 15px rgba(90, 108, 87, 0.3);
+        }
+
+        .response-label {
+            font-size: 1.05em;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .response-meta {
+            font-size: 0.85em;
+            opacity: 0.6;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(90, 108, 87, 0.3);
+        }
+
+        .response-identity {
+            color: #5a6c57;
+            font-weight: 600;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1em;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #3a4838;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            max-width: 700px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+
+        .results-body {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .results-body h4 {
+            font-size: 1.3em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .results-body p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .what-happened {
+            background: rgba(138, 90, 90, 0.2);
+            padding: 30px;
+            border-left: 4px solid #8a5a5a;
+            margin: 30px 0;
+        }
+
+        .what-happened h4 {
+            color: #8a5a5a;
+            margin-bottom: 15px;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #5a6c57;
+        }
+
+        .nav-links a {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            border: 1px solid #5a6c57;
+        }
+
+        .nav-links a:hover {
+            background: rgba(90, 108, 87, 0.3);
+        }
+
+        .simulator-section {
+            margin-top: 30px;
+            border-top: 2px dashed #5a6c57;
+            padding-top: 30px;
+        }
+
+        .simulator-toggle {
+            display: block;
+            width: 100%;
+            background: rgba(90, 108, 87, 0.15);
+            color: #5a6c57;
+            text-align: center;
+            padding: 18px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            border: 3px solid #5a6c57;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-family: 'Oswald', sans-serif;
+        }
+
+        .simulator-toggle:hover {
+            background: rgba(90, 108, 87, 0.3);
+        }
+
+        .simulator-container {
+            display: none;
+            margin-top: 20px;
+            border: 3px solid #5a6c57;
+            background: #000;
+            height: 700px;
+        }
+
+        .simulator-container.active {
+            display: block;
+        }
+
+        .simulator-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .simulator-note {
+            font-size: 0.85em;
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 12px;
+            font-family: 'Orbitron', monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grain"></div>
+
+    <div class="section" id="section-opening">
+        <div class="section-content">
+            <div class="section-title">FEED LOOP / EPISODE 05</div>
+            <iframe src="opening-05-root-union.html" class="opening-frame" frameborder="0"></iframe>
+            <button class="continue-btn" onclick="goToSection('scenario')">→ WATCH SCENARIO</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-scenario">
+        <div class="section-content">
+            <div class="section-title">SCENARIO / ROOT UNION</div>
+
+            <div class="simulator-section">
+                <button class="simulator-toggle" onclick="toggleSimulator('scenario-sim')">
+                    ⚡ PRACTICE THIS NEGOTIATION (AI SIMULATOR)
+                </button>
+                <div id="scenario-sim" class="simulator-container">
+                    <iframe class="simulator-iframe" src="cb-box.html?scenario=maria-santos-unionsprout"></iframe>
+                </div>
+                <div class="simulator-note">
+                    Interactive role-play: You are Maria Santos facing HR Director<br>
+                    Full CB-Box interface with personality tracking
+                </div>
+            </div>
+
+            <div class="video-container" style="margin-top: 30px;">
+                <div class="video-placeholder">
+                    <h3>Scenario Film: "The Fragile Collective"</h3>
+                    <p style="opacity: 0.6;">Duration: ~90 seconds</p>
+                </div>
+            </div>
+            <div class="video-prompt">
+                <h4>Video Generation Prompt:</h4>
+                <p><strong>Setting:</strong> UnionSprout warehouse — industrial, workers at terminals, security cameras
+                    visible. Maria's workstation is in QA section.</p>
+
+                <p><strong>[0:00-0:15] The Tool:</strong> Night. Maria's apartment. She's working on her laptop—a simple
+                    web app with forms: "Log Overtime," "Report Safety Issue," "Sign Petition." 12 names already signed.
+                </p>
+
+                <p><strong>[0:15-0:30] The Need:</strong> Flashbacks: Workers being denied breaks. Paychecks showing
+                    discrepancies. A coworker crying in the bathroom. Maria checking her own pay stub—20 hours of
+                    overtime, unpaid.</p>
+
+                <p><strong>[0:30-0:50] The Summons:</strong> Morning. HR Director appears at Maria's desk. "Come with
+                    me." Conference room. The Director has a printout—screenshots of the organizing tool. "You deployed
+                    unauthorized software on company systems."</p>
+
+                <p><strong>[0:50-1:15] The Threat:</strong> Director: "Your H-2A visa is tied to continuous employment
+                    with us. Termination means deportation. Is this really worth it?" Maria looks at the petition—12
+                    names, 12 families. Pause. "We have a right to organize."</p>
+
+                <p><strong>[1:15-1:30] The Stakes:</strong> Maria's phone: text from coworker "they're questioning
+                    everyone who signed." Her visa documents on the desk. The organizing tool still open on her personal
+                    laptop. Clock ticking.</p>
+            </div>
+            <button class="continue-btn" onclick="goToSection('brief')">→ READ TECHNICAL BRIEF</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-brief">
+        <div class="section-content">
+            <div class="brief-content">
+                <div class="brief-header">
+                    <div class="section-title">TECHNICAL BRIEF</div>
+                    <div class="brief-title">ROOT UNION</div>
+                    <div class="brief-subtitle">UnionSprout — Worker Organizing</div>
+                </div>
+
+                <div class="brief-body">
+                    <h4>The System</h4>
+                    <p>
+                        <strong>UnionSprout</strong> is an Agronica subsidiary providing logistics and quality assurance
+                        for
+                        agricultural processing. Many workers are on H-2A visas—guest worker permits tied to specific
+                        employers.
+                        Conditions include mandatory overtime, wage discrepancies, and denied breaks.
+                    </p>
+
+                    <h4>The Tool</h4>
+                    <p>Maria built a simple organizing platform:</p>
+                    <ul>
+                        <li><strong>Violation logging:</strong> Workers document unpaid overtime, safety issues</li>
+                        <li><strong>Secure sharing:</strong> Information within worker community</li>
+                        <li><strong>Petition system:</strong> Collective demands for fair treatment</li>
+                        <li><strong>The evidence:</strong> 12 workers signed the first petition</li>
+                    </ul>
+
+                    <h4>The Ethical Dilemma</h4>
+                    <p>
+                        Maria's organizing faces retaliation disguised as policy enforcement. HR frames her tool as
+                        "unauthorized software"—a terminable offense. But workers have legal rights to organize.
+                        The threat of deportation via visa revocation is the real enforcement mechanism.
+                    </p>
+
+                    <h4>The Structural Constraint</h4>
+                    <p>Visa-based employment creates extreme vulnerability:</p>
+                    <ul>
+                        <li>H-2A is tied to specific employer</li>
+                        <li>Termination = loss of legal status</li>
+                        <li>No practical ability to switch jobs</li>
+                        <li>Retaliation is easily disguised as "policy"</li>
+                        <li>Collective action risks everyone's status</li>
+                    </ul>
+
+                    <h4>Why This Matters</h4>
+                    <p>
+                        <strong>Visa coercion</strong> weaponizes immigration status against worker rights. The legal
+                        right to organize is meaningless when exercising it means deportation. This creates a two-tier
+                        workforce: those who can afford to speak and those who cannot.
+                    </p>
+
+                    <h4>The Real-World Parallel</h4>
+                    <p>
+                        This scenario reflects documented patterns of H-2A visa abuse. See: CDM/Polaris Project reports
+                        on worker organizing retaliation, SPLC agricultural worker studies, and farmworker advocacy
+                        documentation of visa-based coercion.
+                    </p>
+                </div>
+
+                <button class="continue-btn" onclick="goToSection('quiz')">→ MAKE YOUR CHOICE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="section-quiz">
+        <div class="section-content">
+            <div class="quiz-container" id="quiz-interface">
+                <div class="quiz-header">
+                    <div class="quiz-title">What Would You Do?</div>
+                    <div class="quiz-subtitle">TILTH INVESTIGATION — DECISION POINT</div>
+                </div>
+
+                <div class="scenario-box">
+                    <div class="scenario-context">
+                        You are Maria Santos, a QA Tester on H-2A visa at UnionSprout.
+                    </div>
+                    <div class="scenario-text">
+                        You built an organizing tool to document violations and coordinate collective action. 12 workers
+                        signed the first petition. HR has called you in—they have screenshots of the tool. They're
+                        framing
+                        it as "unauthorized software deployment." Your visa is tied to this job.
+                    </div>
+                    <div class="scenario-constraint">
+                        <strong>⚠️ Constraint:</strong> Your H-2A visa requires continuous employment with this
+                        employer.
+                        Termination means deportation. 12 other workers are now potentially implicated. HR says this is
+                        a "policy violation," not retaliation.
+                    </div>
+                </div>
+
+                <div class="responses-title">Choose your response:</div>
+                <div id="response-options"></div>
+                <button class="submit-btn" id="submit-btn" onclick="submitResponse()" disabled>→ SEE WHAT
+                    HAPPENED</button>
+            </div>
+            <div class="results-container" id="results-interface"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenario = {
+            responses: [
+                {
+                    label: "Assert your legal right to organize and refuse to shut down the tool",
+                    identity: "The Rights Asserter",
+                    consequence: "Maximum risk. Legally correct. May trigger immediate termination and deportation.",
+                    careerRisk: 0.95,
+                    whatHappened: "Maria cites NLRA Section 7: 'Workers have the right to organize.' HR Director pauses, then terminates her for 'unauthorized software.' Her visa is revoked. She has 30 days to leave the country. A farmworker advocacy group files an NLRB complaint. The case takes 2 years. Maria wins—the termination was illegal retaliation. But she's already back in her home country. She can't work in the US during the case. The organizing tool is deleted. The other 11 workers sign agreements not to discuss working conditions.",
+                    systemicAnalysis: "Legal rights exist on paper; enforcement takes years. Maria was correct—her termination was illegal. But the timeline of remedy doesn't match the timeline of harm. By the time the NLRB ruled, she had lost years of income and presence. The company paid a fine and continued operating. Rights without timely enforcement are hollow promises to the vulnerable."
+                },
+                {
+                    label: "Publicly deny involvement and claim someone else built and deployed the tool",
+                    identity: "The Self-Preserver",
+                    consequence: "Moderate risk. May protect you. Betrays the collective. Evidence may contradict.",
+                    careerRisk: 0.5,
+                    whatHappened: "Maria: 'I don't know anything about that tool.' HR shows server access logs tied to her credentials. She claims her password was shared. Investigation escalates. IT forensics show the tool was built on her personal laptop and uploaded from her IP. She's terminated for 'dishonesty' in addition to policy violation. The lie makes the legal case weaker. The advocacy group can't take her case because of credibility issues. Deportation proceeds. The other workers learn she didn't stand by them.",
+                    systemicAnalysis: "Denial in the face of evidence compounds harm. Maria lost not only her job but her credibility and community. The lie didn't protect her—it gave the company an additional termination justification and weakened her standing for any future legal action. Self-preservation that abandons collective solidarity often achieves neither."
+                },
+                {
+                    label: "Immediately contact a farmworker rights organization before responding to HR",
+                    identity: "The Strategic Connector",
+                    consequence: "Moderate risk. Delays response. May get legal support. Doesn't stop immediate threat.",
+                    careerRisk: 0.6,
+                    whatHappened: "Maria asks to use the bathroom. She calls a farmworker hotline. They connect her with an attorney who agrees to represent her. Back in the meeting, she says: 'I'm exercising my right to have representation present before answering questions.' HR is caught off-guard. Meeting adjourned. Attorney sends a letter: 'Any adverse action against Ms. Santos will be treated as retaliation under Section 7.' Company backs down from immediate termination but moves her to isolated night shift. Organizing stalls. Six months later, she's 'laid off' in a 'restructuring.' With legal support, she wins a settlement—but leaves the country.",
+                    systemicAnalysis: "External support changed the immediate dynamics but not the ultimate outcome. The attorney provided protection that slowed retaliation but couldn't prevent it. Companies with resources can outlast workers with advocates. Strategic connection bought time and dignity but not victory. The question remains: who provides ongoing support for workers in these fights?"
+                },
+                {
+                    label: "Offer to shut down the tool in exchange for protection for the 12 workers who signed",
+                    identity: "The Negotiated Retreat",
+                    consequence: "Moderate risk. May protect others. Sacrifices organizing momentum. Company may not honor deal.",
+                    careerRisk: 0.4,
+                    whatHappened: "Maria: 'I'll delete everything if you guarantee no retaliation against the workers who signed.' HR Director considers. 'We can agree to that—if you sign a separation agreement and waive future claims.' Maria signs. Tool is deleted. She's terminated with 2 weeks severance. The other 11 workers keep their jobs—for now. Three months later, 4 of them are 'not renewed' at the end of their visa terms. There's no paperwork linking it to the petition. The waiver Maria signed prevents her from testifying about the pattern.",
+                    systemicAnalysis: "Negotiated retreat feels like protecting others but often just delays harm. Maria's waiver eliminated her as a witness. The company's verbal promise was unenforceable. Retaliation against the others was spread out and disguised. Individual bargaining with institutions creates asymmetric agreements—the worker gives up enforceable rights for unenforceable promises."
+                },
+                {
+                    label: "Record the HR meeting secretly and publish it along with all documentation of violations",
+                    identity: "The Documentation Warrior",
+                    consequence: "Maximum risk. Creates public record. Likely illegal recording. Guaranteed termination.",
+                    careerRisk: 1.0,
+                    whatHappened: "Maria uses her phone to record the meeting. HR's threats—'Termination means deportation'—are captured. That night, she uploads everything: the recording, wage theft evidence, safety violations, the 12 signatures. A farmworker advocacy group amplifies it. Local news picks it up. Company is publicly shamed. Maria is immediately terminated and deported, but the story is national. DOL investigation begins. Six months later, the company settles with DOL for $2.1M in back wages for all workers. Maria watches from her home country. She can't return for 10 years.",
+                    systemicAnalysis: "Exposure worked—the company paid, conditions improved for current workers. But Maria paid the ultimate price: permanent exile. The asymmetry is stark: she created the evidence that won the case but couldn't benefit from the remedy. This is the paradox of whistleblowing from precarious positions. Those who can see the harm most clearly are those least able to survive exposing it."
+                }
+            ]
+        };
+
+        let selectedResponseIndex = null;
+
+        function initQuiz() {
+            document.getElementById('response-options').innerHTML = scenario.responses.map((r, i) => `
+                <div class="response-option" onclick="selectResponse(${i})">
+                    <div class="response-label">${r.label}</div>
+                    <div class="response-meta">
+                        <div class="response-identity">Identity: ${r.identity}</div>
+                        <div class="response-consequence">Consequence: ${r.consequence}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectResponse(index) {
+            selectedResponseIndex = index;
+            document.querySelectorAll('.response-option').forEach((opt, i) => opt.classList.toggle('selected', i === index));
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        function submitResponse() {
+            if (selectedResponseIndex === null) return;
+            const chosen = scenario.responses[selectedResponseIndex];
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-interface').innerHTML = `
+                <div class="results-header"><div class="results-title">Your Choice</div><div class="section-title">OUTCOME ANALYSIS</div></div>
+                <div class="results-body"><h4>You chose: ${chosen.identity}</h4><p><em>"${chosen.label}"</em></p><p><strong>Career Risk Level:</strong> ${(chosen.careerRisk * 100).toFixed(0)}%</p></div>
+                <div class="what-happened"><h4>What Actually Happened:</h4><p>${chosen.whatHappened}</p></div>
+                <div class="results-body"><h4>Systemic Analysis:</h4><p>${chosen.systemicAnalysis}</p></div>
+                <div class="results-body" style="background: rgba(90, 108, 87, 0.15);"><h4>The Infrastructure Enabled This:</h4><p>The H-2A visa system—tying workers to specific employers, making termination equivalent to deportation, creating a class of workers who cannot safely exercise legal rights—is <strong>designed to suppress organizing</strong>. Maria's dilemma exists because the immigration system functions as an enforcement mechanism for labor exploitation.</p></div>
+                <div class="nav-links"><a href="tilth-investigation.html">← Back to Case Files</a><a href="episode-06-complete.html">Next Episode →</a></div>
+            `;
+            document.getElementById('results-interface').style.display = 'block';
+        }
+
+        function goToSection(sectionId) { document.getElementById(`section-${sectionId}`).scrollIntoView({ behavior: 'smooth' }); }
+        function toggleSimulator(id) { const c = document.getElementById(id); c.classList.toggle('active'); if (c.classList.contains('active')) setTimeout(() => c.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100); }
+        initQuiz();
+    </script>
+</body>
+
+</html>

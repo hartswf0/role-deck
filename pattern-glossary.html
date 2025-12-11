@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Glossary | Role Deck Knowledge Infrastructure</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface-alt: #f5f5f5;
+            --card-border: #e5e5e5;
+            --ink: #1a1a1a;
+            --ink-secondary: #525252;
+            --ink-tertiary: #737373;
+            --accent: #b45309;
+            --accent-bg: #fef3c7;
+            --link: #1d4ed8;
+            --pattern-color: #6d28d9;
+            --decision-color: #047857;
+            --morphism-bg: #fffbeb;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d0d12;
+            --surface: #18181b;
+            --surface-alt: #27272a;
+            --card-border: #3f3f46;
+            --ink: #fafafa;
+            --ink-secondary: #a1a1aa;
+            --ink-tertiary: #71717a;
+            --accent: #f59e0b;
+            --accent-bg: rgba(245, 158, 11, 0.12);
+            --link: #60a5fa;
+            --pattern-color: #a78bfa;
+            --decision-color: #34d399;
+            --morphism-bg: rgba(245, 158, 11, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 18px;
+            scroll-behavior: smooth;
+        }
+
+        @media (max-width: 768px) {
+            html {
+                font-size: 16px;
+            }
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Source Serif 4', Georgia, serif;
+            line-height: 1.7;
+            padding: 0 1rem;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin: 2.5rem 0 1rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            max-width: 65ch;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+            background: var(--surface-alt);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+        }
+
+        .container {
+            max-width: 48rem;
+            margin: 0 auto;
+            padding: 2rem 0 4rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--ink-secondary);
+            font-style: italic;
+        }
+
+        .meta {
+            font-size: 0.8rem;
+            color: var(--ink-tertiary);
+            margin-top: 0.5rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .back-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--ink-secondary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .back-nav:hover {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--surface);
+            color: var(--ink);
+            cursor: pointer;
+            font-size: 1.25rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-bg);
+        }
+
+        .toc {
+            background: var(--surface);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .toc-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--ink-tertiary);
+            margin-bottom: 0.75rem;
+        }
+
+        .toc-list {
+            list-style: none;
+            columns: 2;
+            column-gap: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .toc-list {
+                columns: 1;
+            }
+        }
+
+        .toc-list a {
+            color: var(--link);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.25rem 0;
+        }
+
+        .toc-list a:hover {
+            text-decoration: underline;
+        }
+
+        .onto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0 2rem;
+        }
+
+        .onto-card {
+            background: var(--surface);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .onto-sym {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .onto-name {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .onto-desc {
+            font-size: 0.8rem;
+            color: var(--ink-secondary);
+            line-height: 1.5;
+        }
+
+        .morphism {
+            background: var(--morphism-bg);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .morphism-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .morphism-plain {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .morphism-example {
+            font-size: 0.85rem;
+            color: var(--ink-secondary);
+            font-style: italic;
+        }
+
+        .pattern-card {
+            background: var(--surface);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .pattern-head {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pattern-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--pattern-color);
+        }
+
+        .pattern-zones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .zone-chip {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: var(--surface-alt);
+            color: var(--ink-secondary);
+        }
+
+        .pattern-body {
+            padding: 1.25rem;
+        }
+
+        .pattern-def {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--pattern-color);
+            padding-left: 1rem;
+        }
+
+        .pattern-grounding {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--ink-secondary);
+            border-left: 2px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        .pattern-grounding strong {
+            color: var(--ink);
+        }
+
+        .pattern-grounding p {
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-meta {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .pattern-meta dt {
+            font-weight: 600;
+            color: var(--ink-tertiary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .pattern-meta dd {
+            color: var(--ink-secondary);
+        }
+
+        .pattern-refs {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.8rem;
+        }
+
+        .pattern-refs-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: var(--ink-tertiary);
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-refs cite {
+            font-style: normal;
+            display: block;
+            color: var(--ink-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .pattern-refs a {
+            color: var(--link);
+        }
+
+        .void-note {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #991b1b;
+        }
+
+        [data-theme="dark"] .void-note {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .edge-note {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #166534;
+        }
+
+        [data-theme="dark"] .edge-note {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .leverage-note {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: #6b21a8;
+        }
+
+        [data-theme="dark"] .leverage-note {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #d8b4fe;
+        }
+
+        .audit-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+        }
+
+        .audit-verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .audit-caution {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .audit-edge {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .audit-deep {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        [data-theme="dark"] .audit-verified {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        [data-theme="dark"] .audit-caution {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fcd34d;
+        }
+
+        [data-theme="dark"] .audit-edge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        [data-theme="dark"] .audit-deep {
+            background: rgba(168, 85, 247, 0.2);
+            color: #d8b4fe;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--card-border);
+            font-size: 0.8rem;
+            color: var(--ink-tertiary);
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        footer a {
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">☀</button>
+
+    <div class="container">
+        <a href="courage-trail-olog.html" class="back-nav">← Trail Map</a>
+
+        <header>
+            <h1>Pattern Glossary</h1>
+            <p class="subtitle">Recurring design patterns across the Role Deck ethical design toolkit, grounded in HCI,
+                game studies, negotiation theory, and "Undaunted Courage" leverage zones.</p>
+            <p class="meta">v1.03 · Void Guardian + Edge Scout + Deep Leverage · December 2025 · 10 patterns · 38
+                archival sources</p>
+        </header>
+
+        <nav class="toc">
+            <div class="toc-title">Contents</div>
+            <ul class="toc-list">
+                <li><a href="#ontology">Ontology Types</a></li>
+                <li><a href="#morphisms">Morphisms</a></li>
+                <li><a href="#hub-spoke">hub-spoke</a></li>
+                <li><a href="#visual-navigation">visual-navigation 🏛</a></li>
+                <li><a href="#tetrad-analysis">tetrad-analysis</a></li>
+                <li><a href="#negotiation-simulation">negotiation-simulation ⚡</a></li>
+                <li><a href="#ai-characters">ai-characters 🏛</a></li>
+                <li><a href="#phase-sequencing">phase-sequencing ⚡</a></li>
+                <li><a href="#belief-modeling">belief-modeling 🏛</a></li>
+                <li><a href="#case-study">case-study ✓</a></li>
+                <li><a href="#trail-awareness">trail-awareness ⚡</a></li>
+                <li><a href="#bibliography">Bibliography</a></li>
+            </ul>
+        </nav>
+
+        <!-- ONTOLOGY SECTION -->
+        <section id="ontology">
+            <h2>Ontology Types (Objects)</h2>
+            <p>These types form an <em>ethical design ontology</em> for navigating workplace dilemmas. Grounded in Gray
+                & Chivukula (2021), Wong's speculative ethics (2023-2025), and Freire's critical pedagogy (1970). <a
+                    href="#ref-gray2021">[Gray et al. 2021]</a> <a href="#ref-freire">[Freire 1970]</a></p>
+
+            <div class="onto-grid">
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#ef4444">D</div>
+                    <div class="onto-name">Dilemma</div>
+                    <div class="onto-desc">An ethical tension requiring negotiation. The "hard choice" where values
+                        conflict.</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#3b82f6">C</div>
+                    <div class="onto-name">Character</div>
+                    <div class="onto-desc">AI persona with internal belief system. cf. Bratman's "Intentional Agent"
+                        (1987).</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#4ade80">S</div>
+                    <div class="onto-name">Scenario</div>
+                    <div class="onto-desc">Situated context for ethical exploration. Geertz's "thick" particularity.
+                    </div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#f59e0b">T</div>
+                    <div class="onto-name">Tetrad</div>
+                    <div class="onto-desc">McLuhan's 4-direction analysis: Enhance, Obsolesce, Retrieve, Reverse.</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#8b5cf6">I</div>
+                    <div class="onto-name">Identity</div>
+                    <div class="onto-desc">Ethical stance as MacIntyre's "narrative self"—coherent across time.</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#06b6d4">N</div>
+                    <div class="onto-name">Negotiation</div>
+                    <div class="onto-desc">Turn-based dialogue. Habermas Machine caucus mediation (Science, 2024).</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#ec4899">A</div>
+                    <div class="onto-name">Artifact</div>
+                    <div class="onto-desc">Generated output. May be "Fluid Text" (Greetham) not fixed file.</div>
+                </div>
+                <div class="onto-card">
+                    <div class="onto-sym" style="color:#a855f7">P</div>
+                    <div class="onto-name">Pattern</div>
+                    <div class="onto-desc">Recurring approach. Stored in "loci" (Yates) — spatial memory, not flat
+                        lists.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MORPHISMS SECTION -->
+        <section id="morphisms">
+            <h2>Morphisms (Relationships)</h2>
+            <p>Structure-preserving maps between ontology types, following Spivak's categorical framework and Turnbull's
+                "knowledge spaces." <a href="#ref-spivak">[Spivak 2012]</a> <a href="#ref-turnbull">[Turnbull 2000]</a>
+            </p>
+
+            <div class="morphism">
+                <div class="morphism-formula">presents : Scenario → Dilemma</div>
+                <div class="morphism-plain">A Scenario presents a Dilemma by situating abstract tension in Goodwin's
+                    "Professional Vision" context.</div>
+                <div class="morphism-example">Example: "Silenced Educator" scenario presents the dilemma of hiding
+                    platform addiction data.</div>
+            </div>
+
+            <div class="morphism">
+                <div class="morphism-formula">intends : Character → Plan</div>
+                <div class="morphism-plain">A Character intends a Plan with Bratmanian "inertia"—commitment that resists
+                    reconsideration.</div>
+                <div class="morphism-example">Example: "The Pragmatist" character commits to utilitarian cost-benefit
+                    analysis, filtering future options.</div>
+            </div>
+
+            <div class="morphism">
+                <div class="morphism-formula">scaffolds : Interface → Vision</div>
+                <div class="morphism-plain">An Interface scaffolds Professional Vision (Goodwin)—teaching user to "see"
+                    meaningful patterns.</div>
+                <div class="morphism-example">Example: Trail Olog uses spatial highlighting to reveal repository
+                    structure invisible in flat file lists.</div>
+            </div>
+
+            <div class="morphism">
+                <div class="morphism-formula">liberates : Participation × Consciência → Artifact</div>
+                <div class="morphism-plain">Participatory design with critical consciousness (Freire) liberates
+                    artifacts from "Banking Model" deposits.</div>
+                <div class="morphism-example">Example: Users co-create scenario dialogues rather than consuming
+                    designer-imposed "solutions."</div>
+            </div>
+        </section>
+
+        <!-- PATTERNS SECTION -->
+        <section id="patterns">
+            <h2>Pattern Definitions</h2>
+
+            <!-- hub-spoke -->
+            <article class="pattern-card" id="hub-spoke">
+                <div class="pattern-head">
+                    <div class="pattern-name">hub-spoke <span class="audit-badge audit-verified">✓ GROUNDED</span></div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#fef3c7;color:#b45309">HUB CENTER</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Central hub connects to multiple specialized destinations. Users navigate
+                        outward from a single point of origin, reducing cognitive load by providing clear pathways.
+                    </div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Information Architecture:</strong> Rosenfeld & Morville (2002, pp. 74-78) explicitly
+                            describe "Hub-and-Spoke" as "a series of linear paths radiating from a central index." <a
+                                href="#ref-rosenfeld">[Rosenfeld & Morville 2002]</a></p>
+                        <p><strong>Information Foraging:</strong> Pirolli & Card (1999) provide cognitive grounding.
+                            Users stay in "patch" (Spoke) until yield drops, then return to "between-patch" (Hub). <a
+                                href="#ref-pirolli">[Pirolli & Card 1999]</a></p>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Single entry point (HUB.html) with visual links to TILTH, CB-Box, Feed Loop.</dd>
+                        <dt>Known Limitation</dt>
+                        <dd>"Pogo-sticking" problem: users must return to center to switch tasks.</dd>
+                    </dl>
+                    <div class="pattern-refs">
+                        <div class="pattern-refs-title">Key Citations</div>
+                        <cite><a href="#ref-rosenfeld">Rosenfeld & Morville (2002). Information Architecture.
+                                O'Reilly.</a></cite>
+                        <cite><a href="#ref-pirolli">Pirolli & Card (1999). Information Foraging. Psych
+                                Review.</a></cite>
+                    </div>
+                </div>
+            </article>
+
+            <!-- visual-navigation -->
+            <article class="pattern-card" id="visual-navigation">
+                <div class="pattern-head">
+                    <div class="pattern-name">visual-navigation <span class="audit-badge audit-deep">🏛 DEEP</span>
+                    </div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#fef3c7;color:#b45309">HUB CENTER</span>
+                        <span class="zone-chip" style="background:#f3e8ff;color:#6d28d9">TRAIL OLOG</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Replace text lists with visual representations. Users comprehend spatial
+                        layouts faster than textual hierarchies, leveraging millions of years of hippocampal evolution.
+                    </div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding (Foundational HCI):</strong>
+                        <p><strong>Spatial Hypertext:</strong> Marshall & Shipman (Hypertext '93) show users create
+                            "implicit structure" through spatial arrangement. <a href="#ref-marshall93">[Marshall &
+                                Shipman 1993]</a></p>
+                        <p><strong>Zoomable UI:</strong> Bederson & Hollan (UIST '94) introduce Pad++, physics-based
+                            navigation. <a href="#ref-bederson">[Bederson & Hollan 1994]</a></p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: The Art of Memory</strong>
+                        <p><strong>Simonides & the Method of Loci:</strong> Frances Yates' <em>The Art of Memory</em>
+                            (1966) reveals that spatial memory is not a "parlor trick" but governed Western thought for
+                            centuries. The poet Simonides identified mangled bodies by recalling <em>where they
+                                sat</em>—"order is spatial." <a href="#ref-yates">[Yates 1966]</a></p>
+                        <p><strong>Hippocampal Place Cells:</strong> Neuroscience confirms that "place cells" and "grid
+                            cells" create a coordinate system for physical navigation that is <em>co-opted for
+                                conceptual navigation</em>. London taxi drivers (the "Knowledge") show physically larger
+                            hippocampi from spatial training.</p>
+                        <p><strong>Virtual Memory Palaces:</strong> Current VR research demonstrates users retain
+                            information better in navigable 3D environments than 2D arrays. The bottleneck is
+                            "unfamiliar environment" cognitive load—solved via procedural generation and
+                            "Worlds-in-Miniature" (WIM) interfaces.</p>
+                        <p><strong>Design Critical Insight:</strong> By forcing users to navigate data through flat,
+                            non-spatial interfaces (lists, spreadsheets, command lines), we are <em>fighting against
+                                evolutionary hardware</em>. We fail to utilize the brain's most powerful indexing
+                            engine.</p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Knowledge Spaces</strong>
+                        <p><strong>David Turnbull (2000):</strong> In <em>Masons, Tricksters and Cartographers</em>,
+                            Turnbull argues knowledge is not static but "constructed through movement, negotiation, and
+                            assemblage of local practices." <a href="#ref-turnbull">[Turnbull 2000]</a></p>
+                        <p><strong>The Cathedral Builders:</strong> Gothic cathedrals were built without central
+                            blueprints—they were "contingent assemblages" of local knowledge, coordinated by masons'
+                            "templates" (physical design patterns). The cathedral was a "knowledge space" that emerged
+                            from collaboration.</p>
+                        <p><strong>Design Implication:</strong> Our Trail Olog mirrors the cathedral site—a federation
+                            of local knowledges (files, patterns) coordinated not by master plan but by "boundary
+                            objects" (JSON data) and shared protocols.</p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Professional Vision</strong>
+                        <p><strong>Charles Goodwin (1994):</strong> "Professional Vision" argues that the ability to
+                            "see" meaningful patterns is socially learned, not physiological. An archaeologist sees a
+                            "post hole"; a layperson sees dirt. <a href="#ref-goodwin">[Goodwin 1994]</a></p>
+                        <p><strong>Design Implication:</strong> XAI fails if we just "show the data." We must
+                            <em>scaffold vision</em>—use "highlighting" (Goodwin's key concept) to draw attention to
+                            relevant "loci." The interface must teach the user the "coding scheme" in real-time.</p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2024-2025):</strong> Knoll (UIST '25) builds "Knowledge Ecosystems" with
+                        clip/module/link operations. ImaginationVellum (UIST '25) treats canvas as "Spatial Prompt." <a
+                            href="#ref-knoll">[Wang et al. 2025]</a>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Position elements on 2D canvas. Proximity encodes relationship ("loci" in mental palace).
+                        </dd>
+                        <dt>Source verification</dt>
+                        <dd><code>courage-trail-olog.html</code> renders repository as topographic terrain.</dd>
+                    </dl>
+                    <div class="pattern-refs">
+                        <div class="pattern-refs-title">Key Citations</div>
+                        <cite><a href="#ref-yates">Yates, F. (1966). The Art of Memory. U of Chicago Press.</a>
+                            <em>[Deep]</em></cite>
+                        <cite><a href="#ref-turnbull">Turnbull, D. (2000). Masons, Tricksters and Cartographers.
+                                Routledge.</a> <em>[Deep]</em></cite>
+                        <cite><a href="#ref-goodwin">Goodwin, C. (1994). Professional Vision. American Anthropologist
+                                96(3).</a> <em>[Deep]</em></cite>
+                        <cite><a href="#ref-marshall93">Marshall & Shipman (1993). Hypertext '93.</a></cite>
+                    </div>
+                </div>
+            </article>
+
+            <!-- tetrad-analysis -->
+            <article class="pattern-card" id="tetrad-analysis">
+                <div class="pattern-head">
+                    <div class="pattern-name">tetrad-analysis <span class="audit-badge audit-caution">⚠ CAUTION</span>
+                    </div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#dcfce7;color:#166534">TILTH TETRAD</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Apply McLuhan's Tetrad: What does it <em>Enhance</em>? <em>Obsolesce</em>?
+                        <em>Retrieve</em>? <em>Reverse</em> into?</div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Laws of Media:</strong> McLuhan & McLuhan (1988). <a href="#ref-mcluhan">[McLuhan
+                                1988]</a></p>
+                        <p><strong>Remediation:</strong> Bolter & Grusin (1999) bridge to digital interfaces. <a
+                                href="#ref-bolter">[Bolter & Grusin 1999]</a></p>
+                        <p class="void-note"><strong>Scale Transplant:</strong> We apply the Tetrad to UI features, not
+                            mass media—significant reduction from McLuhan's civilizational intent.</p>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Four-quadrant analysis interface. D-pad navigation makes abstract framework tangible.</dd>
+                        <dt>Source</dt>
+                        <dd><code>tetrad-pad.html</code> (2497 lines).</dd>
+                    </dl>
+                </div>
+            </article>
+
+            <!-- negotiation-simulation -->
+            <article class="pattern-card" id="negotiation-simulation">
+                <div class="pattern-head">
+                    <div class="pattern-name">negotiation-simulation <span class="audit-badge audit-edge">⚡ EDGE+</span>
+                    </div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#dbeafe;color:#1d4ed8">CB-BOX ENGINE</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Model dialogue between parties with competing interests. AI characters
+                        respond based on belief systems, enabling emergent negotiation dynamics.</div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Principled Negotiation:</strong> Fisher & Ury (1981) introduced BATNA. <a
+                                href="#ref-fisher">[Fisher & Ury 1981]</a></p>
+                        <p><strong>Virtual Humans:</strong> Gratch et al. (IEEE IS, 2002). <a href="#ref-gratch">[Gratch
+                                2002]</a></p>
+                        <p><strong>Multi-Agent:</strong> Kraus (2001). <a href="#ref-kraus">[Kraus 2001]</a></p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Tactical Empathy</strong>
+                        <p><strong>Chris Voss — Never Split the Difference:</strong> We are in a negotiation with the
+                            Algorithm/Business Logic. Ethical designers must act as "Hostage Negotiators" for the
+                            user—using "Tactical Empathy" to understand adversary constraints and disarm them. Refuse to
+                            "split the difference" on ethics. <a href="#ref-voss">[Voss 2016]</a></p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2024):</strong> <strong>Habermas Machine</strong> (Science 2024)
+                        demonstrates AI caucus mediation for democratic deliberation—AI synthesizes 1000 views into
+                        "Group Statements" preferred over human mediators. <a href="#ref-habermas">[Tessler et al.
+                            2024]</a>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Sequencer manages PLAN → THINK → SPEAK phases. 16 AI characters.</dd>
+                        <dt>Source</dt>
+                        <dd><code>cb-box.html</code> (4529 lines, 260 KB).</dd>
+                    </dl>
+                </div>
+            </article>
+
+            <!-- ai-characters -->
+            <article class="pattern-card" id="ai-characters">
+                <div class="pattern-head">
+                    <div class="pattern-name">ai-characters <span class="audit-badge audit-deep">🏛 DEEP</span></div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#dbeafe;color:#1d4ed8">CB-BOX ENGINE</span>
+                        <span class="zone-chip" style="background:#cffafe;color:#0891b2">DATA LAYER</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Create distinct AI personas with internal belief systems. Each character
+                        has values, priorities, and response patterns—emergent behavior from beliefs, not scripts.</div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding (Software):</strong>
+                        <p><strong>BDI Architecture:</strong> Rao & Georgeff (ICMAS 1995). <a href="#ref-rao">[Rao &
+                                Georgeff 1995]</a></p>
+                        <p><strong>Bartle Taxonomy:</strong> Bartle (1996) — Achievers, Explorers, Socialisers, Killers.
+                            <a href="#ref-bartle">[Bartle 1996]</a></p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: The Philosophy of Intention</strong>
+                        <p><strong>Michael Bratman (1987):</strong> <em>Intention, Plans, and Practical Reason</em> is
+                            the philosophical foundation of BDI. Bratman argues that the "Belief-Desire" model fails for
+                            complex agency. Desires are fleeting and contradictory—a robot might "desire" to clean the
+                            room AND save battery, oscillating without resolution. <a href="#ref-bratman">[Bratman
+                                1987]</a></p>
+                        <p><strong>Intention as Constraint:</strong> Bratman introduces <em>Intention</em> as a distinct
+                            mental state with two critical properties:</p>
+                        <p>• <strong>Inertia:</strong> Once formed, an intention resists reconsideration. The agent
+                            proceeds with the plan until significant problems arise.</p>
+                        <p>• <strong>Filter of Admissibility:</strong> Intentions constrain future deliberations. If I
+                            intend to go to Mars, I cannot simultaneously intend to stay on Earth.</p>
+                        <p><strong>Design Critical Insight:</strong> "Prompt Engineering" is a dead end because it
+                            relies on the <em>user</em> to maintain intention. True leverage embeds intention in the
+                            agent's architecture—plans with commitment strategies (Blind, Single-Minded, Open-Minded).
+                        </p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Learning BDI Agents</strong>
+                        <p><strong>Plan Library + Plan Generation:</strong> Modern BDI agents have pre-compiled
+                            "recipes" but must also generate new plans on the fly (A*, HTN). Critically, once generated,
+                            the agent <em>commits</em> with specified strategy.</p>
+                        <p><strong>Reflexion:</strong> Integration of ML into BDI allows "Learning Agents"—record
+                            execution context and outcome, refine guard conditions over time. Agents become not just
+                            intelligent but <em>wise</em>—accumulating practical reason.</p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2023-2025):</strong> Park et al.'s <strong>Generative Agents</strong> (UIST
+                        '23) demonstrate Memory/Reflection/Planning architecture. "Smallville" agents organized
+                        Valentine's party autonomously. <a href="#ref-park">[Park et al. 2023]</a>
+                    </div>
+
+                    <p class="void-note"><strong>Novel Synthesis:</strong> Our 16-character matrix (4 Bartle × 4 ethics)
+                        is original work.</p>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Character profiles with typed belief objects: values[], priorities[], triggers[].</dd>
+                        <dt>Source</dt>
+                        <dd><code>character-profiles.js</code> defines 16 belief systems.</dd>
+                    </dl>
+                    <div class="pattern-refs">
+                        <div class="pattern-refs-title">Key Citations</div>
+                        <cite><a href="#ref-bratman">Bratman, M. (1987). Intention, Plans, and Practical Reason. Harvard
+                                UP.</a> <em>[Deep]</em></cite>
+                        <cite><a href="#ref-rao">Rao & Georgeff (1995). ICMAS '95.</a></cite>
+                        <cite><a href="#ref-park">Park et al. (2023). Generative Agents. UIST '23.</a>
+                            <em>[Edge]</em></cite>
+                    </div>
+                </div>
+            </article>
+
+            <!-- phase-sequencing -->
+            <article class="pattern-card" id="phase-sequencing">
+                <div class="pattern-head">
+                    <div class="pattern-name">phase-sequencing <span class="audit-badge audit-edge">⚡ EDGE+</span></div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#dbeafe;color:#1d4ed8">CB-BOX ENGINE</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Structure interaction into distinct phases: PLAN → THINK → SPEAK. Each
+                        phase has different affordances, preventing premature commitment and encouraging reflection.
+                    </div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Reflective Practice:</strong> Schön (1983) — "reflect-in-action." <a
+                                href="#ref-schon">[Schön 1983]</a></p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2025):</strong> <strong>Magentic-UI</strong> (Microsoft) introduces
+                        Co-Planning, Action Guards ("human firewall"), Co-Tasking. Key insight: "Observability is the
+                        precursor to trust." <a href="#ref-magentic">[Magentic-UI 2025]</a>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>State machine with explicit phase transitions. UI changes affordances per phase.</dd>
+                    </dl>
+                </div>
+            </article>
+
+            <!-- belief-modeling -->
+            <article class="pattern-card" id="belief-modeling">
+                <div class="pattern-head">
+                    <div class="pattern-name">belief-modeling <span class="audit-badge audit-deep">🏛 DEEP</span></div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#cffafe;color:#0891b2">DATA LAYER</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Encode character positions as structured belief objects. Enables systematic
+                        prediction of responses and consistent character behavior across scenarios.</div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Moral Foundations:</strong> Haidt & Graham (2007) — Care, Fairness, Loyalty,
+                            Authority, Sanctity. <a href="#ref-haidt">[Haidt & Graham 2007]</a></p>
+                        <p><strong>Value Sensitive Design:</strong> Friedman et al. (2006). <a
+                                href="#ref-friedman">[Friedman et al. 2006]</a></p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Virtue Ethics</strong>
+                        <p><strong>Alasdair MacIntyre — After Virtue (1981):</strong> Modern morality is fragmented
+                            because we've lost the <em>teleological</em> view of human life—the idea that life has a
+                            purpose (telos). <a href="#ref-macintyre">[MacIntyre 1981]</a></p>
+                        <p><strong>Virtue-Guided Design:</strong> We must embed virtues into the system:</p>
+                        <p>• <strong>Temperance:</strong> Design interfaces that help users <em>stop</em> using them
+                            ("stopping cues" instead of infinite scroll).</p>
+                        <p>• <strong>Solidarity:</strong> Algorithms that prioritize community connection over
+                            polarization.</p>
+                        <p><strong>The Narrative Self:</strong> MacIntyre argues identity is constituted through
+                            narrative. Our characters are not just "belief bundles" but <em>narrative agents</em> whose
+                            coherence comes from storytelling across time.</p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Freire & Conscientização</strong>
+                        <p><strong>Paulo Freire — Pedagogy of the Oppressed (1970):</strong> The "Banking Model" of
+                            education deposits knowledge into passive students. Design equivalently deposits "solutions"
+                            into passive users. <a href="#ref-freire">[Freire 1970]</a></p>
+                        <p><strong>Conscientização (Critical Consciousness):</strong> The user is not a "tester" but a
+                            <em>co-creator</em> of reality. Participatory Design rooted in Freire makes design a
+                            "political act" of liberation.</p>
+                        <p><strong>Theatre of the Oppressed:</strong> Users act out interactions, identify moments of
+                            oppression (confusing portal, biased algorithm), and "rehearse" solutions before code is
+                            written.</p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2024):</strong> Dark Patterns Ontology (Gray 2024) formalizes manipulative
+                        design as "mechanisms that exploit cognitive biases." <a href="#ref-darkpatterns">[Gray et al.
+                            2024]</a>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>JSON objects with values[], priorities[], triggers[], communication_style.</dd>
+                    </dl>
+                    <div class="pattern-refs">
+                        <div class="pattern-refs-title">Key Citations</div>
+                        <cite><a href="#ref-macintyre">MacIntyre, A. (1981). After Virtue. U of Notre Dame Press.</a>
+                            <em>[Deep]</em></cite>
+                        <cite><a href="#ref-freire">Freire, P. (1970). Pedagogy of the Oppressed. Continuum.</a>
+                            <em>[Deep]</em></cite>
+                        <cite><a href="#ref-haidt">Haidt & Graham (2007). Social Justice Research.</a></cite>
+                    </div>
+                </div>
+            </article>
+
+            <!-- case-study -->
+            <article class="pattern-card" id="case-study">
+                <div class="pattern-head">
+                    <div class="pattern-name">case-study <span class="audit-badge audit-verified">✓ GROUNDED</span>
+                    </div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#fee2e2;color:#dc2626">8 DILEMMAS</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Deep-dive into specific examples. Case studies combine narrative essay,
+                        interactive scenarios, and actionable tools—the "thick description" of ethical design practice.
+                    </div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding:</strong>
+                        <p><strong>Thick Description:</strong> Geertz (1973, pp. 3-30). <a href="#ref-geertz">[Geertz
+                                1973]</a></p>
+                        <p><strong>Case-Based Reasoning:</strong> Kolodner (1993). <a href="#ref-kolodner">[Kolodner
+                                1993]</a></p>
+                        <p><strong>Ethics-Focused Design:</strong> Gray et al. (CHI '21). <a href="#ref-gray2021">[Gray
+                                et al. 2021]</a></p>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>Each dilemma = folder with essay.html + scenarios + tools.</dd>
+                        <dt>Source</dt>
+                        <dd>8 episode folders: <code>01-silenced-educator/</code> through
+                            <code>08-values-treasurer/</code>.</dd>
+                    </dl>
+                </div>
+            </article>
+
+            <!-- trail-awareness -->
+            <article class="pattern-card" id="trail-awareness">
+                <div class="pattern-head">
+                    <div class="pattern-name">trail-awareness <span class="audit-badge audit-edge">⚡ EDGE+</span></div>
+                    <div class="pattern-zones">
+                        <span class="zone-chip" style="background:#f3e8ff;color:#6d28d9">TRAIL OLOG</span>
+                    </div>
+                </div>
+                <div class="pattern-body">
+                    <div class="pattern-def">Tools that observe and visualize the creator's working trail. Meta-level
+                        insight into process—the system becomes conscious of its own evolution.</div>
+
+                    <div class="pattern-grounding">
+                        <strong>Academic Grounding (HCI):</strong>
+                        <p><strong>Edit Wear:</strong> Hill et al. (CHI '92). <a href="#ref-hill">[Hill et al. 1992]</a>
+                        </p>
+                        <p><strong>Footprints:</strong> Wexelblat & Maes (CHI '99). <a href="#ref-wexelblat">[Wexelblat
+                                & Maes 1999]</a></p>
+                        <p><strong>History Flow:</strong> Viégas & Wattenberg (CHI '04). <a href="#ref-viegas">[Viégas &
+                                Wattenberg 2004]</a></p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Secondary Orality & Fluid Text</strong>
+                        <p><strong>Walter Ong — Orality and Literacy (1982):</strong> Electronic media bring "Secondary
+                            Orality"—return to immediacy, communalism, and fluidity of oral culture, sustained by
+                            invisible machinery of print/code. <a href="#ref-ong">[Ong 1982]</a></p>
+                        <p><strong>Prompt Engineering as Oral Skill:</strong> Like Homer's "rosy-fingered dawn," we use
+                            formulas ("Let's think step by step"). LLMs are aggregative (adding ideas) not analytical
+                            (subordinating). AI is obsessed with "context window"—the immediate situation.</p>
+                        <p><strong>The "Mirage" vs. "Hallucination":</strong> AI "errors" aren't visual defects; they're
+                            <em>oral performances</em>. The griot embellishes to keep story alive; the LLM prioritizes
+                            "flow" over "fact."</p>
+                    </div>
+
+                    <div class="leverage-note">
+                        <strong>Deep Leverage: Fluid Text</strong>
+                        <p><strong>D.C. Greetham — Textual Scholarship:</strong> Distinguishes "Work" (abstract entity)
+                            from "Text" (material instance). Texts are inherently "Fluid"—constant revision and
+                            variation. <a href="#ref-greetham">[Greetham 1994]</a></p>
+                        <p><strong>Designer vs. Git Impedance Mismatch:</strong> Designers operate in "Fluid Text"
+                            paradigm (continuous evolution of layers). Git operates on DAG (immutable snapshots).
+                            Designers want to "save a version"; Git asks to "commit a hash."</p>
+                        <p><strong>Design Implication:</strong> Stop forcing designers to learn Git. Build "Textual
+                            Scholarship" tools—track genetic evolution of design, acknowledge "variant readings" that
+                            may coexist for different contexts (A/B testing, locales).</p>
+                    </div>
+
+                    <div class="edge-note">
+                        <strong>Edge Scout (2024-2025):</strong> <strong>Persist</strong> (EuroVis '24) reifies visual
+                        interactions into reproducible Pandas code. <strong>Loops</strong> (TVCG '25) visualizes
+                        notebook evolution—trace why results changed. <a href="#ref-persist">[Cutler et al. 2024]</a>
+                    </div>
+
+                    <dl class="pattern-meta">
+                        <dt>Mechanism</dt>
+                        <dd>JSON data describes repository. HTML visualization renders terrain.</dd>
+                        <dt>Source</dt>
+                        <dd><code>courage-trail-olog.html</code> + <code>courage-trail-data.json</code>.</dd>
+                    </dl>
+                    <div class="pattern-refs">
+                        <div class="pattern-refs-title">Key Citations</div>
+                        <cite><a href="#ref-ong">Ong, W. (1982). Orality and Literacy. Routledge.</a>
+                            <em>[Deep]</em></cite>
+                        <cite><a href="#ref-greetham">Greetham, D.C. (1994). Textual Scholarship. Garland.</a>
+                            <em>[Deep]</em></cite>
+                        <cite><a href="#ref-hill">Hill et al. (1992). Edit Wear. CHI '92.</a></cite>
+                        <cite><a href="#ref-persist">Cutler et al. (2024). Persist. EuroVis '24.</a>
+                            <em>[Edge]</em></cite>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- BIBLIOGRAPHY -->
+        <section id="bibliography"
+            style="margin-top: 3rem; border-top: 1px solid var(--card-border); padding-top: 2rem;">
+            <h2>Works Cited (Archival + Edge + Deep Leverage)</h2>
+            <div style="font-size: 0.72rem; color: var(--ink-secondary); columns: 1; line-height: 1.65;">
+                <p style="font-weight:600;margin-top:1rem;">Foundational Literature</p>
+                <p id="ref-bartle">Bartle, R. (1996). Hearts, Clubs, Diamonds, Spades. Journal of MUD Research 1(1).</p>
+                <p id="ref-bederson">Bederson, B.B. & Hollan, J.D. (1994). Pad++. UIST '94, pp. 17-26.</p>
+                <p id="ref-bolter">Bolter, J.D. & Grusin, R. (1999). Remediation. MIT Press.</p>
+                <p id="ref-fisher">Fisher, R. & Ury, W. (1981). Getting to Yes. Penguin.</p>
+                <p id="ref-friedman">Friedman, B. et al. (2006). Value Sensitive Design. M.E. Sharpe.</p>
+                <p id="ref-geertz">Geertz, C. (1973). The Interpretation of Cultures. Basic Books.</p>
+                <p id="ref-gratch">Gratch, J. et al. (2002). Creating Interactive Virtual Humans. IEEE IS 17(4).</p>
+                <p id="ref-gray2021">Gray, C.M. et al. (2021). UX Practitioners' Conception of Design Methods. CHI '21.
+                </p>
+                <p id="ref-haidt">Haidt, J. & Graham, J. (2007). Social Justice Research 20.</p>
+                <p id="ref-hill">Hill, W.C. et al. (1992). Edit Wear and Read Wear. CHI '92.</p>
+                <p id="ref-kolodner">Kolodner, J.L. (1993). Case-Based Reasoning. Morgan Kaufmann.</p>
+                <p id="ref-kraus">Kraus, S. (2001). Strategic Negotiation in Multiagent Environments. MIT Press.</p>
+                <p id="ref-marshall93">Marshall, C.C. & Shipman, F.M. (1993). Hypertext '93.</p>
+                <p id="ref-mcluhan">McLuhan, M. & McLuhan, E. (1988). Laws of Media. U of Toronto Press.</p>
+                <p id="ref-pirolli">Pirolli, P. & Card, S.K. (1999). Information Foraging. Psych Review 106(4).</p>
+                <p id="ref-rao">Rao, A.S. & Georgeff, M.P. (1995). BDI Agents. ICMAS '95.</p>
+                <p id="ref-rosenfeld">Rosenfeld, L. & Morville, P. (2002). Information Architecture. O'Reilly.</p>
+                <p id="ref-schon">Schön, D. (1983). The Reflective Practitioner. Basic Books.</p>
+                <p id="ref-spivak">Spivak, D.I. (2012). Ologs. PLoS ONE 7(1): e24274.</p>
+                <p id="ref-viegas">Viégas, F.B. & Wattenberg, M. (2004). History Flow. CHI '04.</p>
+                <p id="ref-wexelblat">Wexelblat, A. & Maes, P. (1999). Footprints. CHI '99.</p>
+
+                <p style="font-weight:600;margin-top:1.5rem;">Deep Leverage Sources</p>
+                <p id="ref-bratman">Bratman, M. (1987). Intention, Plans, and Practical Reason. Harvard UP.</p>
+                <p id="ref-freire">Freire, P. (1970). Pedagogy of the Oppressed. Continuum.</p>
+                <p id="ref-goodwin">Goodwin, C. (1994). Professional Vision. American Anthropologist 96(3), pp. 606-633.
+                </p>
+                <p id="ref-greetham">Greetham, D.C. (1994). Textual Scholarship: An Introduction. Garland.</p>
+                <p id="ref-macintyre">MacIntyre, A. (1981). After Virtue. U of Notre Dame Press.</p>
+                <p id="ref-ong">Ong, W. (1982). Orality and Literacy. Routledge.</p>
+                <p id="ref-saito">Saito, Y. (2007). Everyday Aesthetics. Oxford UP.</p>
+                <p id="ref-turnbull">Turnbull, D. (2000). Masons, Tricksters and Cartographers. Routledge.</p>
+                <p id="ref-voss">Voss, C. (2016). Never Split the Difference. Harper.</p>
+                <p id="ref-yates">Yates, F. (1966). The Art of Memory. U of Chicago Press.</p>
+
+                <p style="font-weight:600;margin-top:1.5rem;">Edge Scout (2022-2025)</p>
+                <p id="ref-darkpatterns">Gray, C.M. et al. (2024). Ontology of Dark Patterns. CHI '24.</p>
+                <p id="ref-habermas">Tessler, M.H. et al. (2024). AI for Democratic Deliberation. Science.</p>
+                <p id="ref-knoll">Wang, Y. et al. (2025). Knoll: Knowledge Ecosystem. UIST '25.</p>
+                <p id="ref-loops">Loops Team. (2025). Visualizing Notebook History. IEEE TVCG.</p>
+                <p id="ref-magentic">Microsoft Research. (2025). Magentic-UI.</p>
+                <p id="ref-park">Park, J.S. et al. (2023). Generative Agents. UIST '23.</p>
+                <p id="ref-persist">Cutler, Z. et al. (2024). Persist. EuroVis '24.</p>
+                <p id="ref-vellum">Microsoft Research. (2025). ImaginationVellum. UIST '25.</p>
+            </div>
+        </section>
+
+        <footer>
+            Part of the <a href="courage-trail-olog.html">Role Deck Trail Olog</a> knowledge infrastructure.<br>
+            Audited: Void Guardian + Edge Scout + Deep Leverage · December 2025<br>
+            <span style="font-size:0.7rem; opacity:0.7;">"The front door is locked. Break the basement window." —
+                Undaunted Courage</span>
+        </footer>
+    </div>
+
+    <script>
+        const toggle = document.getElementById('theme-toggle');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDark = localStorage.getItem('theme') === 'dark' || (localStorage.getItem('theme') === null && prefersDark);
+
+        function setTheme(dark) {
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            toggle.textContent = dark ? '☀' : '☽';
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+            isDark = dark;
+        }
+
+        setTheme(isDark);
+        toggle.onclick = () => setTheme(!isDark);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Character Gallery</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.06;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .header-meta {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 3em;
+            letter-spacing: 0.1em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .gallery {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 30px;
+        }
+
+        .character-card {
+            background: rgba(90, 108, 87, 0.08);
+            border: 2px solid #5a6c57;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+
+        .character-card:hover {
+            background: rgba(90, 108, 87, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(90, 108, 87, 0.3);
+        }
+
+        .avatar {
+            font-size: 3em;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(90, 108, 87, 0.2);
+            border-radius: 50%;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .episode-tag {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7em;
+            letter-spacing: 0.15em;
+            opacity: 0.5;
+            margin-bottom: 5px;
+        }
+
+        .name {
+            font-size: 1.5em;
+            color: #5a6c57;
+            margin-bottom: 3px;
+        }
+
+        .role {
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .identity-box {
+            background: rgba(90, 108, 87, 0.15);
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-left: 3px solid #5a6c57;
+        }
+
+        .identity-label {
+            font-size: 0.75em;
+            letter-spacing: 0.1em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .identity-value {
+            font-size: 1.1em;
+            color: #5a6c57;
+        }
+
+        .radar-container {
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .score-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+
+        .score-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+
+        .score-bar-container {
+            height: 6px;
+            background: rgba(90, 108, 87, 0.2);
+            margin-bottom: 3px;
+        }
+
+        .score-bar {
+            height: 100%;
+            background: #5a6c57;
+            transition: width 0.5s;
+        }
+
+        .score-value {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .choice-box {
+            background: rgba(138, 90, 90, 0.15);
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 3px solid #8a5a5a;
+            font-size: 0.9em;
+        }
+
+        .choice-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #8a5a5a;
+            margin-bottom: 8px;
+        }
+
+        .drives-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(90, 108, 87, 0.3);
+        }
+
+        .drive-item {
+            margin-bottom: 10px;
+        }
+
+        .drive-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            opacity: 0.5;
+        }
+
+        .drive-value {
+            font-size: 0.9em;
+            opacity: 0.85;
+        }
+
+        .outcome-box {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 12px 15px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            border-left: 3px solid #5a6c57;
+        }
+
+        .outcome-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #5a6c57;
+            margin-bottom: 5px;
+        }
+
+        .episode-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            text-decoration: none;
+            font-size: 0.9em;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+        }
+
+        .episode-link:hover {
+            background: #3a4838;
+        }
+
+        .nav-footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid #5a6c57;
+            margin-top: 40px;
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            border: 1px solid #5a6c57;
+        }
+
+        .nav-link:hover {
+            background: rgba(90, 108, 87, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grain"></div>
+
+    <header>
+        <div class="header-meta">TILTH INVESTIGATION</div>
+        <h1>CHARACTER GALLERY</h1>
+        <div class="subtitle">
+            Eight practitioners navigating ethical dilemmas across the Agronica ecosystem.
+            Each chose differently. Each paid a price.
+        </div>
+    </header>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="nav-footer">
+        <a href="tilth-investigation.html" class="nav-link">← Case Files</a>
+        <a href="cb-box.html" class="nav-link">Practice Negotiation →</a>
+    </div>
+
+    <script src="character-profiles.js"></script>
+    <script>
+        const radarLabels = [
+            'Openness', 'Conscientiousness', 'Extraversion',
+            'Agreeableness', 'Neuroticism', 'Logic',
+            'Empathy', 'Authority', 'Risk',
+            'Uncertainty', 'Decisiveness'
+        ];
+
+        function createCard(char) {
+            const card = document.createElement('div');
+            card.className = 'character-card';
+
+            const radarData = [
+                char.radar_metrics.openness,
+                char.radar_metrics.conscientiousness,
+                char.radar_metrics.extraversion,
+                char.radar_metrics.agreeableness,
+                char.radar_metrics.neuroticism,
+                char.radar_metrics.logic,
+                char.radar_metrics.empathy,
+                char.radar_metrics.authority,
+                char.radar_metrics.risk,
+                char.radar_metrics.uncertainty,
+                char.radar_metrics.decisiveness
+            ];
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="avatar">${char.photo}</div>
+                    <div class="header-info">
+                        <div class="episode-tag">EPISODE ${String(char.episode).padStart(2, '0')} — ${char.app}</div>
+                        <div class="name">${char.name}</div>
+                        <div class="role">${char.role}</div>
+                    </div>
+                </div>
+                
+                <div class="identity-box">
+                    <div class="identity-label">Identity</div>
+                    <div class="identity-value">${char.identity}</div>
+                </div>
+                
+                <div class="radar-container">
+                    <canvas id="radar-${char.episode}"></canvas>
+                </div>
+                
+                <div class="scores-grid">
+                    <div class="score-item">
+                        <div class="score-label">Ethical Awareness</div>
+                        <div class="score-bar-container"><div class="score-bar" style="width: ${char.ethical_awareness_score * 100}%"></div></div>
+                        <div class="score-value">${(char.ethical_awareness_score * 100).toFixed(0)}%</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Ethical Action</div>
+                        <div class="score-bar-container"><div class="score-bar" style="width: ${char.ethical_action_score * 100}%"></div></div>
+                        <div class="score-value">${(char.ethical_action_score * 100).toFixed(0)}%</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Impact Achieved</div>
+                        <div class="score-bar-container"><div class="score-bar" style="width: ${char.impact_score * 100}%"></div></div>
+                        <div class="score-value">${(char.impact_score * 100).toFixed(0)}%</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Career Risk Taken</div>
+                        <div class="score-bar-container"><div class="score-bar" style="width: ${char.career_risk_taken * 100}%"></div></div>
+                        <div class="score-value">${(char.career_risk_taken * 100).toFixed(0)}%</div>
+                    </div>
+                </div>
+                
+                <div class="choice-box">
+                    <div class="choice-label">What They Chose</div>
+                    ${char.what_they_chose}
+                </div>
+                
+                <div class="drives-section">
+                    <div class="drive-item">
+                        <div class="drive-label">Core Drive</div>
+                        <div class="drive-value">${char.core_drive}</div>
+                    </div>
+                    <div class="drive-item">
+                        <div class="drive-label">Vulnerability</div>
+                        <div class="drive-value">${char.vulnerability}</div>
+                    </div>
+                </div>
+                
+                <div class="outcome-box">
+                    <div class="outcome-label">Outcome</div>
+                    ${char.outcome}
+                </div>
+                
+                <a href="episode-${String(char.episode).padStart(2, '0')}-complete.html" class="episode-link">
+                    → PLAY EPISODE ${String(char.episode).padStart(2, '0')}
+                </a>
+            `;
+
+            return { card, radarData, episodeNum: char.episode };
+        }
+
+        function initGallery() {
+            const gallery = document.getElementById('gallery');
+            const charts = [];
+
+            feedLoopCharacters.forEach(char => {
+                const { card, radarData, episodeNum } = createCard(char);
+                gallery.appendChild(card);
+
+                // Create radar chart after card is in DOM
+                setTimeout(() => {
+                    const ctx = document.getElementById(`radar-${episodeNum}`).getContext('2d');
+                    new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: radarLabels,
+                            datasets: [{
+                                label: char.name,
+                                data: radarData,
+                                backgroundColor: 'rgba(90, 108, 87, 0.2)',
+                                borderColor: 'rgba(90, 108, 87, 0.8)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#5a6c57',
+                                pointRadius: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    min: 0,
+                                    max: 5,
+                                    ticks: { display: false },
+                                    grid: { color: 'rgba(90, 108, 87, 0.2)' },
+                                    angleLines: { color: 'rgba(90, 108, 87, 0.2)' },
+                                    pointLabels: {
+                                        color: '#e8e4d8',
+                                        font: { size: 9 }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }, 100);
+            });
+        }
+
+        initGallery();
+    </script>
+</body>
+
+</html>

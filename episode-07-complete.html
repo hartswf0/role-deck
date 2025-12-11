@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Episode 07: Harvest Watch</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .opening-frame {
+            width: 100%;
+            aspect-ratio: 2.35/1;
+            border: 2px solid #5a6c57;
+            background: #000;
+        }
+
+        .section-title {
+            font-size: 0.9em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .continue-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 40px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            cursor: pointer;
+        }
+
+        .video-container {
+            background: #000;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5a6c57;
+        }
+
+        .video-placeholder h3 {
+            color: #5a6c57;
+        }
+
+        .brief-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .brief-title {
+            font-size: 3em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .brief-body h4 {
+            color: #5a6c57;
+            margin: 30px 0 15px;
+        }
+
+        .brief-body ul {
+            margin: 20px 0 20px 30px;
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(90, 108, 87, 0.05);
+            padding: 40px;
+            border: 1px solid #5a6c57;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .scenario-constraint {
+            color: #8a5a5a;
+            border-top: 1px solid rgba(138, 90, 90, 0.3);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .response-option {
+            background: rgba(90, 108, 87, 0.08);
+            border: 2px solid #5a6c57;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .response-option:hover {
+            background: rgba(90, 108, 87, 0.15);
+        }
+
+        .response-option.selected {
+            background: rgba(90, 108, 87, 0.25);
+        }
+
+        .response-identity {
+            color: #5a6c57;
+            font-weight: 600;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.4;
+        }
+
+        .results-container {
+            max-width: 700px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .results-body {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .what-happened {
+            background: rgba(138, 90, 90, 0.2);
+            padding: 30px;
+            border-left: 4px solid #8a5a5a;
+            margin: 30px 0;
+        }
+
+        .what-happened h4 {
+            color: #8a5a5a;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .nav-links a {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            border: 1px solid #5a6c57;
+        }
+
+        .simulator-toggle {
+            display: block;
+            width: 100%;
+            background: rgba(90, 108, 87, 0.15);
+            color: #5a6c57;
+            padding: 18px;
+            border: 3px solid #5a6c57;
+            cursor: pointer;
+        }
+
+        .simulator-container {
+            display: none;
+            margin-top: 20px;
+            border: 3px solid #5a6c57;
+            height: 700px;
+        }
+
+        .simulator-container.active {
+            display: block;
+        }
+
+        .simulator-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grain"></div>
+
+    <div class="section" id="section-opening">
+        <div class="section-content">
+            <div class="section-title">EPISODE 07 / HARVEST WATCH</div>
+            <iframe src="opening-07-harvest-watch.html" class="opening-frame" frameborder="0"></iframe>
+            <button class="continue-btn" onclick="goToSection('scenario')">→ CONTINUE</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-scenario">
+        <div class="section-content">
+            <div class="section-title">SCENARIO</div>
+            <button class="simulator-toggle" onclick="toggleSimulator('sim')">⚡ PRACTICE NEGOTIATION</button>
+            <div id="sim" class="simulator-container"><iframe class="simulator-iframe"
+                    src="cb-box.html?scenario=amit-desai-migrantharvest"></iframe></div>
+            <div class="video-container" style="margin-top:30px">
+                <div class="video-placeholder">
+                    <h3>Film: The Conditional Person</h3>
+                </div>
+            </div>
+            <button class="continue-btn" onclick="goToSection('brief')">→ BRIEF</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-brief">
+        <div class="section-content">
+            <div class="brief-content">
+                <div class="brief-title">HARVEST WATCH</div>
+                <div class="brief-body">
+                    <h4>The System</h4>
+                    <p><strong>MigrantHarvest</strong> is a "workforce efficiency" platform that tracks agricultural
+                        workers' location, productivity, and breaks in real-time.</p>
+                    <h4>The Dilemma</h4>
+                    <p>Amit Desai built "Health Check Features" that the company is repurposing as surveillance. His
+                        biometric tools become productivity monitoring. His location features become tracking. His
+                        manager says this is "operational efficiency."</p>
+                    <h4>Why It Matters</h4>
+                    <p>Surveillance creep turns benevolent features into control mechanisms. Workers on precarious visas
+                        cannot consent freely—refusing monitoring means losing their job and legal status.</p>
+                </div>
+                <button class="continue-btn" onclick="goToSection('quiz')">→ CHOOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="section-quiz">
+        <div class="section-content">
+            <div class="quiz-container" id="quiz-interface">
+                <div class="scenario-box">
+                    <p>You are Amit Desai, Senior Engineer. Your health monitoring features are being repurposed for
+                        surveillance. Your manager says: "Same data, different dashboard. It's just efficiency."</p>
+                    <div class="scenario-constraint">⚠️ You designed these systems. Your name is on the code. Refusal
+                        means someone else implements it anyway.</div>
+                </div>
+                <div id="response-options"></div>
+                <button class="submit-btn" id="submit-btn" onclick="submitResponse()" disabled>→ SEE OUTCOME</button>
+            </div>
+            <div class="results-container" id="results-interface"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenario = {
+            responses: [
+                { label: "Refuse to build the surveillance dashboard and document the repurposing", identity: "Documented Objector", careerRisk: 0.6, whatHappened: "You refuse and email your concerns. Manager assigns it to a junior engineer. The dashboard launches. Your documentation becomes evidence when workers file a complaint. You're moved to an unrelated project.", systemicAnalysis: "Individual refusal doesn't prevent harm—it just shifts who implements it. Your documentation mattered for accountability, not prevention." },
+                { label: "Build the dashboard but add technical safeguards that limit surveillance granularity", identity: "Covert Limiter", careerRisk: 0.4, whatHappened: "You add 15-minute location averaging and remove second-by-second tracking. Manager doesn't notice. Workers get some protection. A year later, new manager discovers the limitations and demands full granularity. You're no longer on the project.", systemicAnalysis: "Technical resistance buys time but not change. The system eventually gets what it wants; sabotage only delays." },
+                { label: "Alert worker advocacy groups to the surveillance capabilities before launch", identity: "External Alerter", careerRisk: 0.85, whatHappened: "Farmworker groups publicize the surveillance. News coverage embarrasses the company. Launch is delayed for 'privacy review.' You're identified and terminated. But: new policies require worker consent for location tracking.", systemicAnalysis: "External pressure created policy change internal objection couldn't. Your job was the price; workers got protections." },
+                { label: "Propose an alternative 'efficiency' system that doesn't require individual tracking", identity: "Alternative Designer", careerRisk: 0.3, whatHappened: "You propose aggregate productivity metrics instead of individual surveillance. Manager is intrigued—it's cheaper. Pilot launches with aggregate data. Works well. But later, under pressure to identify 'low performers,' individual tracking is added anyway.", systemicAnalysis: "Alternative designs can shift direction temporarily. But business pressure for individual control eventually overrides collective approaches." },
+                { label: "Complete the work as assigned, treating it as a technical task", identity: "Technical Executor", careerRisk: 0.05, whatHappened: "You build the dashboard efficiently. It launches. Workers report feeling constantly watched. Bathroom breaks decrease. Heat injuries increase as workers avoid appearing 'idle.' Three years later, you're promoted. You don't mention this project in interviews.", systemicAnalysis: "Technical execution without ethical engagement enables harm at scale. Your code runs; workers suffer; you advance. This is how systems reproduce." }
+            ]
+        };
+        let selected = null;
+        function initQuiz() {
+            document.getElementById('response-options').innerHTML = scenario.responses.map((r, i) => `<div class="response-option" onclick="selectResponse(${i})"><div>${r.label}</div><div class="response-identity">${r.identity}</div></div>`).join('');
+        }
+        function selectResponse(i) { selected = i; document.querySelectorAll('.response-option').forEach((o, j) => o.classList.toggle('selected', j === i)); document.getElementById('submit-btn').disabled = false; }
+        function submitResponse() {
+            if (selected === null) return;
+            const r = scenario.responses[selected];
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-interface').innerHTML = `<div class="results-title">${r.identity}</div><div class="results-body"><p>Career Risk: ${(r.careerRisk * 100).toFixed(0)}%</p></div><div class="what-happened"><h4>What Happened:</h4><p>${r.whatHappened}</p></div><div class="results-body"><h4>Analysis:</h4><p>${r.systemicAnalysis}</p></div><div class="nav-links"><a href="tilth-investigation.html">← Cases</a><a href="episode-08-complete.html">Next →</a></div>`;
+            document.getElementById('results-interface').style.display = 'block';
+        }
+        function goToSection(s) { document.getElementById(`section-${s}`).scrollIntoView({ behavior: 'smooth' }); }
+        function toggleSimulator(id) { document.getElementById(id).classList.toggle('active'); }
+        initQuiz();
+    </script>
+</body>
+
+</html>

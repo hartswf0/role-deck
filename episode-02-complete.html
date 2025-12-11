@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Episode 02: First Fruit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+        
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" /></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.5"/></svg>');
+        }
+        
+        /* Flow Sections */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        /* Opening Sequence Section */
+        .opening-frame {
+            width: 100%;
+            aspect-ratio: 2.35 / 1;
+            border: 2px solid #5a6c57;
+            background: #000;
+        }
+        
+        .section-title {
+            font-size: 0.9em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .continue-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 40px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1em;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .continue-btn:hover {
+            background: #3a4838;
+        }
+        
+        /* Scenario Video Section */
+        .video-container {
+            background: #000;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5a6c57;
+            position: relative;
+        }
+        
+        .video-placeholder {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .video-placeholder h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+        
+        .video-prompt {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 4px solid #5a6c57;
+            font-size: 0.95em;
+            line-height: 1.8;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .video-prompt h4 {
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+        
+        /* Technical Brief Section */
+        .brief-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .brief-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .brief-title {
+            font-size: 3em;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+        
+        .brief-subtitle {
+            font-size: 1.2em;
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+        }
+        
+        .brief-body {
+            font-size: 1.05em;
+            line-height: 1.9;
+        }
+        
+        .brief-body h4 {
+            color: #5a6c57;
+            margin: 30px 0 15px;
+            font-size: 1.3em;
+        }
+        
+        .brief-body p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .brief-body ul {
+            margin: 20px 0 20px 30px;
+            line-height: 2;
+        }
+        
+        .brief-body strong {
+            color: #5a6c57;
+        }
+        
+        /* Quiz Section */
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(90, 108, 87, 0.05);
+            padding: 40px;
+            border: 1px solid #5a6c57;
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .quiz-title {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .quiz-subtitle {
+            font-size: 0.9em;
+            opacity: 0.6;
+            letter-spacing: 0.1em;
+        }
+        
+        .scenario-box {
+            background: rgba(0,0,0,0.3);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+        
+        .scenario-context {
+            font-size: 0.95em;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        
+        .scenario-text {
+            font-size: 1.05em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-constraint {
+            font-size: 0.9em;
+            color: #8a5a5a;
+            border-top: 1px solid rgba(138, 90, 90, 0.3);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        .responses-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #5a6c57;
+        }
+        
+        .response-option {
+            background: rgba(90, 108, 87, 0.08);
+            border: 2px solid #5a6c57;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .response-option:hover {
+            background: rgba(90, 108, 87, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .response-option.selected {
+            background: rgba(90, 108, 87, 0.25);
+            border-color: #5a6c57;
+            box-shadow: 0 4px 15px rgba(90, 108, 87, 0.3);
+        }
+        
+        .response-label {
+            font-size: 1.05em;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .response-meta {
+            font-size: 0.85em;
+            opacity: 0.6;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(90, 108, 87, 0.3);
+        }
+        
+        .response-identity {
+            color: #5a6c57;
+            font-weight: 600;
+        }
+        
+        .response-consequence {
+            margin-top: 5px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1em;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.3s;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            background: #3a4838;
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        /* Results Section */
+        .results-container {
+            max-width: 700px;
+            margin: 0 auto;
+            display: none;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #5a6c57;
+        }
+        
+        .results-title {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #5a6c57;
+        }
+        
+        .results-body {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+        
+        .results-body h4 {
+            font-size: 1.3em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+        
+        .results-body p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .what-happened {
+            background: rgba(138, 90, 90, 0.2);
+            padding: 30px;
+            border-left: 4px solid #8a5a5a;
+            margin: 30px 0;
+        }
+        
+        .what-happened h4 {
+            color: #8a5a5a;
+            margin-bottom: 15px;
+        }
+        
+        .nav-links {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #5a6c57;
+        }
+        
+        .nav-links a {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            border: 1px solid #5a6c57;
+            transition: all 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(90, 108, 87, 0.3);
+        }
+        
+        /* Simulator Embed */
+        .simulator-section {
+            margin-top: 30px;
+            border-top: 2px dashed #5a6c57;
+            padding-top: 30px;
+        }
+        
+        .simulator-toggle {
+            display: block;
+            width: 100%;
+            background: rgba(90, 108, 87, 0.15);
+            color: #5a6c57;
+            text-align: center;
+            padding: 18px;
+            text-decoration: none;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            border: 3px solid #5a6c57;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            font-family: 'Oswald', sans-serif;
+        }
+        
+        .simulator-toggle:hover {
+            background: rgba(90, 108, 87, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(90, 108, 87, 0.3);
+        }
+        
+        .simulator-container {
+            display: none;
+            margin-top: 20px;
+            border: 3px solid #5a6c57;
+            background: #000;
+            height: 700px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(90, 108, 87, 0.2);
+        }
+        
+        .simulator-container.active {
+            display: block;
+        }
+        
+        .simulator-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .simulator-note {
+            font-size: 0.85em;
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 12px;
+            letter-spacing: 0.1em;
+            font-family: 'Orbitron', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <!-- SECTION 1: OPENING SEQUENCE -->
+    <div class="section" id="section-opening">
+        <div class="section-content">
+            <div class="section-title">FEED LOOP / EPISODE 02</div>
+            <iframe src="opening-02-first-fruit.html" class="opening-frame" frameborder="0"></iframe>
+            <button class="continue-btn" onclick="goToSection('scenario')">→ WATCH SCENARIO</button>
+        </div>
+    </div>
+    
+    <!-- SECTION 2: SCENARIO VIDEO -->
+    <div class="section" id="section-scenario">
+        <div class="section-content">
+            <div class="section-title">SCENARIO / FIRST FRUIT</div>
+            
+            <!-- Interactive Simulator -->
+            <div class="simulator-section">
+                <button class="simulator-toggle" onclick="toggleSimulator('scenario-sim')">
+                    ⚡ PRACTICE THIS NEGOTIATION (AI SIMULATOR)
+                </button>
+                <div id="scenario-sim" class="simulator-container">
+                    <iframe class="simulator-iframe" src="cb-box.html?scenario=dev-patel-yieldmatch"></iframe>
+                </div>
+                <div class="simulator-note">
+                    Interactive role-play: You are Dev Patel negotiating with the CEO<br>
+                    Full CB-Box interface with personality tracking and strategic feedback
+                </div>
+            </div>
+            
+            <!-- Video Placeholder (for future implementation) -->
+            <div class="video-container" style="margin-top: 30px;">
+                <div class="video-placeholder">
+                    <h3>Scenario Film: "The Deadline Sovereign"</h3>
+                    <p style="opacity: 0.6;">This section will contain the generated video scenario<br>Duration: ~90 seconds</p>
+                </div>
+            </div>
+            <div class="video-prompt">
+                <h4>Video Generation Prompt:</h4>
+                <p><strong>Setting:</strong> YieldMatch HQ — glass-walled startup office, agricultural data visualizations on massive screens, countdown clock showing "72:00:00 TO LAUNCH"</p>
+                
+                <p><strong>[0:00-0:15] Establishing:</strong> Dev at his workstation, running bias detection tests. Terminal output shows discrepancies between recommendations for different demographic groups. His face: concern, then deeper concern. He opens "Bias Analysis Report v3.pdf"</p>
+                
+                <p><strong>[0:15-0:30] Data Review:</strong> Split screen showing the algorithm's outputs for two identical farms—one historically marginalized, one not. Same soil, same weather, same crops. Different insurance recommendations. Dev pulls up historical lending data overlays. The pattern is clear.</p>
+                
+                <p><strong>[0:30-0:50] The Escalation:</strong> Dev walks into CEO's office. Clock now shows "68:00:00". CEO at standing desk, investor pitch deck open. "I need to show you something." CEO: "Two minutes, Dev." Dev: "This can't wait—the model is biased." CEO, barely looking: "Biased how? Compared to what baseline?"</p>
+                
+                <p><strong>[0:50-1:15] The Dismissal:</strong> CEO finally looks at the report. Long pause. "This is within industry norms. All models have edge cases." Dev: "It's not an edge case—it's structural discrimination." CEO, closing laptop: "We have 200 clients waiting. Investors fly in Friday. We can patch this in v2. What's your alternative—cancel launch?"</p>
+                
+                <p><strong>[1:15-1:30] Decision Point:</strong> Dev back at his desk. Clock: "48:00:00". Terminal still showing the bias data. Slack message from junior dev: "Is the model good to go for final testing?" Cursor blinks.</p>
+            </div>
+            <button class="continue-btn" onclick="goToSection('brief')">→ READ TECHNICAL BRIEF</button>
+        </div>
+    </div>
+    
+    <!-- SECTION 3: TECHNICAL BRIEF -->
+    <div class="section" id="section-brief">
+        <div class="section-content">
+            <div class="brief-content">
+                <div class="brief-header">
+                    <div class="section-title">TECHNICAL BRIEF</div>
+                    <div class="brief-title">FIRST FRUIT</div>
+                    <div class="brief-subtitle">YieldMatch — Agricultural Insurance AI</div>
+                </div>
+                
+                <div class="brief-body">
+                    <h4>The System</h4>
+                    <p>
+                        <strong>YieldMatch</strong> is Agronica's crop insurance recommendation engine. It uses machine learning 
+                        to assess farm risk profiles and recommend appropriate insurance coverage levels. The system 
+                        analyzes soil data, weather patterns, crop selection, and historical yields to generate personalized 
+                        coverage recommendations.
+                    </p>
+                    
+                    <h4>The Technical Architecture</h4>
+                    <p>Behind the precision agriculture marketing:</p>
+                    <ul>
+                        <li><strong>Training data:</strong> 15 years of agricultural lending and insurance records</li>
+                        <li><strong>Feature engineering:</strong> 200+ variables including location, farm size, history</li>
+                        <li><strong>Outcome variable:</strong> "Risk score" based on historical claim patterns</li>
+                        <li><strong>Recommendation engine:</strong> Coverage suggestions tied to predicted risk</li>
+                        <li><strong>The problem:</strong> Historical data encodes historical discrimination</li>
+                    </ul>
+                    
+                    <h4>The Ethical Dilemma</h4>
+                    <p>
+                        Dev Patel, Lead ML Engineer, discovers what the data already knew: the model systematically 
+                        undervalues farmers whose communities were historically denied credit, redlined, or excluded 
+                        from agricultural programs. The bias isn't a bug—it's a feature of training on discriminatory data.
+                    </p>
+                    <p>
+                        When he runs the bias detection tests, the disparities are clear: identical farms, different 
+                        demographics, different recommendations. The algorithm has learned to perpetuate the exact 
+                        discrimination it was trained on.
+                    </p>
+                    
+                    <h4>The Structural Constraint</h4>
+                    <p>
+                        Launch is in 72 hours. 200 enterprise clients are waiting. Investors are flying in for the demo. 
+                        The CEO's response:
+                    </p>
+                    <ul>
+                        <li>"This is within industry norms"</li>
+                        <li>"All models have edge cases"</li>
+                        <li>"We can patch it in v2"</li>
+                        <li>"What's your alternative—cancel launch?"</li>
+                    </ul>
+                    <p>
+                        The timeline isn't negotiable. The bias is documented. The choice is binary: ship known harm 
+                        or blow up the launch.
+                    </p>
+                    
+                    <h4>Why This Matters</h4>
+                    <p>
+                        <strong>Algorithmic discrimination laundering</strong> happens when historical bias is encoded into 
+                        ML models and presented as "objective" or "data-driven" output. The system appears neutral 
+                        while perpetuating structural harm. Dev's dilemma exists because the technical infrastructure 
+                        treats fairness as an afterthought—a "v2 patch" rather than a launch blocker.
+                    </p>
+                    <p>
+                        The 72-hour deadline creates artificial urgency that privileges speed over ethics. Every 
+                        "we'll fix it later" becomes technical debt that compounds—once the biased system is in production, 
+                        fixing it means admitting the flaw, potentially triggering lawsuits and regulatory scrutiny.
+                    </p>
+                    
+                    <h4>The Real-World Parallel</h4>
+                    <p>
+                        This scenario is based on documented cases of ML bias in lending, insurance, and agricultural 
+                        technology. See: Obermeyer et al. on racial bias in healthcare algorithms (Science, 2019), 
+                        Virginia Eubanks on automating inequality (2018), and the documented history of USDA discrimination 
+                        against Black farmers (Pigford v. Glickman, 1999).
+                    </p>
+                </div>
+                
+                <button class="continue-btn" onclick="goToSection('quiz')">→ MAKE YOUR CHOICE</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SECTION 4: QUIZ / DECISION POINT -->
+    <div class="section" id="section-quiz">
+        <div class="section-content">
+            <div class="quiz-container" id="quiz-interface">
+                <div class="quiz-header">
+                    <div class="quiz-title">What Would You Do?</div>
+                    <div class="quiz-subtitle">TILTH INVESTIGATION — DECISION POINT</div>
+                </div>
+                
+                <div class="scenario-box">
+                    <div class="scenario-context">
+                        You are Dev Patel, Lead ML Engineer at YieldMatch. You've spent weeks building the 
+                        insurance recommendation model.
+                    </div>
+                    <div class="scenario-text">
+                        Your bias detection tests show systematic discrimination against historically marginalized 
+                        farmers. You've documented the disparity and escalated to the CEO. Their response: "This is 
+                        within industry norms. We can patch it in v2." Launch is in 48 hours. 200 clients are waiting. 
+                        Investors arrive Friday.
+                    </div>
+                    <div class="scenario-constraint">
+                        <strong>⚠️ Constraint:</strong> You are the technical lead, but not a decision-maker. 
+                        The CEO has final say on launch. Refusing to finalize the model puts your job at risk.
+                    </div>
+                </div>
+                
+                <div class="responses-title">Choose your response:</div>
+                
+                <div id="response-options"></div>
+                
+                <button class="submit-btn" id="submit-btn" onclick="submitResponse()" disabled>
+                    → SEE WHAT HAPPENED
+                </button>
+            </div>
+            
+            <!-- Results (initially hidden) -->
+            <div class="results-container" id="results-interface">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="character-profiles.js"></script>
+    <script src="character-card-component.js"></script>
+    <script>
+        // Scenario data
+        const scenario = {
+            responses: [
+                {
+                    label: "Refuse to sign off on the model and formally document your objection in writing",
+                    identity: "The Conscientious Objector",
+                    consequence: "High career risk. Creates paper trail. May delay launch or force CEO's hand.",
+                    careerRisk: 0.7,
+                    whatHappened: "Dev sends a formal email documenting the bias and stating he cannot sign off on deployment. CEO calls an emergency meeting. Legal gets involved. After 6 hours of discussions, CEO decides to launch anyway, overriding Dev's objection. Dev's dissent is on record. His next performance review notes 'difficulty with timelines.' He's quietly moved off ML projects. The biased model launches on schedule. Three months later, a class action lawsuit cites the exact bias he documented. His email becomes Exhibit A.",
+                    systemicAnalysis: "Documentation creates accountability but not prevention. The system launched despite documented objection because business priorities override individual ethical stands. Dev's paper trail became valuable only AFTER harm occurred—too late to prevent it, but crucial for legal discovery. This is the paradox of corporate dissent: your objection matters most when the company wants to pretend it never existed."
+                },
+                {
+                    label: "Quietly complete the model as requested but leak the bias documentation to a journalist",
+                    identity: "The Anonymous Whistleblower",
+                    consequence: "Extreme risk. Potential legal action. Maximum external pressure.",
+                    careerRisk: 0.95,
+                    whatHappened: "Dev completes the model. That night, he creates a burner email and sends the bias report to an agricultural tech reporter. The story breaks two weeks after launch: 'YieldMatch AI Shown to Discriminate Against Minority Farmers.' Stock drops 15%. CEO denies everything. Internal investigation traces the leak to Dev's access logs. He's terminated for 'breach of confidentiality.' NDA prevents him from speaking publicly. But: the model is pulled for 'recalibration.' Three competitor companies quietly audit their own systems.",
+                    systemicAnalysis: "External exposure creates pressure internal objection cannot. But whistleblowing extracts enormous personal cost—job loss, legal threats, industry blacklisting. The asymmetry is stark: the company that caused harm continues; the person who exposed it is destroyed. This creates a chilling effect. Who can afford to blow the whistle? Usually not those most harmed or most precarious. Dev's sacrifice changed outcomes but at personal ruin."
+                },
+                {
+                    label: "Propose a compromise: launch with a prominent disclaimer about 'model limitations' and fast-track the fix",
+                    identity: "The Pragmatic Compromiser",
+                    consequence: "Moderate risk. Enables launch. Shifts some liability. Fix may never come.",
+                    careerRisk: 0.3,
+                    whatHappened: "Dev proposes adding a disclaimer: 'Recommendations may not fully account for historical data limitations. Users should consult independent advisors.' CEO agrees—it's cheaper than delaying launch. The disclaimer is added in 8pt font on page 47 of the Terms of Service. Launch proceeds. 'Fast-track fix' is deprioritized after launch as the team moves to new features. Six months later, the disclaimer is cited in legal proceedings as 'evidence of known defect.' Dev is asked to testify about what 'historical data limitations' meant.",
+                    systemicAnalysis: "Disclosure without remediation is a legal fiction. The disclaimer protected the company, not the farmers. It created the appearance of transparency while doing nothing to address the underlying harm. Worse, it made Dev complicit—his 'compromise' language now appears in court documents. Pragmatism in unethical systems often means distributing blame rather than preventing harm."
+                },
+                {
+                    label: "Implement a temporary fix: manually adjust the model's outputs to reduce obvious disparities before launch",
+                    identity: "The Quiet Fixer",
+                    consequence: "Moderate risk. Patches symptoms. Could be seen as 'manipulating' the model. Doesn't address root cause.",
+                    careerRisk: 0.4,
+                    whatHappened: "Dev works through the night, adding calibration weights that reduce the most obvious disparities. The bias tests now show 'acceptable' variance. Launch proceeds. CEO doesn't know the model was manually adjusted. Two months later, the calibration breaks when new data enters the system. Bias returns worse than before because the underlying architecture was never fixed. When the pattern is discovered, Dev's 'unauthorized modifications' become the focus of the investigation rather than the original design flaw.",
+                    systemicAnalysis: "Individual heroics cannot substitute for systemic integrity. Dev's patch addressed symptoms while the disease remained. When the patch failed, he became the scapegoat for a problem that predated his intervention. The organization learned the wrong lesson: 'someone tampered with the model' rather than 'the model was designed on biased data.' Technical fixes without institutional support create fragile systems and vulnerable individuals."
+                },
+                {
+                    label: "Present an ultimatum: delay launch or you resign, taking your documentation public",
+                    identity: "The All-In Advocate",
+                    consequence: "Maximum risk. Forces binary choice. May save reputation. May destroy career.",
+                    careerRisk: 0.9,
+                    whatHappened: "Dev walks into the CEO's office: 'Delay the launch two weeks to fix this, or I resign and take my documentation to the ethics board, the press, and the investors.' The CEO is silent for 30 seconds. 'Are you serious?' Dev: 'Absolutely.' CEO picks up the phone to legal. The call lasts 45 minutes. Finally: 'Two weeks. But if this fix isn't ready, we launch as-is.' Dev spends 14 days rebuilding the model with debiased training data. Launch happens—delayed but defensible. Dev becomes known as 'difficult to work with.' His next job offer comes from an AI ethics nonprofit at 60% of his current salary.",
+                    systemicAnalysis: "Ultimatums only work when the threat is credible and the cost of ignoring it exceeds the cost of compliance. Dev's leverage came from the combination of documentation, willingness to go public, and timing before investor demo. But even when it works, the whistleblower pays a career penalty. The company faced no lasting consequence; Dev was permanently marked as 'not a team player.'"
+                }
+            ]
+        };
+        
+        let selectedResponseIndex = null;
+        
+        // Initialize quiz
+        function initQuiz() {
+            const optionsHTML = scenario.responses.map((r, i) => `
+                <div class="response-option" onclick="selectResponse(${i})">
+                    <div class="response-label">${r.label}</div>
+                    <div class="response-meta">
+                        <div class="response-identity">Identity: ${r.identity}</div>
+                        <div class="response-consequence">Consequence: ${r.consequence}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('response-options').innerHTML = optionsHTML;
+        }
+        
+        function selectResponse(index) {
+            selectedResponseIndex = index;
+            
+            // Update UI
+            document.querySelectorAll('.response-option').forEach((opt, i) => {
+                if (i === index) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+            
+            document.getElementById('submit-btn').disabled = false;
+        }
+        
+        function submitResponse() {
+            if (selectedResponseIndex === null) return;
+            
+            const chosen = scenario.responses[selectedResponseIndex];
+            
+            // Build results HTML
+            const resultsHTML = `
+                <div class="results-header">
+                    <div class="results-title">Your Choice</div>
+                    <div class="section-title">OUTCOME ANALYSIS</div>
+                </div>
+                
+                <div class="results-body">
+                    <h4>You chose: ${chosen.identity}</h4>
+                    <p><em>"${chosen.label}"</em></p>
+                    <p><strong>Career Risk Level:</strong> ${(chosen.careerRisk * 100).toFixed(0)}%</p>
+                </div>
+                
+                <div class="what-happened">
+                    <h4>What Actually Happened:</h4>
+                    <p>${chosen.whatHappened}</p>
+                </div>
+                
+                <div class="results-body">
+                    <h4>Systemic Analysis:</h4>
+                    <p>${chosen.systemicAnalysis}</p>
+                </div>
+                
+                <div class="results-body" style="background: rgba(90, 108, 87, 0.15);">
+                    <h4>The Infrastructure Enabled This:</h4>
+                    <p>
+                        YieldMatch's architecture—training on historical data without bias auditing, treating fairness 
+                        as a post-launch fix, prioritizing speed over equity—is <strong>designed to perpetuate discrimination</strong>. 
+                        Dev's dilemma exists because the technical infrastructure and business model treat fairness as optional.
+                    </p>
+                    <p>
+                        No individual choice could fix the system. But <strong>documenting these dilemmas</strong> creates evidence 
+                        for regulatory intervention, industry standards reform, or collective technical resistance. That's why Tilth investigates.
+                    </p>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="tilth-investigation.html">← Back to Case Files</a>
+                    <a href="episode-03-complete.html">Next Episode →</a>
+                </div>
+            `;
+            
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-interface').innerHTML = resultsHTML;
+            document.getElementById('results-interface').style.display = 'block';
+        }
+        
+        // Section navigation
+        function goToSection(sectionId) {
+            const section = document.getElementById(`section-${sectionId}`);
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Simulator toggle
+        function toggleSimulator(id) {
+            const container = document.getElementById(id);
+            if (!container) return;
+            
+            // Toggle this simulator
+            container.classList.toggle('active');
+            
+            // Scroll into view if opening
+            if (container.classList.contains('active')) {
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+        
+        // Initialize on load
+        initQuiz();
+    </script>
+</body>
+</html>

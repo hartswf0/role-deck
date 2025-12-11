@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Loop — Episode 06: Flood Learning</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a08;
+            color: #e8e4d8;
+            font-family: 'Oswald', sans-serif;
+            line-height: 1.6;
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.08;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid #5a6c57;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .opening-frame {
+            width: 100%;
+            aspect-ratio: 2.35/1;
+            border: 2px solid #5a6c57;
+            background: #000;
+        }
+
+        .section-title {
+            font-size: 0.9em;
+            letter-spacing: 0.3em;
+            opacity: 0.5;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .continue-btn {
+            display: block;
+            margin: 30px auto 0;
+            padding: 15px 40px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            cursor: pointer;
+        }
+
+        .video-container {
+            background: #000;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #5a6c57;
+        }
+
+        .video-placeholder h3 {
+            color: #5a6c57;
+        }
+
+        .video-prompt {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .brief-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .brief-title {
+            font-size: 3em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .brief-body h4 {
+            color: #5a6c57;
+            margin: 30px 0 15px;
+        }
+
+        .brief-body ul {
+            margin: 20px 0 20px 30px;
+        }
+
+        .quiz-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(90, 108, 87, 0.05);
+            padding: 40px;
+            border: 1px solid #5a6c57;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .scenario-constraint {
+            color: #8a5a5a;
+            border-top: 1px solid rgba(138, 90, 90, 0.3);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .response-option {
+            background: rgba(90, 108, 87, 0.08);
+            border: 2px solid #5a6c57;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .response-option:hover {
+            background: rgba(90, 108, 87, 0.15);
+        }
+
+        .response-option.selected {
+            background: rgba(90, 108, 87, 0.25);
+        }
+
+        .response-identity {
+            color: #5a6c57;
+            font-weight: 600;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: #5a6c57;
+            color: #e8e4d8;
+            border: none;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.4;
+        }
+
+        .results-container {
+            max-width: 700px;
+            margin: 0 auto;
+            display: none;
+        }
+
+        .results-title {
+            font-size: 2.5em;
+            color: #5a6c57;
+            margin-bottom: 15px;
+        }
+
+        .results-body {
+            background: rgba(90, 108, 87, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #5a6c57;
+        }
+
+        .what-happened {
+            background: rgba(138, 90, 90, 0.2);
+            padding: 30px;
+            border-left: 4px solid #8a5a5a;
+            margin: 30px 0;
+        }
+
+        .what-happened h4 {
+            color: #8a5a5a;
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .nav-links a {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 0 10px;
+            background: rgba(90, 108, 87, 0.2);
+            color: #e8e4d8;
+            text-decoration: none;
+            border: 1px solid #5a6c57;
+        }
+
+        .simulator-toggle {
+            display: block;
+            width: 100%;
+            background: rgba(90, 108, 87, 0.15);
+            color: #5a6c57;
+            padding: 18px;
+            border: 3px solid #5a6c57;
+            cursor: pointer;
+        }
+
+        .simulator-container {
+            display: none;
+            margin-top: 20px;
+            border: 3px solid #5a6c57;
+            height: 700px;
+        }
+
+        .simulator-container.active {
+            display: block;
+        }
+
+        .simulator-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grain"></div>
+
+    <div class="section" id="section-opening">
+        <div class="section-content">
+            <div class="section-title">EPISODE 06 / FLOOD LEARNING</div>
+            <iframe src="opening-06-flood-learning.html" class="opening-frame" frameborder="0"></iframe>
+            <button class="continue-btn" onclick="goToSection('scenario')">→ CONTINUE</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-scenario">
+        <div class="section-content">
+            <div class="section-title">SCENARIO</div>
+            <button class="simulator-toggle" onclick="toggleSimulator('sim')">⚡ PRACTICE NEGOTIATION</button>
+            <div id="sim" class="simulator-container"><iframe class="simulator-iframe"
+                    src="cb-box.html?scenario=sarah-kim-autogrow"></iframe></div>
+            <div class="video-container" style="margin-top:30px">
+                <div class="video-placeholder">
+                    <h3>Film: The Epistemic Rush</h3>
+                </div>
+            </div>
+            <button class="continue-btn" onclick="goToSection('brief')">→ BRIEF</button>
+        </div>
+    </div>
+
+    <div class="section" id="section-brief">
+        <div class="section-content">
+            <div class="brief-content">
+                <div class="brief-title">FLOOD LEARNING</div>
+                <div class="brief-body">
+                    <h4>The System</h4>
+                    <p><strong>AutoGrow AI</strong> provides garden recommendations trained on Western industrial
+                        agriculture.</p>
+                    <h4>The Dilemma</h4>
+                    <p>Dr. Sarah Kim discovered the model recommends against traditional practices—Three Sisters,
+                        polyculture—treating centuries of Indigenous knowledge as "suboptimal."</p>
+                    <h4>Why It Matters</h4>
+                    <p>AI confidence masks AI ignorance. The model doesn't say "I don't know"—it says "you're wrong."
+                    </p>
+                </div>
+                <button class="continue-btn" onclick="goToSection('quiz')">→ CHOOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="section-quiz">
+        <div class="section-content">
+            <div class="quiz-container" id="quiz-interface">
+                <div class="scenario-box">
+                    <p>You are Dr. Sarah Kim. Your 15-page risk memo sits unread. Launch is in 48 hours.</p>
+                    <div class="scenario-constraint">⚠️ You're not a decision-maker. CTO controls launch.</div>
+                </div>
+                <div id="response-options"></div>
+                <button class="submit-btn" id="submit-btn" onclick="submitResponse()" disabled>→ SEE OUTCOME</button>
+            </div>
+            <div class="results-container" id="results-interface"></div>
+        </div>
+    </div>
+
+    <script>
+        const scenario = {
+            responses: [
+                { label: "Interrupt the investor demo to show the cultural bias", identity: "Public Interrupter", careerRisk: 0.95, whatHappened: "You demo the Three Sisters query. Model recommends destroying it. Investors pause the deal. You're fired. But the model is rebuilt before launch.", systemicAnalysis: "Public intervention works when private channels don't. Your career ended; the harm was prevented." },
+                { label: "Warn Indigenous agricultural organizations before launch", identity: "Community Alerter", careerRisk: 0.8, whatHappened: "Social media erupts. Investors pause. You're terminated. But the communities work with AutoGrow to rebuild training data.", systemicAnalysis: "Community pressure created change you couldn't. Individual sacrifice enabled collective protection." },
+                { label: "Add a disclaimer about the system's limitations", identity: "Disclosure Inserter", careerRisk: 0.2, whatHappened: "The disclaimer appears in Settings > About. No user sees it. A year later it's cited as evidence the concern was 'addressed.'", systemicAnalysis: "Buried disclosure protects the company, not users." },
+                { label: "Resign before launch with formal documentation", identity: "Clean Exit", careerRisk: 0.4, whatHappened: "You leave. AutoGrow launches. The harms happen. Your resignation letter becomes evidence in the lawsuit a year later.", systemicAnalysis: "Exit with documentation is the ethical minimum. You couldn't prevent harm but preserved your integrity." },
+                { label: "Stay quiet and try to fix it in later versions", identity: "Long-Term Insider", careerRisk: 0.1, whatHappened: "18 months later your diverse model is ready. Leadership says it can be 'a separate product later.' It never ships.", systemicAnalysis: "The long game rarely delivers. Organizations absorb advocates without changing." }
+            ]
+        };
+        let selected = null;
+        function initQuiz() {
+            document.getElementById('response-options').innerHTML = scenario.responses.map((r, i) => `<div class="response-option" onclick="selectResponse(${i})"><div>${r.label}</div><div class="response-identity">${r.identity}</div></div>`).join('');
+        }
+        function selectResponse(i) { selected = i; document.querySelectorAll('.response-option').forEach((o, j) => o.classList.toggle('selected', j === i)); document.getElementById('submit-btn').disabled = false; }
+        function submitResponse() {
+            if (selected === null) return;
+            const r = scenario.responses[selected];
+            document.getElementById('quiz-interface').style.display = 'none';
+            document.getElementById('results-interface').innerHTML = `<div class="results-title">${r.identity}</div><div class="results-body"><p>Career Risk: ${(r.careerRisk * 100).toFixed(0)}%</p></div><div class="what-happened"><h4>What Happened:</h4><p>${r.whatHappened}</p></div><div class="results-body"><h4>Analysis:</h4><p>${r.systemicAnalysis}</p></div><div class="nav-links"><a href="tilth-investigation.html">← Cases</a><a href="episode-07-complete.html">Next →</a></div>`;
+            document.getElementById('results-interface').style.display = 'block';
+        }
+        function goToSection(s) { document.getElementById(`section-${s}`).scrollIntoView({ behavior: 'smooth' }); }
+        function toggleSimulator(id) { document.getElementById(id).classList.toggle('active'); }
+        initQuiz();
+    </script>
+</body>
+
+</html>

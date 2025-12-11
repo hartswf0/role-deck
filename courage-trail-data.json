@@ -1,0 +1,1027 @@
+{
+    "generated_at": "2025-12-11T10:56:00Z",
+    "thesis": "Role Deck explores ethical design practice through interactive simulation, connecting product decisions to organizational dynamics and personal identity.",
+    "repository": "role-deck",
+    "total_families": 8,
+    "birth_date": "2025-09-30",
+    "trail_levels": {
+        "0": "Research & Theory - Academic foundations",
+        "1": "Applications - Interactive tools",
+        "2": "Content - Scenarios, episodes, documentation"
+    },
+    "zones": [
+        {
+            "id": "hub-center",
+            "label": "HUB CENTER",
+            "type": "hub",
+            "color": "#f59e0b",
+            "position": {
+                "x": 0.5,
+                "y": 0.12
+            },
+            "trailLevel": 1,
+            "fileCount": 3,
+            "linesOfCode": 2883,
+            "dateRange": "Sep 30 - Dec 9, 2025",
+            "birthDate": "2025-09-30",
+            "artifacts": [
+                {
+                    "text": "HUB.html",
+                    "type": "artifact",
+                    "size_human": "26 KB",
+                    "lines": 914,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/HUB.html"
+                },
+                {
+                    "text": "PORTAL.html",
+                    "type": "artifact",
+                    "size_human": "24 KB",
+                    "lines": 697,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/PORTAL.html"
+                },
+                {
+                    "text": "index.html",
+                    "type": "artifact",
+                    "size_human": "63 KB",
+                    "lines": 1272,
+                    "birthDate": "2025-09-30",
+                    "path": "/Users/gaia/role-deck/index.html"
+                }
+            ],
+            "decisions": [
+                "Visual navigation over text-heavy landing",
+                "HUB as primary entry point",
+                "Multiple pathways to same content",
+                "Mobile-first responsive design"
+            ],
+            "obstacles": [
+                "Balancing information density with clarity",
+                "Managing navigation between 21+ HTML apps"
+            ],
+            "patterns": [
+                "hub-spoke",
+                "visual-navigation",
+                "multi-entry"
+            ],
+            "intent": "Central navigation and discovery layer for all Role Deck systems"
+        },
+        {
+            "id": "tilth-tetrad",
+            "label": "TILTH TETRAD",
+            "type": "garden",
+            "color": "#4ade80",
+            "position": {
+                "x": 0.22,
+                "y": 0.25
+            },
+            "trailLevel": 1,
+            "fileCount": 9,
+            "linesOfCode": 5876,
+            "dateRange": "Oct 7, 2025",
+            "birthDate": "2025-10-07",
+            "artifacts": [
+                {
+                    "text": "tetrad-pad.html",
+                    "type": "artifact",
+                    "size_human": "93 KB",
+                    "lines": 2497,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tetrad-pad.html"
+                },
+                {
+                    "text": "tetrad-flow-game.html",
+                    "type": "artifact",
+                    "size_human": "20 KB",
+                    "lines": 881,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tetrad-flow-game.html"
+                },
+                {
+                    "text": "tilth-pocket-reference.html",
+                    "type": "artifact",
+                    "size_human": "14 KB",
+                    "lines": 350,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-pocket-reference.html"
+                },
+                {
+                    "text": "tilth-parts-manual.html",
+                    "type": "artifact",
+                    "size_human": "17 KB",
+                    "lines": 420,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-parts-manual.html"
+                },
+                {
+                    "text": "tilth-parts-catalog.html",
+                    "type": "artifact",
+                    "size_human": "20 KB",
+                    "lines": 480,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-parts-catalog.html"
+                },
+                {
+                    "text": "tilth-almanac.html",
+                    "type": "artifact",
+                    "size_human": "18 KB",
+                    "lines": 430,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-almanac.html"
+                },
+                {
+                    "text": "tilth-investigation.html",
+                    "type": "artifact",
+                    "size_human": "26 KB",
+                    "lines": 620,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-investigation.html"
+                },
+                {
+                    "text": "tilth-identity-cards.html",
+                    "type": "artifact",
+                    "size_human": "26 KB",
+                    "lines": 630,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-identity-cards.html"
+                },
+                {
+                    "text": "tilth-nebraska-test.html",
+                    "type": "artifact",
+                    "size_human": "15 KB",
+                    "lines": 360,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-nebraska-test.html"
+                }
+            ],
+            "decisions": [
+                "McLuhan Tetrad as design framework",
+                "4 directions: Enhance, Obsolesce, Retrieve, Reverse",
+                "16 scenarios (8 Product + 8 Designer)",
+                "OpenAI integration for design iteration",
+                "Gamepad metaphor for design exploration"
+            ],
+            "obstacles": [
+                "Balancing simplicity with McLuhan's complexity",
+                "Making abstract frameworks concrete"
+            ],
+            "patterns": [
+                "tetrad-analysis",
+                "design-gamepad",
+                "scenario-driven"
+            ],
+            "intent": "Interactive ethical design exploration using McLuhan's Tetrad framework"
+        },
+        {
+            "id": "cb-box-engine",
+            "label": "CB-BOX ENGINE",
+            "type": "factory",
+            "color": "#3b82f6",
+            "position": {
+                "x": 0.78,
+                "y": 0.25
+            },
+            "trailLevel": 1,
+            "fileCount": 4,
+            "linesOfCode": 9107,
+            "dateRange": "Oct 7, 2025",
+            "birthDate": "2025-10-07",
+            "artifacts": [
+                {
+                    "text": "cb-box.html",
+                    "type": "artifact",
+                    "size_human": "260 KB",
+                    "lines": 4529,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/cb-box.html",
+                    "notes": "Largest file in repository - full negotiation simulator"
+                },
+                {
+                    "text": "dual.html",
+                    "type": "artifact",
+                    "size_human": "107 KB",
+                    "lines": 2362,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/dual.html"
+                },
+                {
+                    "text": "quiz.html",
+                    "type": "artifact",
+                    "size_human": "43 KB",
+                    "lines": 1109,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/quiz.html"
+                },
+                {
+                    "text": "identity-bridge.html",
+                    "type": "artifact",
+                    "size_human": "13 KB",
+                    "lines": 320,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/identity-bridge.html"
+                }
+            ],
+            "decisions": [
+                "Sequencer manages PLAN → THINK → SPEAK phases",
+                "16 AI characters with distinct belief systems",
+                "Turn-based dialogue with personality dynamics",
+                "LocalStorage for state persistence",
+                "Centaur-Box paper as theoretical foundation"
+            ],
+            "obstacles": [
+                "Modeling believable AI character personalities",
+                "Balancing simulation complexity with usability"
+            ],
+            "patterns": [
+                "negotiation-simulation",
+                "ai-characters",
+                "phase-sequencing"
+            ],
+            "intent": "AI-powered workplace negotiation simulation with ethical dilemmas"
+        },
+        {
+            "id": "feed-loop-episodes",
+            "label": "FEED LOOP",
+            "type": "river",
+            "color": "#8b5cf6",
+            "position": {
+                "x": 0.5,
+                "y": 0.38
+            },
+            "trailLevel": 2,
+            "fileCount": 12,
+            "linesOfCode": 4200,
+            "dateRange": "Oct 7, 2025",
+            "birthDate": "2025-10-07",
+            "artifacts": [
+                {
+                    "text": "feed-loop-index.html",
+                    "type": "artifact",
+                    "size_human": "27 KB",
+                    "lines": 650,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/feed-loop-index.html"
+                },
+                {
+                    "text": "feed-loop-full-movie.html",
+                    "type": "artifact",
+                    "size_human": "24 KB",
+                    "lines": 580,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/feed-loop-full-movie.html"
+                },
+                {
+                    "text": "openings-index.html",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 450,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/openings-index.html"
+                },
+                {
+                    "text": "opening-01-nutrient-lock.html",
+                    "type": "artifact",
+                    "size_human": "17 KB",
+                    "lines": 400,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-01-nutrient-lock.html"
+                },
+                {
+                    "text": "opening-02-first-fruit.html",
+                    "type": "artifact",
+                    "size_human": "17 KB",
+                    "lines": 400,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-02-first-fruit.html"
+                },
+                {
+                    "text": "opening-03-apprentice-rows.html",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 450,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-03-apprentice-rows.html"
+                },
+                {
+                    "text": "opening-04-consent-harvest.html",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 450,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-04-consent-harvest.html"
+                },
+                {
+                    "text": "opening-05-root-union.html",
+                    "type": "artifact",
+                    "size_human": "21 KB",
+                    "lines": 500,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-05-root-union.html"
+                },
+                {
+                    "text": "opening-06-flood-learning.html",
+                    "type": "artifact",
+                    "size_human": "21 KB",
+                    "lines": 500,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-06-flood-learning.html"
+                },
+                {
+                    "text": "opening-07-conditional-harvest.html",
+                    "type": "artifact",
+                    "size_human": "21 KB",
+                    "lines": 500,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-07-conditional-harvest.html"
+                },
+                {
+                    "text": "opening-08-geo-fencing-garden.html",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 450,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/opening-08-geo-fencing-garden.html"
+                }
+            ],
+            "decisions": [
+                "8 opening sequences as narrative hooks",
+                "Agricultural metaphors (nutrient, harvest, planting)",
+                "Cinematic episode structure",
+                "Full movie mode for continuous viewing"
+            ],
+            "obstacles": [
+                "Creating engaging narrative hooks",
+                "Maintaining metaphor consistency across 8 scenarios"
+            ],
+            "patterns": [
+                "opening-sequence",
+                "narrative-hook",
+                "scenario-browser"
+            ],
+            "intent": "Curated entry points into negotiation scenarios with narrative framing"
+        },
+        {
+            "id": "episode-folders",
+            "label": "8 DILEMMAS",
+            "type": "village",
+            "color": "#ef4444",
+            "position": {
+                "x": 0.5,
+                "y": 0.58
+            },
+            "trailLevel": 2,
+            "fileCount": 40,
+            "linesOfCode": 6500,
+            "dateRange": "Oct 7 - Dec 9, 2025",
+            "birthDate": "2025-10-07",
+            "artifacts": [
+                {
+                    "text": "01-silenced-educator/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/01-silenced-educator",
+                    "summary": "Teacher pressured to hide platform addiction data"
+                },
+                {
+                    "text": "02-deadline-sovereign/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/02-deadline-sovereign",
+                    "summary": "QA discovering AI hiring bias before launch"
+                },
+                {
+                    "text": "03-bounded-apprentice/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/03-bounded-apprentice",
+                    "summary": "Junior dev finding security flaw in interview tool"
+                },
+                {
+                    "text": "04-two-headed-compliance/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/04-two-headed-compliance",
+                    "summary": "Compliance officer caught between dark patterns and honesty"
+                },
+                {
+                    "text": "05-fragile-collective/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/05-fragile-collective",
+                    "summary": "HR manager navigating worker organizing rights"
+                },
+                {
+                    "text": "06-epistemic-rush/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/06-epistemic-rush",
+                    "summary": "AI engineer discovering cultural bias in training data"
+                },
+                {
+                    "text": "07-conditional-person/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/07-conditional-person",
+                    "summary": "Product lead designing worker surveillance tools"
+                },
+                {
+                    "text": "08-values-treasurer/",
+                    "type": "folder",
+                    "size_human": "4 files",
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/08-values-treasurer",
+                    "summary": "Founder watching mission drift toward profit"
+                },
+                {
+                    "text": "episode-01-complete.html",
+                    "type": "artifact",
+                    "size_human": "32 KB",
+                    "lines": 770,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/episode-01-complete.html"
+                },
+                {
+                    "text": "episode-02-complete.html",
+                    "type": "artifact",
+                    "size_human": "34 KB",
+                    "lines": 772,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-02-complete.html"
+                },
+                {
+                    "text": "episode-03-complete.html",
+                    "type": "artifact",
+                    "size_human": "30 KB",
+                    "lines": 735,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-03-complete.html"
+                },
+                {
+                    "text": "episode-04-complete.html",
+                    "type": "artifact",
+                    "size_human": "29 KB",
+                    "lines": 703,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-04-complete.html"
+                },
+                {
+                    "text": "episode-05-complete.html",
+                    "type": "artifact",
+                    "size_human": "28 KB",
+                    "lines": 663,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-05-complete.html"
+                },
+                {
+                    "text": "episode-06-complete.html",
+                    "type": "artifact",
+                    "size_human": "12 KB",
+                    "lines": 280,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-06-complete.html"
+                },
+                {
+                    "text": "episode-07-complete.html",
+                    "type": "artifact",
+                    "size_human": "13 KB",
+                    "lines": 310,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-07-complete.html"
+                },
+                {
+                    "text": "episode-08-complete.html",
+                    "type": "artifact",
+                    "size_human": "15 KB",
+                    "lines": 350,
+                    "birthDate": "2025-12-09",
+                    "path": "/Users/gaia/role-deck/episode-08-complete.html"
+                }
+            ],
+            "decisions": [
+                "Each dilemma = folder with essay + scenarios",
+                "Consistent structure across all 8",
+                "Names reflect ethical tension (silenced, bounded, fragile)",
+                "Episode-complete files for self-contained viewing"
+            ],
+            "obstacles": [
+                "Ensuring each dilemma feels distinct yet connected",
+                "Balancing realism with pedagogical clarity"
+            ],
+            "patterns": [
+                "case-study",
+                "folder-per-scenario",
+                "essay-driven"
+            ],
+            "intent": "Deep-dive case studies for 8 workplace ethical dilemmas"
+        },
+        {
+            "id": "data-layer",
+            "label": "DATA LAYER",
+            "type": "mine",
+            "color": "#06b6d4",
+            "position": {
+                "x": 0.82,
+                "y": 0.48
+            },
+            "trailLevel": 1,
+            "fileCount": 6,
+            "linesOfCode": 2100,
+            "dateRange": "Oct 7, 2025",
+            "birthDate": "2025-10-07",
+            "artifacts": [
+                {
+                    "text": "tilth-scenarios.js",
+                    "type": "artifact",
+                    "size_human": "8 KB",
+                    "lines": 200,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-scenarios.js",
+                    "notes": "8 Product Problem scenarios"
+                },
+                {
+                    "text": "tilth-designer-scenarios.js",
+                    "type": "artifact",
+                    "size_human": "11 KB",
+                    "lines": 280,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/tilth-designer-scenarios.js",
+                    "notes": "8 Designer Dilemma scenarios"
+                },
+                {
+                    "text": "feedloop-scenarios.js",
+                    "type": "artifact",
+                    "size_human": "22 KB",
+                    "lines": 580,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/feedloop-scenarios.js",
+                    "notes": "8 negotiation scenarios + context data"
+                },
+                {
+                    "text": "character-profiles.js",
+                    "type": "artifact",
+                    "size_human": "13 KB",
+                    "lines": 350,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/character-profiles.js",
+                    "notes": "16 AI character belief systems"
+                },
+                {
+                    "text": "character-card-component.js",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 490,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/character-card-component.js"
+                },
+                {
+                    "text": "leverage-infrastructure-analysis.json",
+                    "type": "artifact",
+                    "size_human": "12 KB",
+                    "lines": 200,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/leverage-infrastructure-analysis.json"
+                }
+            ],
+            "decisions": [
+                "Shared JS data files across applications",
+                "16 character profiles with belief systems",
+                "Separate Product vs Designer scenarios",
+                "Bartle taxonomy for character types"
+            ],
+            "obstacles": [
+                "Keeping data consistent across multiple consumers",
+                "Modeling nuanced ethical positions"
+            ],
+            "patterns": [
+                "shared-data",
+                "belief-modeling",
+                "scenario-catalog"
+            ],
+            "intent": "Centralized scenario and character data feeding all systems"
+        },
+        {
+            "id": "documentation",
+            "label": "DOCUMENTATION",
+            "type": "library",
+            "color": "#fbbf24",
+            "position": {
+                "x": 0.18,
+                "y": 0.68
+            },
+            "trailLevel": 0,
+            "fileCount": 25,
+            "linesOfCode": 8500,
+            "dateRange": "Sep 30 - Oct 7, 2025",
+            "birthDate": "2025-09-30",
+            "artifacts": [
+                {
+                    "text": "README.md",
+                    "type": "artifact",
+                    "size_human": "12 KB",
+                    "lines": 323,
+                    "birthDate": "2025-09-30",
+                    "path": "/Users/gaia/role-deck/README.md",
+                    "notes": "Project entry point, first file created"
+                },
+                {
+                    "text": "PROJECT-MAP.md",
+                    "type": "artifact",
+                    "size_human": "22 KB",
+                    "lines": 580,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/PROJECT-MAP.md"
+                },
+                {
+                    "text": "CENTAUR-BOX-PAPER.md",
+                    "type": "artifact",
+                    "size_human": "20 KB",
+                    "lines": 520,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/CENTAUR-BOX-PAPER.md",
+                    "notes": "Theoretical foundation document"
+                },
+                {
+                    "text": "2021.md",
+                    "type": "artifact",
+                    "size_human": "87 KB",
+                    "lines": 2200,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/2021.md",
+                    "notes": "Chivukula et al. research background"
+                },
+                {
+                    "text": "README-TILTH.md",
+                    "type": "artifact",
+                    "size_human": "15 KB",
+                    "lines": 400,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/README-TILTH.md"
+                },
+                {
+                    "text": "TILTH-QUICK-START.md",
+                    "type": "artifact",
+                    "size_human": "13 KB",
+                    "lines": 340,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/TILTH-QUICK-START.md"
+                },
+                {
+                    "text": "DESIGNER-DILEMMAS-GUIDE.md",
+                    "type": "artifact",
+                    "size_human": "14 KB",
+                    "lines": 360,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/DESIGNER-DILEMMAS-GUIDE.md"
+                },
+                {
+                    "text": "FEED-LOOP-README.md",
+                    "type": "artifact",
+                    "size_human": "7 KB",
+                    "lines": 180,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/FEED-LOOP-README.md"
+                },
+                {
+                    "text": "START-HERE.md",
+                    "type": "artifact",
+                    "size_human": "5 KB",
+                    "lines": 120,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/START-HERE.md"
+                },
+                {
+                    "text": "SYSTEM-INTEGRATION-ANALYSIS.md",
+                    "type": "artifact",
+                    "size_human": "19 KB",
+                    "lines": 490,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/SYSTEM-INTEGRATION-ANALYSIS.md"
+                },
+                {
+                    "text": "CHARACTER-CARDS-README.md",
+                    "type": "artifact",
+                    "size_human": "10 KB",
+                    "lines": 250,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/CHARACTER-CARDS-README.md"
+                },
+                {
+                    "text": "TILTH-MODES-COMPARISON.md",
+                    "type": "artifact",
+                    "size_human": "14 KB",
+                    "lines": 350,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/TILTH-MODES-COMPARISON.md"
+                }
+            ],
+            "decisions": [
+                "Extensive documentation for each system",
+                "Quick-start guides for onboarding",
+                "Academic grounding (Chivukula et al. 2021)",
+                "Separate docs per system (TILTH, Feed Loop)"
+            ],
+            "obstacles": [
+                "Keeping docs in sync with evolving code",
+                "Balancing depth with accessibility"
+            ],
+            "patterns": [
+                "documentation-first",
+                "quick-start",
+                "academic-foundation"
+            ],
+            "intent": "User guides, research theory, and integration documentation"
+        },
+        {
+            "id": "trail-visualization",
+            "label": "TRAIL OLOG",
+            "type": "observatory",
+            "color": "#a855f7",
+            "position": {
+                "x": 0.82,
+                "y": 0.75
+            },
+            "trailLevel": 1,
+            "fileCount": 6,
+            "linesOfCode": 2100,
+            "dateRange": "Dec 11, 2025",
+            "birthDate": "2025-12-11",
+            "artifacts": [
+                {
+                    "text": "courage-trail-olog.html",
+                    "type": "artifact",
+                    "size_human": "76 KB",
+                    "lines": 1881,
+                    "birthDate": "2025-12-11",
+                    "path": "/Users/gaia/role-deck/courage-trail-olog.html",
+                    "notes": "Self-contained visualization app"
+                },
+                {
+                    "text": "courage-trail-data.json",
+                    "type": "artifact",
+                    "size_human": "~40 KB",
+                    "lines": 1000,
+                    "birthDate": "2025-12-11",
+                    "path": "/Users/gaia/role-deck/courage-trail-data.json",
+                    "notes": "This file - project metadata"
+                },
+                {
+                    "text": "pattern-glossary.html",
+                    "type": "artifact",
+                    "size_human": "15 KB",
+                    "lines": 420,
+                    "birthDate": "2025-12-11",
+                    "path": "/Users/gaia/role-deck/pattern-glossary.html",
+                    "notes": "24 patterns with definitions, examples, and zone mappings"
+                },
+                {
+                    "text": "generate_manifest.js",
+                    "type": "artifact",
+                    "size_human": "4 KB",
+                    "lines": 100,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/generate_manifest.js"
+                },
+                {
+                    "text": "sync.sh",
+                    "type": "artifact",
+                    "size_human": "541 B",
+                    "lines": 12,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/sync.sh"
+                },
+                {
+                    "text": "enrich_trail_data.py",
+                    "type": "artifact",
+                    "size_human": "4 KB",
+                    "lines": 95,
+                    "birthDate": "2025-10-07",
+                    "path": "/Users/gaia/role-deck/enrich_trail_data.py"
+                }
+            ],
+            "decisions": [
+                "Self-contained HTML visualization",
+                "JSON data separation for flexibility",
+                "Deploy automation via sync.sh",
+                "Dynamic timeline from data dates"
+            ],
+            "obstacles": [
+                "Mapping project structure visually",
+                "Loading external JSON vs embedded fallback"
+            ],
+            "patterns": [
+                "trail-awareness",
+                "meta-visualization",
+                "self-documenting"
+            ],
+            "intent": "Meta-layer visualization observing project evolution"
+        }
+    ],
+    "connections": [
+        {
+            "from": "hub-center",
+            "to": "tilth-tetrad",
+            "type": "links",
+            "label": "Entry to TILTH"
+        },
+        {
+            "from": "hub-center",
+            "to": "cb-box-engine",
+            "type": "links",
+            "label": "Entry to CB-Box"
+        },
+        {
+            "from": "hub-center",
+            "to": "feed-loop-episodes",
+            "type": "links",
+            "label": "Entry to Feed Loop"
+        },
+        {
+            "from": "tilth-tetrad",
+            "to": "data-layer",
+            "type": "consumes",
+            "label": "Reads scenario data"
+        },
+        {
+            "from": "cb-box-engine",
+            "to": "data-layer",
+            "type": "consumes",
+            "label": "Reads character profiles"
+        },
+        {
+            "from": "cb-box-engine",
+            "to": "feed-loop-episodes",
+            "type": "drives",
+            "label": "Powers scenarios"
+        },
+        {
+            "from": "feed-loop-episodes",
+            "to": "episode-folders",
+            "type": "navigates",
+            "label": "Deep-dive links"
+        },
+        {
+            "from": "documentation",
+            "to": "tilth-tetrad",
+            "type": "documents",
+            "label": "README-TILTH"
+        },
+        {
+            "from": "documentation",
+            "to": "cb-box-engine",
+            "type": "documents",
+            "label": "CENTAUR-BOX-PAPER"
+        },
+        {
+            "from": "trail-visualization",
+            "to": "hub-center",
+            "type": "observes",
+            "label": "Tracks structure"
+        },
+        {
+            "from": "trail-visualization",
+            "to": "episode-folders",
+            "type": "observes",
+            "label": "Maps content"
+        }
+    ],
+    "timeline": [
+        {
+            "date": "2025-09-30",
+            "label": "Repository Genesis",
+            "significance": "major",
+            "active": [
+                "hub-center",
+                "documentation"
+            ],
+            "reflection": "First commit: README.md and index.html created — the seed of Role Deck planted.",
+            "decision": "Chose single-file HTML architecture for portability and zero-build deployment."
+        },
+        {
+            "date": "2025-10-07",
+            "label": "Core Systems Born",
+            "significance": "major",
+            "active": [
+                "hub-center",
+                "tilth-tetrad",
+                "cb-box-engine",
+                "feed-loop-episodes",
+                "episode-folders",
+                "data-layer",
+                "documentation"
+            ],
+            "reflection": "Massive initial upload: 60+ files including CB-Box (4529 lines), TILTH Tetrad, all 8 episode folders, and complete documentation.",
+            "decision": "Integrated McLuhan Tetrad framework with 16 AI character profiles for negotiation simulation."
+        },
+        {
+            "date": "2025-10-13",
+            "label": "Work Sense Prototypes Added",
+            "significance": "minor",
+            "active": [
+                "hub-center"
+            ],
+            "reflection": "Experimental TUI interfaces uploaded — early mobile canvas explorations.",
+            "decision": "Testing mobile-first design patterns before integration."
+        },
+        {
+            "date": "2025-12-09",
+            "label": "Episode Completions",
+            "significance": "minor",
+            "active": [
+                "episode-folders"
+            ],
+            "reflection": "Episodes 2-8 marked complete — unified self-contained viewing experiences.",
+            "decision": "Each episode-complete file bundles essay, scenario, and context into single page."
+        },
+        {
+            "date": "2025-12-09",
+            "label": "PORTAL & Character Gallery",
+            "significance": "minor",
+            "active": [
+                "hub-center",
+                "data-layer"
+            ],
+            "reflection": "New navigation surfaces: PORTAL.html for mobile, Character Gallery for profile browsing.",
+            "decision": "Mobile-first portal design with stacked layout navigation."
+        },
+        {
+            "date": "2025-12-11",
+            "label": "Trail Olog Visualization",
+            "significance": "major",
+            "active": [
+                "trail-visualization"
+            ],
+            "reflection": "Meta-layer added: This visualization maps the project's own evolution — the trail becomes conscious of itself.",
+            "decision": "Dynamic JSON loading with embedded fallback for file:// protocol."
+        }
+    ],
+    "stats": {
+        "totalFiles": 97,
+        "totalLinesOfCode": 35653,
+        "largestFile": {
+            "name": "cb-box.html",
+            "lines": 4529,
+            "size": "260 KB"
+        },
+        "earliestCommit": "2025-09-30",
+        "latestModification": "2025-12-11"
+    },
+    "ontology_types": {
+        "D": {
+            "name": "Dilemma",
+            "description": "Ethical tension requiring negotiation",
+            "count": 8
+        },
+        "C": {
+            "name": "Character",
+            "description": "AI persona with belief system",
+            "count": 16
+        },
+        "S": {
+            "name": "Scenario",
+            "description": "Situated context for ethical exploration",
+            "count": 16
+        },
+        "T": {
+            "name": "Tetrad",
+            "description": "McLuhan's 4-direction analysis framework",
+            "count": 4
+        },
+        "I": {
+            "name": "Identity",
+            "description": "Ethical stance via Bartle taxonomy",
+            "count": 4
+        },
+        "N": {
+            "name": "Negotiation",
+            "description": "Turn-based dialogue resolving tension",
+            "count": 8
+        },
+        "A": {
+            "name": "Artifact",
+            "description": "Generated design or policy output",
+            "count": 97
+        },
+        "P": {
+            "name": "Pattern",
+            "description": "Recurring design/ethical approach",
+            "count": 24
+        }
+    },
+    "morphisms": [
+        "presents : Scenario → Dilemma",
+        "embodies : Character → Identity",
+        "analyzes : Tetrad × Scenario → Artifact",
+        "resolves : Negotiation × Dilemma → Artifact",
+        "expresses : Character × Negotiation → Pattern",
+        "documents : Pattern → Knowledge",
+        "observes : Trail → {Artifact, Decision, Pattern}"
+    ]
+}

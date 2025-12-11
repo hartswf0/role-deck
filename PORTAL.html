@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TILTH — Control Surface</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0d0d0b;
+            --surface: #1a1a16;
+            --raised: #252520;
+            --border: #4a7a3a;
+            --accent: #F4A520;
+            --text: #f0ece0;
+            --muted: #8a8a7a;
+            --active: #6aaa4a;
+            --active-text: #fff;
+        }
+
+        :root.light {
+            --bg: #f0ece0;
+            --surface: #fff;
+            --raised: #f8f6f0;
+            --border: #4a7a3a;
+            --accent: #2a5a1a;
+            --text: #1a1a16;
+            --muted: #6a6a5a;
+            --active: #4a7a3a;
+            --active-text: #fff;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', monospace;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2em;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .header-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .h-btn {
+            padding: 6px 12px;
+            background: var(--raised);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.7em;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s;
+        }
+
+        .h-btn:hover {
+            background: var(--border);
+            color: var(--active-text);
+        }
+
+        .h-btn.active {
+            background: var(--active);
+            border-color: var(--active);
+            color: var(--active-text);
+        }
+
+        /* Main split view */
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Left: Index panel */
+        .index-panel {
+            width: 340px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .index-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .idx-tab {
+            flex: 1;
+            padding: 12px 8px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.85em;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .idx-tab:hover {
+            color: var(--text);
+        }
+
+        .idx-tab.active {
+            color: var(--active-text);
+            background: var(--active);
+            border-bottom-color: var(--accent);
+        }
+
+        .index-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .idx-panel {
+            display: none;
+        }
+
+        .idx-panel.active {
+            display: block;
+        }
+
+        /* Episode rows */
+        .ep-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(74, 122, 58, 0.3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .ep-row:hover {
+            background: var(--raised);
+        }
+
+        .ep-row.active {
+            background: var(--active);
+        }
+
+        .ep-row.active * {
+            color: var(--active-text);
+        }
+
+        .ep-num {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2em;
+            font-weight: 300;
+            color: var(--accent);
+            min-width: 28px;
+        }
+
+        .ep-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ep-title {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .ep-meta {
+            font-size: 0.7em;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Tool rows */
+        .tool-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-bottom: 1px solid rgba(74, 122, 58, 0.3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tool-row:hover {
+            background: var(--raised);
+        }
+
+        .tool-code {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.3em;
+            font-weight: 300;
+            color: var(--accent);
+            min-width: 40px;
+        }
+
+        .tool-name {
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .tool-desc {
+            font-size: 0.7em;
+            color: var(--muted);
+        }
+
+        /* Tier rows */
+        .tier-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            border-bottom: 1px solid rgba(74, 122, 58, 0.3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tier-row:hover {
+            background: var(--raised);
+        }
+
+        .tier-row.active {
+            background: var(--active);
+        }
+
+        .tier-row.active * {
+            color: var(--active-text);
+        }
+
+        .tier-cat {
+            font-size: 0.6em;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+        }
+
+        .tier-name {
+            font-family: 'Oswald', sans-serif;
+            font-size: 0.95em;
+            margin-top: 2px;
+        }
+
+        .tier-stat {
+            font-size: 0.75em;
+            color: var(--accent);
+        }
+
+        /* Right: Viewer panel */
+        .viewer-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+            overflow: hidden;
+        }
+
+        .viewer-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .viewer-title {
+            font-size: 0.8em;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+        }
+
+        .viewer-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .v-btn {
+            padding: 6px 12px;
+            background: var(--raised);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.7em;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.15s;
+        }
+
+        .v-btn:hover {
+            background: var(--border);
+            color: var(--active-text);
+        }
+
+        .v-btn.active {
+            background: var(--active);
+            border-color: var(--active);
+            color: var(--active-text);
+        }
+
+        .v-btn.primary {
+            background: var(--active);
+            border-color: var(--active);
+            color: var(--active-text);
+        }
+
+        .viewer-frame {
+            flex: 1;
+            border: none;
+            background: #fff;
+        }
+
+        /* Detail view (when no iframe) */
+        .detail-view {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .detail-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-tag {
+            font-size: 0.7em;
+            letter-spacing: 0.2em;
+            color: var(--muted);
+        }
+
+        .detail-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 2em;
+            font-weight: 400;
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        .detail-sub {
+            font-size: 0.85em;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .section-label {
+            font-size: 0.65em;
+            letter-spacing: 0.15em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .prac-card {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .prac-name {
+            font-weight: 600;
+        }
+
+        .prac-role {
+            font-size: 0.85em;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .prac-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 10px;
+            background: var(--active);
+            color: var(--active-text);
+            font-size: 0.7em;
+            letter-spacing: 0.08em;
+            border-radius: 3px;
+        }
+
+        .conflict-text {
+            line-height: 1.7;
+        }
+
+        .status-list {
+            list-style: none;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .dot.ok {
+            background: var(--active);
+        }
+
+        .dot.warn {
+            background: var(--accent);
+        }
+
+        .dot.miss {
+            background: #aa5a5a;
+        }
+
+        .meta-box {
+            padding: 12px;
+            background: var(--surface);
+            border-left: 3px solid var(--border);
+            font-size: 0.85em;
+            line-height: 1.5;
+            margin-top: 15px;
+        }
+
+        /* Mobile */
+        @media (max-width: 700px) {
+            .index-panel {
+                width: 100%;
+                position: absolute;
+                z-index: 50;
+                height: calc(100vh - 50px);
+                transform: translateX(0);
+                transition: transform 0.3s;
+            }
+
+            .index-panel.hidden {
+                transform: translateX(-100%);
+            }
+
+            .viewer-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="header">
+            <div class="brand" onclick="showIndex()">TILTH</div>
+            <div class="header-btns">
+                <button class="h-btn" onclick="showIndex()" id="btn-back">INDEX</button>
+                <button class="h-btn" onclick="toggleTheme()" id="btn-theme">LIGHT</button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="index-panel" id="index-panel">
+                <div class="index-tabs">
+                    <button class="idx-tab active" onclick="showTab('episodes')">EPISODES</button>
+                    <button class="idx-tab" onclick="showTab('tools')">TOOLS</button>
+                    <button class="idx-tab" onclick="showTab('infra')">INFRA</button>
+                </div>
+                <div class="index-content">
+                    <div id="episodes-tab" class="idx-panel active"></div>
+                    <div id="tools-tab" class="idx-panel"></div>
+                    <div id="infra-tab" class="idx-panel"></div>
+                </div>
+            </div>
+
+            <div class="viewer-panel" id="viewer-panel">
+                <div class="viewer-bar" id="viewer-bar">
+                    <div class="viewer-title" id="viewer-title">Select an episode</div>
+                    <div class="viewer-btns" id="viewer-btns"></div>
+                </div>
+                <div class="detail-view" id="detail-view"></div>
+                <iframe class="viewer-frame" id="viewer-frame" style="display:none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const EPS = [
+            { n: 1, title: 'NUTRIENT LOCK', app: 'GrowthPath', folder: '01-silenced-educator', essay: 'essay.html', evidence: 'silence-policy.html', scenario: 'silenced-educator.html', char: 'Maya Chen', role: 'L&D Lead', badge: 'The Silenced Educator', conflict: 'Internal research shows addictive engagement patterns harm learners. Leadership wants metrics, not ethics.' },
+            { n: 2, title: 'FIRST FRUIT', app: 'YieldMatch', folder: '02-deadline-sovereign', essay: 'essay.html', evidence: 'v2-will-fix.html', scenario: 'deadline-sovereign.html', char: 'Dev Patel', role: 'ML Engineer', badge: 'The Overruled Engineer', conflict: 'AI bias detected before launch. CEO says ship now, fix in v2. The harm will be real.' },
+            { n: 3, title: 'APPRENTICE ROWS', app: 'TalentFarm', folder: '03-bounded-apprentice', essay: 'essay.html', evidence: 'guild-gate.html', scenario: 'bounded-apprentice.html', char: 'Priya Sharma', role: 'Junior Designer', badge: 'The Bounded Apprentice', conflict: 'Security vulnerability found. Senior says not your lane. Breach happens 4 months later.' },
+            { n: 4, title: 'CONSENT HARVEST', app: 'ConsentGarden', folder: '04-two-headed-compliance', essay: 'essay.html', evidence: 'dark-pattern-choir.html', scenario: 'two-headed-compliance.html', char: 'Jordan Lee', role: 'UX Designer', badge: 'The Compliant Optimizer', conflict: 'Dark patterns in consent flow. Legal says compliant. Users dont understand what they agreed to.' },
+            { n: 5, title: 'ROOT UNION', app: 'UnionSprout', folder: '05-fragile-collective', essay: 'essay.html', evidence: 'organizers-microphone.html', scenario: 'fragile-collective.html', char: 'Maria Santos', role: 'QA Tester (H-2A)', badge: 'The Precarious Organizer', conflict: 'Visa worker builds organizing tool. Company terminates within 48 hours. Deportation follows.' },
+            { n: 6, title: 'FLOOD LEARNING', app: 'AutoGrow AI', folder: '06-epistemic-rush', essay: 'essay.html', evidence: 'epistemic-noise-gate.html', scenario: 'epistemic-rush.html', char: 'Dr. Sarah Kim', role: 'Data Scientist', badge: 'The Epistemic Rusher', conflict: 'AI garden advisor lacks cultural competency. Memo sent. VP never opens it. 4000 gardens deleted.' },
+            { n: 7, title: 'HARVEST WATCH', app: 'MigrantHarvest', folder: '07-conditional-person', essay: 'essay.html', evidence: 'maslow-lock.html', scenario: 'conditional-person.html', char: 'Amit Desai', role: 'Senior Engineer (H-1B)', badge: 'The Conditional Person', conflict: 'Discovers surveillance creep in labor tracking. Documents everything. Reports nothing. Waits for green card.' },
+            { n: 8, title: 'ROOT VALUES', app: 'GlobalGrow', folder: '08-values-treasurer', essay: 'essay.html', evidence: 'tiered-principles.html', scenario: 'values-treasurer.html', char: 'Sam Okafor', role: 'Founder/CEO', badge: 'The Values Treasurer', conflict: 'Board wants surveillance features for large client. Mission drift or company death. 6 senior staff resign.' }
+        ];
+
+        const TOOLS = [
+            { code: 'TET', name: 'TILTH TETRAD', desc: 'McLuhan framework', url: 'tetrad-pad.html' },
+            { code: 'CBX', name: 'CB-BOX', desc: 'AI negotiation', url: 'cb-box.html' },
+            { code: 'INV', name: 'INVESTIGATE', desc: 'Case decisions', url: 'tilth-investigation.html' },
+            { code: 'CAT', name: 'CATALOG', desc: 'Character specs', url: 'tilth-parts-catalog.html' },
+            { code: 'QIZ', name: 'QUIZ', desc: 'Assessment', url: 'quiz.html' },
+            { code: 'DUL', name: 'DUAL VIEW', desc: 'Split analysis', url: 'dual.html' }
+        ];
+
+        const TIERS = {
+            mindsets: { cat: 'HIGHEST LEVERAGE', name: 'Mindsets & Paradigms', desc: 'Beliefs, worldviews, paradigms that shape the system', ok: ['McLuhan Tetrad', 'Chivukula research', 'Design fiction'], warn: ['Founder essays'], miss: ['Paradigm synthesis', 'Counter-paradigm doc'] },
+            organizing: { cat: 'HIGH LEVERAGE', name: 'Organizing Principles', desc: 'Rules, goals, self-organization patterns', ok: ['Quiz labels', 'Risk scores', 'Systemic analysis'], warn: [], miss: ['Facilitator guide', 'Learning objectives', 'Rubric'] },
+            information: { cat: 'MEDIUM LEVERAGE', name: 'Information Flows', desc: 'Feedback loops, delays, information availability', ok: ['CB-Box feedback', 'Quiz outcomes', 'TILTH directions'], warn: [], miss: ['Trail-aware state', 'Cross-ep patterns'] },
+            foundation: { cat: 'FOUNDATION', name: 'System Infrastructure', desc: 'Parameters, buffers, physical structures', ok: ['8 folders', '8 openings', '8 episodes', 'CB-Box', 'TILTH'], warn: [], miss: ['Video content', 'Relationship viz'] }
+        };
+
+        let currentEp = null;
+        let currentTier = null;
+        let isLight = false;
+
+        function toggleTheme() {
+            isLight = !isLight;
+            document.documentElement.classList.toggle('light', isLight);
+            document.getElementById('btn-theme').textContent = isLight ? 'DARK' : 'LIGHT';
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.idx-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.idx-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        function showIndex() {
+            document.getElementById('index-panel').classList.remove('hidden');
+        }
+
+        function selectEp(n) {
+            currentEp = EPS.find(e => e.n === n);
+            document.querySelectorAll('.ep-row').forEach(r => r.classList.remove('active'));
+            document.querySelector(`[data-ep="${n}"]`).classList.add('active');
+            showEpDetail();
+        }
+
+        function showEpDetail() {
+            const e = currentEp;
+            const pad = n => String(n).padStart(2, '0');
+
+            document.getElementById('viewer-title').textContent = `EP ${pad(e.n)} — ${e.title}`;
+            document.getElementById('viewer-btns').innerHTML = `
+                <button class="v-btn" onclick="loadFile('${e.folder}/${e.essay}')">Essay</button>
+                <button class="v-btn" onclick="loadFile('${e.folder}/${e.evidence}')">Evidence</button>
+                <button class="v-btn" onclick="loadFile('${e.folder}/${e.scenario}')">Scenario</button>
+                <button class="v-btn" onclick="loadFile('opening-${pad(e.n)}-${e.folder.split('-').slice(1).join('-')}.html')">Opening</button>
+                <button class="v-btn primary" onclick="loadFile('episode-${pad(e.n)}-complete.html')">Play</button>
+            `;
+
+            document.getElementById('detail-view').innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-tag">EPISODE ${pad(e.n)}</div>
+                    <div class="detail-title">${e.title}</div>
+                    <div class="detail-sub">${e.app}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="section-label">Practitioner</div>
+                    <div class="prac-card">
+                        <div class="prac-name">${e.char}</div>
+                        <div class="prac-role">${e.role}</div>
+                        <div class="prac-badge">${e.badge}</div>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <div class="section-label">The Dilemma</div>
+                    <div class="conflict-text">${e.conflict}</div>
+                </div>
+            `;
+
+            document.getElementById('detail-view').style.display = 'block';
+            document.getElementById('viewer-frame').style.display = 'none';
+        }
+
+        function selectTier(key) {
+            currentTier = TIERS[key];
+            document.querySelectorAll('.tier-row').forEach(r => r.classList.remove('active'));
+            document.querySelector(`[data-tier="${key}"]`).classList.add('active');
+            showTierDetail(key);
+        }
+
+        function showTierDetail(key) {
+            const t = TIERS[key];
+            document.getElementById('viewer-title').textContent = t.name;
+            document.getElementById('viewer-btns').innerHTML = '';
+
+            let html = `<div class="detail-header">
+                <div class="detail-tag">${t.cat}</div>
+                <div class="detail-title">${t.name}</div>
+                <div class="detail-sub">${t.desc}</div>
+            </div>`;
+
+            if (t.ok.length) html += `<div class="detail-section"><div class="section-label">Exists</div><ul class="status-list">${t.ok.map(x => `<li class="status-item"><span class="dot ok"></span>${x}</li>`).join('')}</ul></div>`;
+            if (t.warn.length) html += `<div class="detail-section"><div class="section-label">Partial</div><ul class="status-list">${t.warn.map(x => `<li class="status-item"><span class="dot warn"></span>${x}</li>`).join('')}</ul></div>`;
+            if (t.miss.length) html += `<div class="detail-section"><div class="section-label">Missing</div><ul class="status-list">${t.miss.map(x => `<li class="status-item"><span class="dot miss"></span>${x}</li>`).join('')}</ul></div>`;
+
+            html += `<div class="meta-box">Build from mindset shifts DOWN, ensure infrastructure sustains the paradigm.</div>`;
+
+            document.getElementById('detail-view').innerHTML = html;
+            document.getElementById('detail-view').style.display = 'block';
+            document.getElementById('viewer-frame').style.display = 'none';
+        }
+
+        function loadFile(url) {
+            document.getElementById('viewer-title').textContent = url.split('/').pop();
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('viewer-frame').style.display = 'block';
+            document.getElementById('viewer-frame').src = url;
+
+            // On mobile, hide index
+            if (window.innerWidth <= 700) {
+                document.getElementById('index-panel').classList.add('hidden');
+            }
+        }
+
+        function loadTool(url) {
+            document.getElementById('viewer-title').textContent = url.split('/').pop();
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('viewer-frame').style.display = 'block';
+            document.getElementById('viewer-frame').src = url;
+            document.getElementById('viewer-btns').innerHTML = '';
+        }
+
+        // Init
+        const epTab = document.getElementById('episodes-tab');
+        EPS.forEach(e => {
+            epTab.innerHTML += `<div class="ep-row" data-ep="${e.n}" onclick="selectEp(${e.n})">
+                <div class="ep-num">${String(e.n).padStart(2, '0')}</div>
+                <div class="ep-info"><div class="ep-title">${e.title}</div><div class="ep-meta">${e.char} — ${e.app}</div></div>
+            </div>`;
+        });
+
+        const toolTab = document.getElementById('tools-tab');
+        TOOLS.forEach(t => {
+            toolTab.innerHTML += `<div class="tool-row" onclick="loadTool('${t.url}')">
+                <div class="tool-code">${t.code}</div>
+                <div><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>
+            </div>`;
+        });
+
+        const tierTab = document.getElementById('infra-tab');
+        Object.entries(TIERS).forEach(([k, t]) => {
+            const total = t.ok.length + t.warn.length + t.miss.length;
+            tierTab.innerHTML += `<div class="tier-row" data-tier="${k}" onclick="selectTier('${k}')">
+                <div><div class="tier-cat">${t.cat}</div><div class="tier-name">${t.name}</div></div>
+                <div class="tier-stat">${t.ok.length}/${total}</div>
+            </div>`;
+        });
+
+        selectEp(1);
+    </script>
+</body>
+
+</html>

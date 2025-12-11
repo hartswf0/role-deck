@@ -1,0 +1,32 @@
+name: Deploy static content to Pages
+on:
+  push:
+    branches: ["main"]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Prepare
+        run: |
+          mkdir -p _deploy
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.js" -o -name "*.css" -o -name "*.json" -o -name "*.md" -o -name "*.svg" -o -name "*.png" -o -name "*.jpg" -o -name "*.ico" \) -exec cp {} _deploy/ \;
+          # Copy subdirectories (episode folders)
+          for dir in 01-* 02-* 03-* 04-* 05-* 06-* 07-* 08-*; do
+            if [ -d "$dir" ]; then
+              cp -r "$dir" _deploy/
+            fi
+          done
+          touch _deploy/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_deploy'
+      - uses: actions/deploy-pages@v4

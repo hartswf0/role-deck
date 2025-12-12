@@ -1818,18 +1818,18 @@
             function openIframe(idx) {
                 if (!currentZone) return;
                 currentFileIndex = idx;
-                if (!currentZone) return;
-                currentFileIndex = idx;
                 const fileObj = currentZone.artifacts[idx];
                 const fileName = typeof fileObj === 'string' ? fileObj : fileObj.text;
-                const ext = fileName.substring(fileName.lastIndexOf('.') + 1);
+                // Check if it's an external URL
+                const isUrl = typeof fileObj !== 'string' && fileObj.url;
+                const ext = isUrl ? 'LINK' : fileName.substring(fileName.lastIndexOf('.') + 1);
 
                 document.getElementById('iframe-name').textContent = fileName;
                 document.getElementById('iframe-ext').textContent = ext.toUpperCase();
-                document.getElementById('iframe-ext').className = 'file-ext ' + ext;
+                document.getElementById('iframe-ext').className = 'file-ext ' + (isUrl ? 'html' : ext);
 
                 const openBtn = document.getElementById('if-open');
-                openBtn.href = fileName;
+                openBtn.href = isUrl ? fileObj.url : fileName;
                 openBtn.title = "Open in new tab (if blocked)";
                 openBtn.style.display = "inline-block"; // Ensure visible
 
@@ -1839,7 +1839,9 @@
                 const frame = document.getElementById('iframe-frame');
                 frame.classList.remove('loaded');
                 frame.onload = () => frame.classList.add('loaded');
-                frame.src = fileName;
+
+                // Use URL if available, otherwise filename
+                frame.src = isUrl ? fileObj.url : fileName;
 
                 // PLAYLIST GENERATION
                 const playlist = document.getElementById('if-playlist');

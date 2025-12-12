@@ -220,6 +220,22 @@
                     "lines": 320,
                     "birthDate": "2025-10-07",
                     "path": "/Users/gaia/role-deck/identity-bridge.html"
+                },
+                {
+                    "text": "Centaur Box Experiment (Paper)",
+                    "type": "artifact",
+                    "size_human": "LINK",
+                    "birthDate": "2025-10-07",
+                    "url": "https://hartswf0.github.io/think-outside-the-box/",
+                    "notes": "Tests how human-AI teams recursively optimize persuasion."
+                },
+                {
+                    "text": "Centaur Box Video",
+                    "type": "artifact",
+                    "size_human": "LINK",
+                    "birthDate": "2025-10-07",
+                    "url": "https://www.youtube.com/embed/HZBSQ1hcyPw",
+                    "notes": "Made in collaboration with Tony Assi."
                 }
             ],
             "decisions": [
